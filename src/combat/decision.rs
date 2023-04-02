@@ -13,7 +13,7 @@ pub fn decide_choreography(
         .iter_mut()
         .filter(|(_, combatant, _)| combatant.is_ready_for_next_choreography())
     {
-        let next_choreography_index = choose_next_choreography(&combatant, &condition_tracker)?;
+        let next_choreography_index = choose_next_choreography(&combatant, condition_tracker)?;
         combatant.current = Some(MoveIndex {
             choreography: next_choreography_index,
             move_: 0,
