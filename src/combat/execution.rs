@@ -28,19 +28,23 @@ pub fn execute_move(
 
 pub fn execute_choreography(
     time: Res<Time>,
-    mut combatants: Query<(Entity, &mut Combatant)>,
+    mut combatants: Query<(Entity, &mut Combatant, &ConditionTracker)>,
     mut move_event_writer: EventWriter<MoveEvent>,
 ) {
-    for (entity, mut combatant) in &mut combatants.iter_mut() {
+    for (entity, mut combatant, condition_tracker) in &mut combatants.iter_mut() {
         combatant.time_since_last_move += time.delta_seconds();
         if let Some(current) = combatant.current {
             let (move_duration, choreography_length) = {
                 let moves = &combatant.choreographies[current.choreography].moves;
                 let move_ = &moves[current.move_];
-                (move_.duration, moves.len())
+                (move_.duration.clone(), moves.len())
             };
 
-            if combatant.time_since_last_move >= move_duration {
+            let time_for_next_move = match move_duration {
+                MoveDuration::Fixed(time) => combatant.time_since_last_move >= time,
+                MoveDuration::Until(conditions) => condition_tracker.all(&conditions),
+            };
+            if time_for_next_move {
                 combatant.time_since_last_move = 0.0;
                 let was_last_move = current.move_ + 1 >= choreography_length;
                 if was_last_move {
@@ -59,7 +63,6 @@ pub fn execute_choreography(
                     });
                 }
             }
-        } else {
         }
     }
 }

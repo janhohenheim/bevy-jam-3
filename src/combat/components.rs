@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct CombatBundle {
     combatant: Combatant,
     combatant_state: CombatantState,
+    condition_tracker: ConditionTracker,
 }
 
 #[derive(Debug, Component, Clone, PartialEq, Default, Reflect, FromReflect)]
@@ -19,13 +20,7 @@ pub struct Combatant {
 
 impl Combatant {
     pub fn is_ready_for_next_choreography(&self) -> bool {
-        if self.current.is_some() {
-            false
-        } else if let Some(last_choreography) = self.last_choreography {
-            self.time_since_last_move >= self.choreographies[last_choreography].recovery_time
-        } else {
-            true
-        }
+        self.current.is_none()
     }
 }
 
@@ -33,19 +28,7 @@ impl Combatant {
 pub struct Tendency {
     pub choreography: usize,
     pub weight: f32,
-    pub conditions: Vec<TendencyCondition>,
-}
-
-#[derive(Debug, Clone, PartialEq, Reflect, FromReflect)]
-pub enum TendencyCondition {
-    MinDistance(f32),
-    MaxDistance(f32),
-}
-
-impl Default for TendencyCondition {
-    fn default() -> Self {
-        Self::MinDistance(0.0)
-    }
+    pub conditions: Vec<Condition>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Default, Reflect, FromReflect)]
@@ -57,14 +40,36 @@ pub struct MoveIndex {
 #[derive(Debug, Clone, PartialEq, Default, Reflect, FromReflect)]
 pub struct Choreography {
     pub moves: Vec<Move>,
-    pub recovery_time: f32,
 }
 
 #[derive(Debug, Clone, PartialEq, Default, Reflect, FromReflect)]
 pub struct Move {
-    pub duration: f32,
+    pub duration: MoveDuration,
     pub animation: Option<Handle<AnimationClip>>,
     pub state: CombatantState,
+}
+
+#[derive(Debug, Clone, PartialEq, Reflect, FromReflect)]
+pub enum MoveDuration {
+    Fixed(f32),
+    Until(Vec<Condition>),
+}
+impl Default for MoveDuration {
+    fn default() -> Self {
+        Self::Fixed(0.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Reflect, FromReflect)]
+pub enum Condition {
+    PlayerDistanceSquaredUnder(f32),
+    PlayerDistanceSquaredOver(f32),
+}
+
+impl Default for Condition {
+    fn default() -> Self {
+        Self::PlayerDistanceSquaredUnder(0.0)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -83,4 +88,23 @@ pub enum CombatantState {
     #[default]
     OnGuard,
     HyperArmor,
+}
+
+#[derive(Debug, Component, Clone, PartialEq, Default, Reflect, FromReflect)]
+#[reflect(Component)]
+pub struct ConditionTracker {
+    pub player_distance_squared: f32,
+}
+
+impl ConditionTracker {
+    pub fn all(&self, conditions: &[Condition]) -> bool {
+        conditions.iter().all(|condition| match condition {
+            Condition::PlayerDistanceSquaredUnder(distance) => {
+                self.player_distance_squared < *distance
+            }
+            Condition::PlayerDistanceSquaredOver(distance) => {
+                self.player_distance_squared > *distance
+            }
+        })
+    }
 }
