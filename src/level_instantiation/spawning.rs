@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use spew::prelude::*;
 use strum_macros::EnumIter;
 
-mod animation_link;
+pub mod animation_link;
 mod despawn;
 pub mod objects;
 mod post_spawn_modification;

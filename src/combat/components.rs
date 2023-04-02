@@ -70,7 +70,8 @@ pub struct Move {
 #[derive(Debug, Clone, PartialEq, Reflect, FromReflect)]
 pub enum MoveDuration {
     Fixed(f32),
-    Until(Vec<Condition>),
+    WhileAll(Vec<Condition>),
+    UntilAll(Vec<Condition>),
 }
 impl Default for MoveDuration {
     fn default() -> Self {
@@ -116,13 +117,21 @@ pub struct ConditionTracker {
 
 impl ConditionTracker {
     pub fn all(&self, conditions: &[Condition]) -> bool {
-        conditions.iter().all(|condition| match condition {
+        conditions.iter().all(|condition| self.fulfilled(condition))
+    }
+
+    pub fn any(&self, conditions: &[Condition]) -> bool {
+        conditions.iter().any(|condition| self.fulfilled(condition))
+    }
+
+    pub fn fulfilled(&self, condition: &Condition) -> bool {
+        match condition {
             Condition::PlayerDistanceSquaredUnder(distance) => {
                 self.player_distance_squared < *distance
             }
             Condition::PlayerDistanceSquaredOver(distance) => {
                 self.player_distance_squared > *distance
             }
-        })
+        }
     }
 }

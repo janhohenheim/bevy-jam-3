@@ -29,21 +29,40 @@ pub(crate) fn spawn(
             Name::new("NPC"),
             CharacterControllerBundle::capsule(HEIGHT, RADIUS),
             CombatBundle::new(Combatant::new(
-                vec![Choreography {
-                    name: "Walk toward Player".to_string(),
-                    moves: vec![Move {
-                        duration: MoveDuration::Until(vec![
-                            CombatCondition::PlayerDistanceSquaredUnder(2.),
-                        ]),
-                        animation: Some(animations.character_walking.clone()),
-                        state: CombatantState::OnGuard,
-                    }],
-                }],
-                vec![Tendency {
-                    choreography: 0,
-                    weight: 1.0,
-                    conditions: vec![CombatCondition::PlayerDistanceSquaredOver(2.)],
-                }],
+                vec![
+                    Choreography {
+                        name: "Walk toward Player".to_string(),
+                        moves: vec![Move {
+                            duration: MoveDuration::WhileAll(vec![
+                                CombatCondition::PlayerDistanceSquaredOver(2.),
+                            ]),
+                            animation: Some(animations.character_walking.clone()),
+                            state: CombatantState::OnGuard,
+                        }],
+                    },
+                    Choreography {
+                        name: "Idle".to_string(),
+                        moves: vec![Move {
+                            duration: MoveDuration::WhileAll(vec![
+                                CombatCondition::PlayerDistanceSquaredUnder(2.),
+                            ]),
+                            animation: Some(animations.character_idle.clone()),
+                            state: CombatantState::OnGuard,
+                        }],
+                    },
+                ],
+                vec![
+                    Tendency {
+                        choreography: 0,
+                        weight: 1.0,
+                        conditions: vec![CombatCondition::PlayerDistanceSquaredOver(2.)],
+                    },
+                    Tendency {
+                        choreography: 1,
+                        weight: 1.0,
+                        conditions: vec![CombatCondition::PlayerDistanceSquaredUnder(2.)],
+                    },
+                ],
             )),
             CharacterAnimations {
                 idle: animations.character_idle.clone(),
