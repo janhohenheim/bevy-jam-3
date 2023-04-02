@@ -2045,6 +2045,7 @@ dependencies = [
  "bitflags 2.0.2",
  "chrono",
  "embed-resource",
+ "getrandom",
  "glob",
  "image",
  "indexmap",

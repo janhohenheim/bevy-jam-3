@@ -61,6 +61,7 @@ wasm = [
     "bevy_rapier3d/wasm-bindgen",
     "core",
     "dep:wasm-bindgen",
+    "dep:getrandom",
 ]
 
 wasm_dev = [
@@ -103,6 +104,7 @@ bevy_dolly = { git = "https://github.com/BlackPhlox/bevy_dolly", rev = "b2f5dc78
 spew = "0.2.1"
 bevy_mod_sysfail = "2"
 seldom_fn_plugin = "0.3"
+getrandom = { version = "0.2", features = ["js"], optional = true }
 
 # keep the following in sync with Bevy's dependencies
 winit = { version = "0.28", default-features = false }

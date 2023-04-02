@@ -17,6 +17,19 @@ pub struct Combatant {
     pub time_since_last_move: f32,
 }
 
+impl Combatant {
+    pub fn is_ready_for_next_choreography(&self) -> bool {
+        if self.current.is_some() {
+            return false;
+        }
+        if let Some(last_choreography) = self.last_choreography {
+            self.time_since_last_move >= self.choreographies[last_choreography].recovery_time
+        } else {
+            true
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Default, Reflect, FromReflect)]
 pub struct Tendency {
     pub choreography: usize,
