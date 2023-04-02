@@ -27,7 +27,7 @@ pub struct Combatant {
     pub current: Option<MoveIndex>,
     pub tendencies: Vec<Tendency>,
     /// Used to implement e.g. circling around player after a strong boss attack.
-    /// Currently does not factro in any conditions.
+    /// Currently does not factor in any conditions.
     pub chained_choreographies: HashMap<usize, usize>,
     pub time_since_last_move: f32,
 }
