@@ -13,7 +13,7 @@ mod update_states;
 pub fn combat_plugin(app: &mut App) {
     app.register_type::<Combatant>()
         .register_type::<Tendency>()
-        .register_type::<MoveIndex>()
+        .register_type::<CurrentMove>()
         .register_type::<Choreography>()
         .register_type::<Move>()
         .register_type::<MoveDuration>()

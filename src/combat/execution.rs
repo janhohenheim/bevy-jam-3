@@ -2,7 +2,7 @@ use crate::combat::components::*;
 use crate::level_instantiation::spawning::AnimationEntityLink;
 use anyhow::{Context, Result};
 use bevy::prelude::*;
-use bevy_mod_sysfail::sysfail;
+use bevy_mod_sysfail::macros::*;
 use std::time::Duration;
 
 #[sysfail(log(level = "error"))]
@@ -19,7 +19,9 @@ pub fn execute_move(
             .context("animation_entity_link held entity without animation player")?;
 
         if let Some(animation) = &move_.animation {
-            animation_player.play_with_transition(animation.clone(), Duration::from_secs_f32(0.2));
+            animation_player
+                .play_with_transition(animation.clone(), Duration::from_secs_f32(0.2))
+                .repeat();
         }
         *combatant_state = move_.state;
     }
@@ -28,10 +30,10 @@ pub fn execute_move(
 
 pub fn execute_choreography(
     time: Res<Time>,
-    mut combatants: Query<(Entity, &mut Combatant, &ConditionTracker)>,
+    mut combatants: Query<(Entity, &mut Combatant, &ConditionTracker, &Transform)>,
     mut move_event_writer: EventWriter<MoveEvent>,
 ) {
-    for (entity, mut combatant, condition_tracker) in &mut combatants.iter_mut() {
+    for (entity, mut combatant, condition_tracker, transform) in &mut combatants.iter_mut() {
         combatant.time_since_last_move += time.delta_seconds();
         let Some(current) = combatant.current else { continue; };
 
@@ -53,9 +55,10 @@ pub fn execute_choreography(
                 combatant.last_choreography = Some(current.choreography);
                 combatant.current = None;
             } else {
-                combatant.current = Some(MoveIndex {
+                combatant.current = Some(CurrentMove {
                     choreography: current.choreography,
                     move_: current.move_ + 1,
+                    start_transform: *transform,
                 });
 
                 let next_move =

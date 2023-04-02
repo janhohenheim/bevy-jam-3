@@ -24,7 +24,7 @@ impl CombatBundle {
 pub struct Combatant {
     pub choreographies: Vec<Choreography>,
     pub last_choreography: Option<usize>,
-    pub current: Option<MoveIndex>,
+    pub current: Option<CurrentMove>,
     pub tendencies: Vec<Tendency>,
     /// Used to implement e.g. circling around player after a strong boss attack.
     /// Currently does not factor in any conditions.
@@ -58,9 +58,10 @@ pub struct Tendency {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Default, Reflect, FromReflect)]
-pub struct MoveIndex {
+pub struct CurrentMove {
     pub choreography: usize,
     pub move_: usize,
+    pub start_transform: Transform,
 }
 
 #[derive(Debug, Clone, PartialEq, Default, Reflect, FromReflect)]
@@ -121,7 +122,7 @@ pub enum CombatantState {
 #[derive(Debug, Component, Clone, PartialEq, Default, Reflect, FromReflect)]
 #[reflect(Component)]
 pub struct ConditionTracker {
-    pub player_distance_squared: f32,
+    pub player_direction: Vec3,
 }
 
 impl ConditionTracker {
@@ -135,11 +136,11 @@ impl ConditionTracker {
 
     pub fn fulfilled(&self, condition: &Condition) -> bool {
         match condition {
-            Condition::PlayerDistanceSquaredUnder(distance) => {
-                self.player_distance_squared < *distance
+            Condition::PlayerDistanceSquaredUnder(distance_squared) => {
+                self.player_direction.length_squared() < *distance_squared
             }
-            Condition::PlayerDistanceSquaredOver(distance) => {
-                self.player_distance_squared > *distance
+            Condition::PlayerDistanceSquaredOver(distance_squared) => {
+                self.player_direction.length_squared() > *distance_squared
             }
         }
     }

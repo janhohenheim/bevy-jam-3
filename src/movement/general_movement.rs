@@ -1,16 +1,16 @@
-use anyhow::{Context, Result};
-use bevy::prelude::*;
-use std::time::Duration;
-
-use bevy_rapier3d::prelude::*;
-mod components;
 use crate::file_system_interaction::config::GameConfig;
 use crate::level_instantiation::spawning::AnimationEntityLink;
 use crate::util::smoothness_to_lerp_factor;
 use crate::util::trait_extension::{TransformExt, Vec3Ext};
 use crate::GameState;
+use anyhow::{Context, Result};
+use bevy::prelude::*;
 use bevy_mod_sysfail::macros::*;
+use bevy_rapier3d::prelude::*;
 pub use components::*;
+use std::time::Duration;
+
+mod components;
 
 /// Handles movement of character controllers, i.e. entities with the [`CharacterControllerBundle`].
 /// The default forces on a character going right are:  
@@ -47,7 +47,7 @@ pub fn general_movement_plugin(app: &mut App) {
                 apply_jumping,
                 apply_walking,
                 rotate_characters,
-                play_animations,
+                //play_animations,
                 sync_models,
                 reset_movement_components,
             )
@@ -160,7 +160,7 @@ fn rotate_characters(
 }
 
 #[sysfail(log(level = "error"))]
-fn play_animations(
+fn _play_animations(
     mut animation_player: Query<&mut AnimationPlayer>,
     characters: Query<(
         &Velocity,
