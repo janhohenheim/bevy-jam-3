@@ -16,6 +16,7 @@
 //! Feel free to [file an issue](https://github.com/janhohenheim/foxtrot/issues/new) if you need help!
 //! The docs are organized such that you can click through the plugins to explore the systems at play.
 pub mod bevy_config;
+pub mod combat;
 #[cfg(feature = "dev")]
 pub mod dev;
 pub mod file_system_interaction;
@@ -31,6 +32,7 @@ pub mod util;
 pub mod world_interaction;
 
 use crate::bevy_config::bevy_config_plugin;
+use crate::combat::combat_plugin;
 #[cfg(feature = "dev")]
 use crate::dev::dev_plugin;
 use crate::file_system_interaction::file_system_interaction_plugin;
@@ -90,6 +92,7 @@ impl Plugin for GamePlugin {
             .fn_plugin(bevy_config_plugin)
             .fn_plugin(menu_plugin)
             .fn_plugin(movement_plugin)
+            .fn_plugin(combat_plugin)
             .fn_plugin(player_control_plugin)
             .fn_plugin(world_interaction_plugin)
             .fn_plugin(level_instantiation_plugin)

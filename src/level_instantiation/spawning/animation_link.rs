@@ -2,7 +2,9 @@ use crate::movement::general_movement::Model;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Eq, PartialEq, Component, Reflect, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Eq, PartialEq, Component, Reflect, Serialize, Deserialize, Deref, DerefMut,
+)]
 #[reflect(Component, Serialize, Deserialize)]
 pub struct AnimationEntityLink(pub Entity);
 

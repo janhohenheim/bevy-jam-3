@@ -46,6 +46,7 @@ pub fn actions_plugin(app: &mut App) {
 pub enum PlayerAction {
     #[default]
     Move,
+    Attack,
     Sprint,
     Jump,
     Interact,
@@ -115,6 +116,7 @@ pub fn create_player_action_input_manager_bundle() -> InputManagerBundle<PlayerA
             (QwertyScanCode::Key0, PlayerAction::NumberedChoice0),
         ])
         .insert(VirtualDPad::wasd(), PlayerAction::Move)
+        .insert(MouseButton::Left, PlayerAction::Attack)
         .build(),
         ..default()
     }
