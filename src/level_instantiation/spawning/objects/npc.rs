@@ -39,6 +39,7 @@ pub(crate) fn spawn(
                             ]),
                             animation: Some(animations.character_walking.clone()),
                             state: CombatantState::OnGuard,
+                            translation_fn: None,
                         }],
                     },
                     Choreography {
@@ -49,6 +50,7 @@ pub(crate) fn spawn(
                             ]),
                             animation: Some(animations.character_idle.clone()),
                             state: CombatantState::OnGuard,
+                            translation_fn: None,
                         }],
                     },
                 ],

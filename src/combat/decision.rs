@@ -11,7 +11,7 @@ pub fn decide_choreography(
 ) -> Result<()> {
     for (entity, mut combatant, condition_tracker, transform) in combatant
         .iter_mut()
-        .filter(|(_, combatant, _)| combatant.is_ready_for_next_choreography())
+        .filter(|(_, combatant, _, _)| combatant.is_ready_for_next_choreography())
     {
         let next_choreography_index = get_chained_choreography(&combatant)
             .map(Ok)

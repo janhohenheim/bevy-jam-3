@@ -19,8 +19,7 @@ impl CombatBundle {
     }
 }
 
-#[derive(Debug, Component, Clone, PartialEq, Default, Reflect, FromReflect)]
-#[reflect(Component)]
+#[derive(Debug, Component, Clone, Default)]
 pub struct Combatant {
     pub choreographies: Vec<Choreography>,
     pub last_choreography: Option<usize>,
@@ -57,24 +56,25 @@ pub struct Tendency {
     pub conditions: Vec<Condition>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Default, Reflect, FromReflect)]
+#[derive(Debug, Clone, Copy, Default, Reflect, FromReflect)]
 pub struct CurrentMove {
     pub choreography: usize,
     pub move_: usize,
     pub start_transform: Transform,
 }
 
-#[derive(Debug, Clone, PartialEq, Default, Reflect, FromReflect)]
+#[derive(Debug, Clone, Default)]
 pub struct Choreography {
     pub name: String,
     pub moves: Vec<Move>,
 }
 
-#[derive(Debug, Clone, PartialEq, Default, Reflect, FromReflect)]
+#[derive(Debug, Clone, Default)]
 pub struct Move {
     pub duration: MoveDuration,
     pub animation: Option<Handle<AnimationClip>>,
     pub state: CombatantState,
+    pub translation_fn: Option<Box<fn(f32) -> Vec3>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Reflect, FromReflect)]
@@ -101,7 +101,7 @@ impl Default for Condition {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct MoveEvent {
     pub source: Entity,
     pub move_: Move,
