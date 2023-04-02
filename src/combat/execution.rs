@@ -45,8 +45,8 @@ pub fn execute_choreography(
 
         let time_for_next_move = match move_duration {
             MoveDuration::Fixed(time) => combatant.time_since_last_move >= time,
-            MoveDuration::WhileAll(conditions) => !condition_tracker.any(&conditions),
-            MoveDuration::UntilAll(conditions) => condition_tracker.all(&conditions),
+            MoveDuration::While(condition) => !condition_tracker.fulfilled(&condition),
+            MoveDuration::Until(condition) => condition_tracker.fulfilled(&condition),
         };
         if time_for_next_move {
             combatant.time_since_last_move = 0.0;

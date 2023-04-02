@@ -8,8 +8,8 @@ pub fn update_condition_tracker(
 ) {
     for (mut condition_tracker, combatant_transform) in combatants.iter_mut() {
         for player_transform in player.iter() {
-            condition_tracker.player_direction =
-                player_transform.translation - combatant_transform.translation;
+            let player_direction = player_transform.translation - combatant_transform.translation;
+            condition_tracker.player_distance_squared = player_direction.length_squared();
         }
     }
 }

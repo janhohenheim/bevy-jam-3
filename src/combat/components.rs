@@ -49,11 +49,11 @@ impl Combatant {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Default, Reflect, FromReflect)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct Tendency {
     pub choreography: usize,
     pub weight: f32,
-    pub conditions: Vec<Condition>,
+    pub condition: Condition,
 }
 
 #[derive(Debug, Clone, Copy, Default, Reflect, FromReflect)]
@@ -74,14 +74,24 @@ pub struct Move {
     pub duration: MoveDuration,
     pub animation: Option<Handle<AnimationClip>>,
     pub state: CombatantState,
-    pub translation_fn: Option<Box<fn(f32) -> Vec3>>,
+    pub translation_fn: Option<fn(TranslationFnInput) -> Vec3>,
 }
 
-#[derive(Debug, Clone, PartialEq, Reflect, FromReflect)]
+#[derive(Debug, Clone, Default)]
+pub struct TranslationFnInput {
+    pub time: f32,
+    pub transform: Transform,
+    pub start_transform: Transform,
+    pub player_direction: Vec3,
+    pub start_player_direction: Vec3,
+    pub has_line_of_sight: bool,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum MoveDuration {
     Fixed(f32),
-    WhileAll(Vec<Condition>),
-    UntilAll(Vec<Condition>),
+    While(Condition),
+    Until(Condition),
 }
 impl Default for MoveDuration {
     fn default() -> Self {
@@ -89,10 +99,14 @@ impl Default for MoveDuration {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Reflect, FromReflect)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Condition {
     PlayerDistanceSquaredUnder(f32),
     PlayerDistanceSquaredOver(f32),
+    HasLineOfSight,
+    Not(Box<Condition>),
+    And(Vec<Condition>),
+    Or(Vec<Condition>),
 }
 
 impl Default for Condition {
@@ -122,7 +136,8 @@ pub enum CombatantState {
 #[derive(Debug, Component, Clone, PartialEq, Default, Reflect, FromReflect)]
 #[reflect(Component)]
 pub struct ConditionTracker {
-    pub player_direction: Vec3,
+    pub player_distance_squared: f32,
+    pub has_line_of_sight: bool,
 }
 
 impl ConditionTracker {
@@ -137,11 +152,15 @@ impl ConditionTracker {
     pub fn fulfilled(&self, condition: &Condition) -> bool {
         match condition {
             Condition::PlayerDistanceSquaredUnder(distance_squared) => {
-                self.player_direction.length_squared() < *distance_squared
+                self.player_distance_squared < *distance_squared
             }
             Condition::PlayerDistanceSquaredOver(distance_squared) => {
-                self.player_direction.length_squared() > *distance_squared
+                self.player_distance_squared > *distance_squared
             }
+            Condition::HasLineOfSight => self.has_line_of_sight,
+            Condition::Not(condition) => !self.fulfilled(condition),
+            Condition::And(conditions) => self.all(conditions),
+            Condition::Or(conditions) => self.any(conditions),
         }
     }
 }

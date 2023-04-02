@@ -11,10 +11,7 @@ mod execution;
 mod update_states;
 
 pub fn combat_plugin(app: &mut App) {
-    app.register_type::<Tendency>()
-        .register_type::<CurrentMove>()
-        .register_type::<MoveDuration>()
-        .register_type::<components::Condition>()
+    app.register_type::<CurrentMove>()
         .register_type::<CombatantState>()
         .register_type::<ConditionTracker>()
         .add_event::<MoveEvent>()

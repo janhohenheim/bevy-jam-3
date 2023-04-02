@@ -45,7 +45,7 @@ fn choose_next_choreography(
     let choices: Vec<_> = combatant
         .tendencies
         .iter()
-        .filter(|tendency| condition_tracker.all(&tendency.conditions))
+        .filter(|tendency| condition_tracker.fulfilled(&tendency.condition))
         .collect();
     let next_choreography_index = choices
         .choose_weighted(&mut rng, |item| item.weight)?
