@@ -3,15 +3,19 @@ use crate::GameState;
 use anyhow::{Context, Result};
 use bevy::prelude::*;
 use bevy_mod_sysfail::sysfail;
-use serde::{Deserialize, Serialize};
 use std::time::Duration;
+
+mod components;
+pub use components::*;
 
 pub fn combat_plugin(app: &mut App) {
     app.register_type::<CombatantState>()
         .register_type::<Choreography>()
         .register_type::<Move>()
         .add_event::<MoveEvent>()
-        .add_systems((execute_move,).in_set(OnUpdate(GameState::Playing)));
+        .add_systems(
+            (execute_move, execute_current_choreography).in_set(OnUpdate(GameState::Playing)),
+        );
 }
 
 #[sysfail(log(level = "error"))]
@@ -34,32 +38,40 @@ fn execute_move(
     Ok(())
 }
 
-#[derive(Debug, Component, Clone, PartialEq, Default, Reflect, FromReflect)]
-#[reflect(Component)]
-pub struct Choreography(pub Vec<Move>);
+fn execute_current_choreography(
+    time: Res<Time>,
+    mut combatants: Query<(Entity, &mut Combatant)>,
+    mut move_event_writer: EventWriter<MoveEvent>,
+) {
+    for (entity, mut combatant) in &mut combatants.iter_mut() {
+        if let Some(current) = combatant.current {
+            let (move_duration, choreography_length) = {
+                let choreography = &combatant.choreographies[current.choreography];
+                let move_ = &choreography[current.move_];
+                (move_.duration, choreography.len())
+            };
 
-#[derive(Debug, Component, Clone, PartialEq, Default, Reflect, FromReflect)]
-#[reflect(Component)]
-pub struct Move {
-    duration: f32,
-    pub animation: Handle<AnimationClip>,
-    pub state: CombatantState,
-}
+            if combatant.time_since_last_move >= move_duration {
+                combatant.time_since_last_move = 0.0;
+                let was_last_move = current.move_ + 1 >= choreography_length;
+                if was_last_move {
+                    combatant.current = None;
+                } else {
+                    combatant.current = Some(MoveIndex {
+                        choreography: current.choreography,
+                        move_: current.move_ + 1,
+                    });
 
-#[derive(Debug, Component, Clone, PartialEq)]
-pub struct MoveEvent {
-    pub source: Entity,
-    pub move_: Move,
-}
-
-#[derive(
-    Debug, Component, Clone, Copy, PartialEq, Default, Reflect, FromReflect, Serialize, Deserialize,
-)]
-#[reflect(Component, Serialize, Deserialize)]
-pub enum CombatantState {
-    Deathblow,
-    Vulnerable,
-    #[default]
-    OnGuard,
-    HyperArmor,
+                    let next_move =
+                        &combatant.choreographies[current.choreography][current.move_ + 1];
+                    move_event_writer.send(MoveEvent {
+                        source: entity,
+                        move_: next_move.clone(),
+                    });
+                }
+            } else {
+                combatant.time_since_last_move += time.delta_seconds();
+            }
+        }
+    }
 }
