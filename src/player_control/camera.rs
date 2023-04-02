@@ -40,8 +40,8 @@ impl Default for IngameCamera {
 #[derive(Debug, Clone, PartialEq, Reflect, FromReflect, Serialize, Deserialize, Default)]
 #[reflect(Serialize, Deserialize)]
 pub enum IngameCameraKind {
-    #[default]
     ThirdPerson,
+    #[default]
     FirstPerson,
     FixedAngle,
 }

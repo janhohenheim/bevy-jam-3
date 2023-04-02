@@ -25,7 +25,7 @@ pub fn update_rig(
     config: Res<GameConfig>,
 ) -> Result<()> {
     let dt = time.delta_seconds();
-    for (mut camera, mut rig, actions, transform) in camera_query.iter_mut() {
+    for (camera, mut rig, actions, transform) in camera_query.iter_mut() {
         set_look_at(&mut rig, &camera);
         set_position(&mut rig, &camera);
         if camera.kind == IngameCameraKind::FixedAngle {
@@ -39,7 +39,7 @@ pub fn update_rig(
             }
         }
 
-        set_desired_distance(&mut camera, actions, &config);
+        //set_desired_distance(&mut camera, actions, &config);
         let distance = get_arm_distance(&camera, transform, &rapier_context, &config);
         if let Some(distance) = distance {
             let zoom_smoothness = get_zoom_smoothness(&config, &camera, &rig, distance);
@@ -100,7 +100,7 @@ fn get_pitch_extrema(config: &GameConfig, camera: &IngameCamera) -> (f32, f32) {
     }
 }
 
-fn set_desired_distance(
+fn _set_desired_distance(
     camera: &mut IngameCamera,
     actions: &ActionState<CameraAction>,
     config: &GameConfig,
