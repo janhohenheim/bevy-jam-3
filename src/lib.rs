@@ -15,6 +15,7 @@
 //! Instead, decide for yourself which features you like and which one's you don't and simply trim the code accordingly.
 //! Feel free to [file an issue](https://github.com/janhohenheim/foxtrot/issues/new) if you need help!
 //! The docs are organized such that you can click through the plugins to explore the systems at play.
+pub mod ai;
 pub mod bevy_config;
 pub mod combat;
 #[cfg(feature = "dev")]

@@ -1,3 +1,4 @@
+use crate::ai;
 use crate::combat::{
     components::Condition as CombatCondition, Choreography, CombatBundle, Combatant,
     CombatantState, Move, MoveDuration, Tendency,
@@ -39,7 +40,7 @@ pub(crate) fn spawn(
                             ),
                             animation: Some(animations.character_walking.clone()),
                             state: CombatantState::OnGuard,
-                            translation_fn: None,
+                            translation_fn: Some(ai::generic::walk_towards_player(2.)),
                         }],
                     },
                     Choreography {

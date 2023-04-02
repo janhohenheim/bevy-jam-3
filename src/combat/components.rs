@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use serde::{Deserialize, Serialize};
+use std::fmt::Debug;
 
 #[derive(Debug, Clone, Bundle)]
 pub struct CombatBundle {
@@ -74,7 +75,36 @@ pub struct Move {
     pub duration: MoveDuration,
     pub animation: Option<Handle<AnimationClip>>,
     pub state: CombatantState,
-    pub translation_fn: Option<fn(TranslationFnInput) -> Vec3>,
+    pub translation_fn: Option<Box<dyn TranslationFn<Output = Vec3>>>,
+}
+
+impl Debug for dyn TranslationFn<Output = Vec3> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TranslationFn").finish()
+    }
+}
+
+pub trait TranslationFn: Fn(TranslationFnInput) -> Vec3 + Send + Sync {
+    fn clone_box<'a>(&self) -> Box<dyn TranslationFn<Output = Vec3> + 'a>
+    where
+        Self: 'a;
+}
+impl<F> TranslationFn for F
+where
+    F: Fn(TranslationFnInput) -> Vec3 + Send + Sync + Clone,
+{
+    fn clone_box<'a>(&self) -> Box<dyn TranslationFn<Output = Vec3> + 'a>
+    where
+        Self: 'a,
+    {
+        Box::new(self.clone())
+    }
+}
+
+impl<'a> Clone for Box<dyn TranslationFn<Output = Vec3> + 'a> {
+    fn clone(&self) -> Self {
+        (**self).clone_box()
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -85,6 +115,7 @@ pub struct TranslationFnInput {
     pub player_direction: Vec3,
     pub start_player_direction: Vec3,
     pub has_line_of_sight: bool,
+    pub line_of_sight_path: Vec<Vec3>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
