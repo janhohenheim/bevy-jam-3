@@ -20,9 +20,8 @@ pub struct Combatant {
 impl Combatant {
     pub fn is_ready_for_next_choreography(&self) -> bool {
         if self.current.is_some() {
-            return false;
-        }
-        if let Some(last_choreography) = self.last_choreography {
+            false
+        } else if let Some(last_choreography) = self.last_choreography {
             self.time_since_last_move >= self.choreographies[last_choreography].recovery_time
         } else {
             true
@@ -64,7 +63,7 @@ pub struct Choreography {
 #[derive(Debug, Clone, PartialEq, Default, Reflect, FromReflect)]
 pub struct Move {
     pub duration: f32,
-    pub animation: Handle<AnimationClip>,
+    pub animation: Option<Handle<AnimationClip>>,
     pub state: CombatantState,
 }
 

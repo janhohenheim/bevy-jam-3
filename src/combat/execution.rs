@@ -18,8 +18,9 @@ pub fn execute_move(
             .get_mut(**animation_entity_link)
             .context("animation_entity_link held entity without animation player")?;
 
-        animation_player
-            .play_with_transition(move_.animation.clone(), Duration::from_secs_f32(0.2));
+        if let Some(animation) = &move_.animation {
+            animation_player.play_with_transition(animation.clone(), Duration::from_secs_f32(0.2));
+        }
         *combatant_state = move_.state;
     }
     Ok(())
@@ -31,6 +32,7 @@ pub fn execute_choreography(
     mut move_event_writer: EventWriter<MoveEvent>,
 ) {
     for (entity, mut combatant) in &mut combatants.iter_mut() {
+        combatant.time_since_last_move += time.delta_seconds();
         if let Some(current) = combatant.current {
             let (move_duration, choreography_length) = {
                 let moves = &combatant.choreographies[current.choreography].moves;
@@ -56,9 +58,8 @@ pub fn execute_choreography(
                         move_: next_move.clone(),
                     });
                 }
-            } else {
-                combatant.time_since_last_move += time.delta_seconds();
             }
+        } else {
         }
     }
 }
