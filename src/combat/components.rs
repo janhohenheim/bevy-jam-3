@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::utils::HashMap;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Bundle)]
@@ -25,14 +26,22 @@ pub struct Combatant {
     pub last_choreography: Option<usize>,
     pub current: Option<MoveIndex>,
     pub tendencies: Vec<Tendency>,
+    /// Used to implement e.g. circling around player after a strong boss attack.
+    /// Currently does not factro in any conditions.
+    pub chained_choreographies: HashMap<usize, usize>,
     pub time_since_last_move: f32,
 }
 
 impl Combatant {
-    pub fn new(choreographies: Vec<Choreography>, tendencies: Vec<Tendency>) -> Self {
+    pub fn new(
+        choreographies: Vec<Choreography>,
+        tendencies: Vec<Tendency>,
+        chained_choreographies: HashMap<usize, usize>,
+    ) -> Self {
         Self {
             choreographies,
             tendencies,
+            chained_choreographies,
             ..default()
         }
     }

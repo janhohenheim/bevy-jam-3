@@ -8,6 +8,7 @@ use crate::level_instantiation::spawning::GameObject;
 use crate::movement::general_movement::{CharacterAnimations, CharacterControllerBundle, Model};
 use crate::world_interaction::dialog::{DialogId, DialogTarget};
 use bevy::prelude::*;
+use bevy::utils::HashMap;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::TAU;
 
@@ -63,6 +64,7 @@ pub(crate) fn spawn(
                         conditions: vec![CombatCondition::PlayerDistanceSquaredUnder(2.)],
                     },
                 ],
+                HashMap::new(),
             )),
             CharacterAnimations {
                 idle: animations.character_idle.clone(),

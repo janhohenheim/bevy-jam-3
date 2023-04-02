@@ -13,7 +13,9 @@ pub fn decide_choreography(
         .iter_mut()
         .filter(|(_, combatant, _)| combatant.is_ready_for_next_choreography())
     {
-        let next_choreography_index = choose_next_choreography(&combatant, condition_tracker)?;
+        let next_choreography_index = get_chained_choreography(&combatant)
+            .map(Ok)
+            .unwrap_or_else(|| choose_next_choreography(&combatant, condition_tracker))?;
         combatant.current = Some(MoveIndex {
             choreography: next_choreography_index,
             move_: 0,
@@ -25,6 +27,13 @@ pub fn decide_choreography(
         });
     }
     Ok(())
+}
+
+fn get_chained_choreography(combatant: &Combatant) -> Option<usize> {
+    combatant
+        .last_choreography
+        .and_then(|index| combatant.chained_choreographies.get(&index))
+        .copied()
 }
 
 fn choose_next_choreography(

@@ -33,36 +33,37 @@ pub fn execute_choreography(
 ) {
     for (entity, mut combatant, condition_tracker) in &mut combatants.iter_mut() {
         combatant.time_since_last_move += time.delta_seconds();
-        if let Some(current) = combatant.current {
-            let (move_duration, choreography_length) = {
-                let moves = &combatant.choreographies[current.choreography].moves;
-                let move_ = &moves[current.move_];
-                (move_.duration.clone(), moves.len())
-            };
+        let Some(current) = combatant.current else { continue; };
 
-            let time_for_next_move = match move_duration {
-                MoveDuration::Fixed(time) => combatant.time_since_last_move >= time,
-                MoveDuration::WhileAll(conditions) => !condition_tracker.any(&conditions),
-                MoveDuration::UntilAll(conditions) => condition_tracker.all(&conditions),
-            };
-            if time_for_next_move {
-                combatant.time_since_last_move = 0.0;
-                let was_last_move = current.move_ + 1 >= choreography_length;
-                if was_last_move {
-                    combatant.current = None;
-                } else {
-                    combatant.current = Some(MoveIndex {
-                        choreography: current.choreography,
-                        move_: current.move_ + 1,
-                    });
+        let (move_duration, choreography_length) = {
+            let moves = &combatant.choreographies[current.choreography].moves;
+            let move_ = &moves[current.move_];
+            (move_.duration.clone(), moves.len())
+        };
 
-                    let next_move =
-                        &combatant.choreographies[current.choreography].moves[current.move_ + 1];
-                    move_event_writer.send(MoveEvent {
-                        source: entity,
-                        move_: next_move.clone(),
-                    });
-                }
+        let time_for_next_move = match move_duration {
+            MoveDuration::Fixed(time) => combatant.time_since_last_move >= time,
+            MoveDuration::WhileAll(conditions) => !condition_tracker.any(&conditions),
+            MoveDuration::UntilAll(conditions) => condition_tracker.all(&conditions),
+        };
+        if time_for_next_move {
+            combatant.time_since_last_move = 0.0;
+            let was_last_move = current.move_ + 1 >= choreography_length;
+            if was_last_move {
+                combatant.last_choreography = Some(current.choreography);
+                combatant.current = None;
+            } else {
+                combatant.current = Some(MoveIndex {
+                    choreography: current.choreography,
+                    move_: current.move_ + 1,
+                });
+
+                let next_move =
+                    &combatant.choreographies[current.choreography].moves[current.move_ + 1];
+                move_event_writer.send(MoveEvent {
+                    source: entity,
+                    move_: next_move.clone(),
+                });
             }
         }
     }
