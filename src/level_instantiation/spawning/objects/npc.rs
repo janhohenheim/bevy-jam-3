@@ -1,8 +1,11 @@
+use crate::combat::{
+    components::Condition as CombatCondition, Choreography, CombatBundle, Combatant,
+    CombatantState, Move, MoveDuration, Tendency,
+};
 use crate::file_system_interaction::asset_loading::{AnimationAssets, SceneAssets};
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::GameObject;
 use crate::movement::general_movement::{CharacterAnimations, CharacterControllerBundle, Model};
-use crate::movement::navigation::Follower;
 use crate::world_interaction::dialog::{DialogId, DialogTarget};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
@@ -25,7 +28,23 @@ pub(crate) fn spawn(
             },
             Name::new("NPC"),
             CharacterControllerBundle::capsule(HEIGHT, RADIUS),
-            Follower,
+            CombatBundle::new(Combatant::new(
+                vec![Choreography {
+                    name: "Walk toward Player".to_string(),
+                    moves: vec![Move {
+                        duration: MoveDuration::Until(vec![
+                            CombatCondition::PlayerDistanceSquaredUnder(2.),
+                        ]),
+                        animation: Some(animations.character_walking.clone()),
+                        state: CombatantState::OnGuard,
+                    }],
+                }],
+                vec![Tendency {
+                    choreography: 0,
+                    weight: 1.0,
+                    conditions: vec![CombatCondition::PlayerDistanceSquaredOver(2.)],
+                }],
+            )),
             CharacterAnimations {
                 idle: animations.character_idle.clone(),
                 walk: animations.character_walking.clone(),

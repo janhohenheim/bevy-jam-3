@@ -8,6 +8,16 @@ pub struct CombatBundle {
     condition_tracker: ConditionTracker,
 }
 
+impl CombatBundle {
+    pub fn new(combatant: Combatant) -> Self {
+        Self {
+            combatant,
+            combatant_state: default(),
+            condition_tracker: default(),
+        }
+    }
+}
+
 #[derive(Debug, Component, Clone, PartialEq, Default, Reflect, FromReflect)]
 #[reflect(Component)]
 pub struct Combatant {
@@ -19,6 +29,13 @@ pub struct Combatant {
 }
 
 impl Combatant {
+    pub fn new(choreographies: Vec<Choreography>, tendencies: Vec<Tendency>) -> Self {
+        Self {
+            choreographies,
+            tendencies,
+            ..default()
+        }
+    }
     pub fn is_ready_for_next_choreography(&self) -> bool {
         self.current.is_none()
     }
@@ -39,6 +56,7 @@ pub struct MoveIndex {
 
 #[derive(Debug, Clone, PartialEq, Default, Reflect, FromReflect)]
 pub struct Choreography {
+    pub name: String,
     pub moves: Vec<Move>,
 }
 
