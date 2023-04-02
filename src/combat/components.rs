@@ -136,8 +136,10 @@ pub enum CombatantState {
 #[derive(Debug, Component, Clone, PartialEq, Default, Reflect, FromReflect)]
 #[reflect(Component)]
 pub struct ConditionTracker {
-    pub player_distance_squared: f32,
+    pub player_direction: Vec3,
+    pub line_of_sight_path: Vec<Vec3>,
     pub has_line_of_sight: bool,
+    pub active: bool,
 }
 
 impl ConditionTracker {
@@ -150,17 +152,18 @@ impl ConditionTracker {
     }
 
     pub fn fulfilled(&self, condition: &Condition) -> bool {
-        match condition {
-            Condition::PlayerDistanceSquaredUnder(distance_squared) => {
-                self.player_distance_squared < *distance_squared
+        self.active
+            && match condition {
+                Condition::PlayerDistanceSquaredUnder(distance_squared) => {
+                    self.player_direction.length_squared() < *distance_squared
+                }
+                Condition::PlayerDistanceSquaredOver(distance_squared) => {
+                    self.player_direction.length_squared() > *distance_squared
+                }
+                Condition::HasLineOfSight => self.has_line_of_sight,
+                Condition::Not(condition) => !self.fulfilled(condition),
+                Condition::And(conditions) => self.all(conditions),
+                Condition::Or(conditions) => self.any(conditions),
             }
-            Condition::PlayerDistanceSquaredOver(distance_squared) => {
-                self.player_distance_squared > *distance_squared
-            }
-            Condition::HasLineOfSight => self.has_line_of_sight,
-            Condition::Not(condition) => !self.fulfilled(condition),
-            Condition::And(conditions) => self.all(conditions),
-            Condition::Or(conditions) => self.any(conditions),
-        }
     }
 }
