@@ -9,6 +9,7 @@ pub mod components;
 pub mod debug;
 mod decision;
 mod execution;
+mod linking;
 mod update_states;
 
 pub fn combat_plugin(app: &mut App) {
@@ -19,6 +20,7 @@ pub fn combat_plugin(app: &mut App) {
         .add_event::<ExecuteMoveEvent>()
         .add_systems(
             (
+                linking::link_melee_attack,
                 update_states::update_condition_tracker,
                 decision::decide_choreography,
                 execution::init_move,

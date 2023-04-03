@@ -57,30 +57,31 @@ pub fn execute_move(
     )>,
     mut move_events: EventReader<ExecuteMoveEvent>,
 ) -> Result<()> {
-    for (entity, force_fn) in move_events
-        .iter()
-        .filter_map(|event| event.move_.force_fn.as_ref().map(|f| (event.source, f)))
-    {
+    for event in move_events.iter() {
+        let entity = event.source;
         let (combatant, condition_tracker, mut transform, mass, mut force, move_metadata) =
             combatants.get_mut(entity)?;
-        let input = ForceFnInput {
-            time: combatant.time_since_last_move,
-            transform: *transform,
-            start_transform: move_metadata.start_transform,
-            player_direction: condition_tracker.player_direction,
-            start_player_direction: move_metadata.start_player_direction,
-            has_line_of_sight: condition_tracker.has_line_of_sight,
-            line_of_sight_path: condition_tracker.line_of_sight_path.clone(),
-            mass: mass.0.mass,
-        };
-        let ForceFnOutput {
-            force: output_force,
-            rotation,
-        } = force_fn.call(input);
-        *force = output_force;
-        if let Some(rotation) = rotation {
-            transform.rotation = rotation;
+        if let Some(force_fn) = &event.move_.force_fn {
+            let input = ForceFnInput {
+                time: combatant.time_since_last_move,
+                transform: *transform,
+                start_transform: move_metadata.start_transform,
+                player_direction: condition_tracker.player_direction,
+                start_player_direction: move_metadata.start_player_direction,
+                has_line_of_sight: condition_tracker.has_line_of_sight,
+                line_of_sight_path: condition_tracker.line_of_sight_path.clone(),
+                mass: mass.0.mass,
+            };
+            let ForceFnOutput {
+                force: output_force,
+                rotation,
+            } = force_fn.call(input);
+            *force = output_force;
+            if let Some(rotation) = rotation {
+                transform.rotation = rotation;
+            }
         }
+        if let Some(attack_fn) = &event.move_.attack_fn {}
     }
     Ok(())
 }

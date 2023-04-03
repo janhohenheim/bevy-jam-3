@@ -87,6 +87,9 @@ pub(crate) fn spawn(
             GameObject::Npc,
         ))
         .with_children(|parent| {
+            parent.spawn((Name::new("NPC Melee Attack"), MeleeAttackBundle::default()));
+        })
+        .with_children(|parent| {
             parent.spawn((
                 Name::new("NPC Dialog Collider"),
                 Collider::cylinder(HEIGHT / 2., RADIUS * 5.),

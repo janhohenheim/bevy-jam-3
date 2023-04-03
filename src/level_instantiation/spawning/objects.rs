@@ -15,6 +15,7 @@ mod util;
 bitflags! {
     pub struct GameCollisionGroup: u32 {
         const PLAYER = 1 << 0;
+        const ATTACK = 1 << 1;
         const OTHER = 1 << 31;
 
         const ALL = u32::MAX;

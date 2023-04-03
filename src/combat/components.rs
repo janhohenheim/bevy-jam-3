@@ -1,5 +1,7 @@
+use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
+use bevy_rapier3d::prelude::*;
 pub use condition::*;
 pub use move_::*;
 use serde::{Deserialize, Serialize};
@@ -55,6 +57,41 @@ impl Combatant {
         self.current.is_none()
     }
 }
+
+#[derive(Debug, Bundle)]
+pub struct MeleeAttackBundle {
+    pub melee_attack: MeleeAttack,
+    pub collider: Collider,
+    pub collision_groups: CollisionGroups,
+    #[bundle]
+    pub spatial_bundle: SpatialBundle,
+    pub sensor: Sensor,
+    pub active_events: ActiveEvents,
+    pub active_collision_types: ActiveCollisionTypes,
+}
+
+impl Default for MeleeAttackBundle {
+    fn default() -> Self {
+        Self {
+            melee_attack: default(),
+            collider: default(),
+            spatial_bundle: default(),
+            collision_groups: CollisionGroups::new(
+                GameCollisionGroup::ATTACK.into(),
+                GameCollisionGroup::NONE.into(),
+            ),
+            sensor: default(),
+            active_events: ActiveEvents::COLLISION_EVENTS,
+            active_collision_types: ActiveCollisionTypes::DYNAMIC_DYNAMIC,
+        }
+    }
+}
+
+#[derive(Debug, Component, Clone, Default)]
+pub struct MeleeAttack;
+
+#[derive(Debug, Component, Clone, Deref, DerefMut)]
+pub struct MeleeAttackLink(pub Entity);
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Tendency {
