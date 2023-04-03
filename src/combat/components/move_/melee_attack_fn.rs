@@ -39,9 +39,6 @@ impl<'a> Clone for Box<dyn MeleeAttackFn + 'a> {
 #[derive(Debug, Clone, Default)]
 pub struct MeleeAttackFnInput {
     pub time: f32,
-    pub transform: Transform,
-    pub player_direction: Vec3,
-    pub start_player_direction: Vec3,
 }
 
 #[derive(Debug, Clone, Default)]

@@ -70,6 +70,15 @@ pub struct MeleeAttackBundle {
     pub active_collision_types: ActiveCollisionTypes,
 }
 
+impl MeleeAttackBundle {
+    pub fn from_melee_attack(melee_attack: MeleeAttack) -> Self {
+        Self {
+            melee_attack,
+            ..default()
+        }
+    }
+}
+
 impl Default for MeleeAttackBundle {
     fn default() -> Self {
         Self {
@@ -88,7 +97,10 @@ impl Default for MeleeAttackBundle {
 }
 
 #[derive(Debug, Component, Clone, Default)]
-pub struct MeleeAttack;
+pub struct MeleeAttack {
+    pub(crate) damage: f32,
+    pub(crate) knockback: f32,
+}
 
 #[derive(Debug, Component, Clone, Deref, DerefMut)]
 pub struct MeleeAttackLink(pub Entity);

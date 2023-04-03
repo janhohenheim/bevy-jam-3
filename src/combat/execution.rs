@@ -48,16 +48,24 @@ pub fn init_move(
 
 #[sysfail(log(level = "error"))]
 pub fn execute_move(
-    mut combatants: Query<(
-        &Combatant,
-        &ConditionTracker,
+    mut combatants: Query<
+        (
+            &Combatant,
+            &ConditionTracker,
+            &mut Transform,
+            &ReadMassProperties,
+            &mut ExternalForce,
+            &MoveMetadata,
+            &MeleeAttackLink,
+        ),
+        Without<MeleeAttack>,
+    >,
+    mut melee_attacks: Query<(
+        &mut MeleeAttack,
+        &mut CollisionGroups,
         &mut Transform,
-        &ReadMassProperties,
-        &mut ExternalForce,
-        &MoveMetadata,
-        &MeleeAttackLink,
+        &mut Collider,
     )>,
-    mut melee_attacks: Query<&mut CollisionGroups, With<MeleeAttack>>,
     mut move_events: EventReader<ExecuteMoveEvent>,
 ) -> Result<()> {
     for event in move_events.iter() {
@@ -92,23 +100,30 @@ pub fn execute_move(
             }
         }
 
-        let mut melee_attack_collision_groups = melee_attacks.get_mut(melee_attack_link.0)?;
         if let Some(melee_attack_fn) = &event.move_.melee_attack_fn {
-            melee_attack_collision_groups.filters |= GameCollisionGroup::PLAYER.into();
+            let (
+                mut melee_attack,
+                mut attack_collision_groups,
+                mut attack_transform,
+                mut attack_collider,
+            ) = melee_attacks.get_mut(melee_attack_link.0)?;
+            attack_collision_groups.filters |= GameCollisionGroup::PLAYER.into();
             let input = MeleeAttackFnInput {
                 time: combatant.time_since_last_move,
-                transform: *transform,
-                player_direction: condition_tracker.player_direction,
-                start_player_direction: move_metadata.start_player_direction,
             };
             let MeleeAttackFnOutput {
-                collider,
-                transform,
+                collider: output_collider,
+                transform: output_transform,
                 damage,
                 knockback,
             } = melee_attack_fn.call(input);
+            *attack_transform = output_transform;
+            *attack_collider = output_collider;
+            melee_attack.damage = damage;
+            melee_attack.knockback = knockback;
         } else {
-            melee_attack_collision_groups.filters -= GameCollisionGroup::PLAYER.into();
+            let mut attack_collision_groups = melee_attacks.get_mut(melee_attack_link.0)?.1;
+            attack_collision_groups.filters -= GameCollisionGroup::PLAYER.into();
         }
     }
     Ok(())
