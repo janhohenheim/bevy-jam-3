@@ -2,12 +2,12 @@ use crate::combat::{CombatCondition, CombatantState};
 use bevy::prelude::*;
 pub use force_fn::*;
 pub use melee_attack_fn::*;
-pub use projective_attack_fn::*;
+pub use projectile_attack_fn::*;
 use std::fmt::Debug;
 
 mod force_fn;
 mod melee_attack_fn;
-mod projective_attack_fn;
+mod projectile_attack_fn;
 
 #[derive(Debug, Clone, Default)]
 pub struct Move {
