@@ -5,6 +5,7 @@ use anyhow::{Context, Result};
 use bevy::prelude::*;
 use bevy_mod_sysfail::macros::*;
 use bevy_rapier3d::prelude::*;
+use spew::prelude::SpawnEvent;
 use std::time::Duration;
 
 #[sysfail(log(level = "error"))]
@@ -67,6 +68,7 @@ pub fn execute_move(
         &mut Collider,
     )>,
     mut move_events: EventReader<ExecuteMoveEvent>,
+    mut spawn_event_writer: EventWriter<SpawnEvent<ProjectileKind, ProjectileSpawnInput>>,
 ) -> Result<()> {
     for event in move_events.iter() {
         let entity = event.source;
@@ -124,6 +126,15 @@ pub fn execute_move(
         } else {
             let mut attack_collision_groups = melee_attacks.get_mut(melee_attack_link.0)?.1;
             attack_collision_groups.filters -= GameCollisionGroup::PLAYER.into();
+        }
+
+        if let Some(attack_fn) = &event.move_.projectile_attack_fn {
+            let input = ProjectileAttackFnInput {
+                time: combatant.time_since_last_move,
+                spawner: entity,
+            };
+            let ProjectileAttackFnOutput { spawn_events } = attack_fn.call(input);
+            spawn_event_writer.send_batch(spawn_events);
         }
     }
     Ok(())

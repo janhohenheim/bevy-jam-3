@@ -4,7 +4,7 @@ use std::fmt::Debug;
 
 impl Debug for dyn MeleeAttackFn {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("AttackFn").finish()
+        f.debug_struct("MeleeAttackFn").finish()
     }
 }
 

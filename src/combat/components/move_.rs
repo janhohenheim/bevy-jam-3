@@ -2,10 +2,12 @@ use crate::combat::{CombatCondition, CombatantState};
 use bevy::prelude::*;
 pub use force_fn::*;
 pub use melee_attack_fn::*;
+pub use projective_attack_fn::*;
 use std::fmt::Debug;
 
 mod force_fn;
 mod melee_attack_fn;
+mod projective_attack_fn;
 
 #[derive(Debug, Clone, Default)]
 pub struct Move {
@@ -24,6 +26,7 @@ pub struct InitMove {
 pub struct ExecuteMove {
     pub force_fn: Option<Box<dyn ForceFn>>,
     pub melee_attack_fn: Option<Box<dyn MeleeAttackFn>>,
+    pub projectile_attack_fn: Option<Box<dyn ProjectileAttackFn>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
