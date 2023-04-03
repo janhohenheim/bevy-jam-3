@@ -86,17 +86,18 @@ pub struct InitMove {
 
 #[derive(Debug, Clone, Default)]
 pub struct ExecuteMove {
-    pub force_fn: Option<Box<dyn ForceFn<Output = ForceFnOutput>>>,
+    pub force_fn: Option<Box<dyn ForceFn>>,
 }
 
-impl Debug for dyn ForceFn<Output = ForceFnOutput> {
+impl Debug for dyn ForceFn {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TranslationFn").finish()
     }
 }
 
-pub trait ForceFn: Fn(ForceFnInput) -> ForceFnOutput + Send + Sync {
-    fn clone_box<'a>(&self) -> Box<dyn ForceFn<Output = ForceFnOutput> + 'a>
+pub trait ForceFn: Send + Sync {
+    fn call(&self, input: ForceFnInput) -> ForceFnOutput;
+    fn clone_box<'a>(&self) -> Box<dyn ForceFn + 'a>
     where
         Self: 'a;
 }
@@ -104,7 +105,11 @@ impl<F> ForceFn for F
 where
     F: Fn(ForceFnInput) -> ForceFnOutput + Send + Sync + Clone,
 {
-    fn clone_box<'a>(&self) -> Box<dyn ForceFn<Output = ForceFnOutput> + 'a>
+    fn call(&self, input: ForceFnInput) -> ForceFnOutput {
+        self(input)
+    }
+
+    fn clone_box<'a>(&self) -> Box<dyn ForceFn + 'a>
     where
         Self: 'a,
     {
@@ -112,7 +117,7 @@ where
     }
 }
 
-impl<'a> Clone for Box<dyn ForceFn<Output = ForceFnOutput> + 'a> {
+impl<'a> Clone for Box<dyn ForceFn + 'a> {
     fn clone(&self) -> Self {
         (**self).clone_box()
     }

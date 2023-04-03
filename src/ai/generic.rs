@@ -2,7 +2,7 @@ use crate::combat::{ForceFn, ForceFnInput, ForceFnOutput};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-pub fn walk_towards_player(ground_acceleration: f32) -> Box<dyn ForceFn<Output = ForceFnOutput>> {
+pub fn accelerate_towards_player(ground_acceleration: f32) -> Box<dyn ForceFn> {
     Box::new(
         move |ForceFnInput {
                   transform,
