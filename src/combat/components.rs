@@ -1,6 +1,6 @@
-use crate::movement::general_movement::Walking;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
+use bevy_rapier3d::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
@@ -86,25 +86,25 @@ pub struct InitMove {
 
 #[derive(Debug, Clone, Default)]
 pub struct ExecuteMove {
-    pub force_fn: Option<Box<dyn ForceFn<Output = Walking>>>,
+    pub force_fn: Option<Box<dyn ForceFn<Output = ForceFnOutput>>>,
 }
 
-impl Debug for dyn ForceFn<Output = Walking> {
+impl Debug for dyn ForceFn<Output = ForceFnOutput> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TranslationFn").finish()
     }
 }
 
-pub trait ForceFn: Fn(ForceFnInput) -> Walking + Send + Sync {
-    fn clone_box<'a>(&self) -> Box<dyn ForceFn<Output = Walking> + 'a>
+pub trait ForceFn: Fn(ForceFnInput) -> ForceFnOutput + Send + Sync {
+    fn clone_box<'a>(&self) -> Box<dyn ForceFn<Output = ForceFnOutput> + 'a>
     where
         Self: 'a;
 }
 impl<F> ForceFn for F
 where
-    F: Fn(ForceFnInput) -> Walking + Send + Sync + Clone,
+    F: Fn(ForceFnInput) -> ForceFnOutput + Send + Sync + Clone,
 {
-    fn clone_box<'a>(&self) -> Box<dyn ForceFn<Output = Walking> + 'a>
+    fn clone_box<'a>(&self) -> Box<dyn ForceFn<Output = ForceFnOutput> + 'a>
     where
         Self: 'a,
     {
@@ -112,7 +112,7 @@ where
     }
 }
 
-impl<'a> Clone for Box<dyn ForceFn<Output = Walking> + 'a> {
+impl<'a> Clone for Box<dyn ForceFn<Output = ForceFnOutput> + 'a> {
     fn clone(&self) -> Self {
         (**self).clone_box()
     }
@@ -127,7 +127,14 @@ pub struct ForceFnInput {
     pub start_player_direction: Vec3,
     pub has_line_of_sight: bool,
     pub line_of_sight_path: Vec<Vec3>,
-    pub walking: Walking,
+    pub mass: f32,
+    pub rotation: Quat,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct ForceFnOutput {
+    pub force: ExternalForce,
+    pub rotation: Option<Quat>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
