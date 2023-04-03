@@ -87,7 +87,13 @@ pub(crate) fn spawn(
             GameObject::Npc,
         ))
         .with_children(|parent| {
-            parent.spawn((Name::new("NPC Melee Attack"), MeleeAttackBundle::default()));
+            parent.spawn((
+                Name::new("NPC Melee Attack"),
+                MeleeAttackBundle::from_melee_attack(MeleeAttack {
+                    damage: 10.0,
+                    knockback: 1.0,
+                }),
+            ));
         })
         .with_children(|parent| {
             parent.spawn((
