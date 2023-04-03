@@ -31,9 +31,9 @@ pub fn display_combatants(
                 condition_tracker.has_line_of_sight
             ));
             ui.label(format!("Is active: {}", condition_tracker.active));
-            ui.label(format!("Line of sight path:"));
+            ui.label("Line of sight path:");
             for direction in &condition_tracker.line_of_sight_path {
-                ui.label(format!("• {}", direction));
+                ui.label(format!("• {direction}"));
             }
 
             ui.heading("Misc");

@@ -75,5 +75,5 @@ fn get_line_of_sight(
 
     rapier_context
         .cast_ray(origin, target - origin, MAX_TOI, SOLID, filter)
-        .and_then(|(entity, toi)| (entity == target_entity).then(|| toi))
+        .and_then(|(entity, toi)| (entity == target_entity).then_some(toi))
 }
