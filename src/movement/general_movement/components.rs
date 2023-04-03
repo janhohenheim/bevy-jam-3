@@ -67,7 +67,7 @@ pub struct Walking {
     pub sprinting_acceleration: f32,
     /// Acceleration in the air
     pub aerial_acceleration: f32,
-    /// Acceleration in opposide direction of velocity when not explicitely walking, i.e. [`Walking::direction`] is [`Option::None`]
+    /// Acceleration in opposite direction of velocity when not explicitly walking, i.e. [`Walking::direction`] is [`None`]
     pub braking_acceleration: f32,
     /// Speed at which we stop braking and just set the horizontal velocity to 0
     pub stopping_speed: f32,

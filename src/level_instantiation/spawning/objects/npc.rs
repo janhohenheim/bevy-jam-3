@@ -1,7 +1,7 @@
 use crate::ai;
 use crate::combat::{
     components::Condition as CombatCondition, Choreography, CombatBundle, Combatant,
-    CombatantState, Move, MoveDuration, Tendency,
+    CombatantState, ExecuteMove, InitMove, Move, MoveDuration, Tendency,
 };
 use crate::file_system_interaction::asset_loading::{AnimationAssets, SceneAssets};
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
@@ -35,23 +35,29 @@ pub(crate) fn spawn(
                     Choreography {
                         name: "Walk toward Player".to_string(),
                         moves: vec![Move {
-                            duration: MoveDuration::While(
-                                CombatCondition::PlayerDistanceSquaredOver(2.),
-                            ),
-                            animation: Some(animations.character_walking.clone()),
-                            state: CombatantState::OnGuard,
-                            translation_fn: Some(ai::generic::walk_towards_player(2.)),
+                            init: InitMove {
+                                duration: MoveDuration::While(
+                                    CombatCondition::PlayerDistanceSquaredOver(2.),
+                                ),
+                                animation: Some(animations.character_walking.clone()),
+                                state: CombatantState::OnGuard,
+                            },
+                            execute: ExecuteMove {
+                                force_fn: Some(ai::generic::walk_towards_player(14.)),
+                            },
                         }],
                     },
                     Choreography {
                         name: "Idle".to_string(),
                         moves: vec![Move {
-                            duration: MoveDuration::While(
-                                CombatCondition::PlayerDistanceSquaredUnder(2.),
-                            ),
-                            animation: Some(animations.character_idle.clone()),
-                            state: CombatantState::OnGuard,
-                            translation_fn: None,
+                            init: InitMove {
+                                duration: MoveDuration::While(
+                                    CombatCondition::PlayerDistanceSquaredUnder(2.),
+                                ),
+                                animation: Some(animations.character_idle.clone()),
+                                state: CombatantState::OnGuard,
+                            },
+                            execute: ExecuteMove { force_fn: None },
                         }],
                     },
                 ],

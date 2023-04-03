@@ -1,3 +1,4 @@
+use crate::movement::general_movement::Walking;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use serde::{Deserialize, Serialize};
@@ -72,28 +73,38 @@ pub struct Choreography {
 
 #[derive(Debug, Clone, Default)]
 pub struct Move {
+    pub(crate) init: InitMove,
+    pub(crate) execute: ExecuteMove,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct InitMove {
     pub duration: MoveDuration,
     pub animation: Option<Handle<AnimationClip>>,
     pub state: CombatantState,
-    pub translation_fn: Option<Box<dyn TranslationFn<Output = Vec3>>>,
 }
 
-impl Debug for dyn TranslationFn<Output = Vec3> {
+#[derive(Debug, Clone, Default)]
+pub struct ExecuteMove {
+    pub force_fn: Option<Box<dyn ForceFn<Output = Walking>>>,
+}
+
+impl Debug for dyn ForceFn<Output = Walking> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TranslationFn").finish()
     }
 }
 
-pub trait TranslationFn: Fn(TranslationFnInput) -> Vec3 + Send + Sync {
-    fn clone_box<'a>(&self) -> Box<dyn TranslationFn<Output = Vec3> + 'a>
+pub trait ForceFn: Fn(ForceFnInput) -> Walking + Send + Sync {
+    fn clone_box<'a>(&self) -> Box<dyn ForceFn<Output = Walking> + 'a>
     where
         Self: 'a;
 }
-impl<F> TranslationFn for F
+impl<F> ForceFn for F
 where
-    F: Fn(TranslationFnInput) -> Vec3 + Send + Sync + Clone,
+    F: Fn(ForceFnInput) -> Walking + Send + Sync + Clone,
 {
-    fn clone_box<'a>(&self) -> Box<dyn TranslationFn<Output = Vec3> + 'a>
+    fn clone_box<'a>(&self) -> Box<dyn ForceFn<Output = Walking> + 'a>
     where
         Self: 'a,
     {
@@ -101,14 +112,14 @@ where
     }
 }
 
-impl<'a> Clone for Box<dyn TranslationFn<Output = Vec3> + 'a> {
+impl<'a> Clone for Box<dyn ForceFn<Output = Walking> + 'a> {
     fn clone(&self) -> Self {
         (**self).clone_box()
     }
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct TranslationFnInput {
+pub struct ForceFnInput {
     pub time: f32,
     pub transform: Transform,
     pub start_transform: Transform,
@@ -116,6 +127,7 @@ pub struct TranslationFnInput {
     pub start_player_direction: Vec3,
     pub has_line_of_sight: bool,
     pub line_of_sight_path: Vec<Vec3>,
+    pub walking: Walking,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -147,9 +159,15 @@ impl Default for Condition {
 }
 
 #[derive(Debug, Clone)]
-pub struct MoveEvent {
+pub struct InitMoveEvent {
     pub source: Entity,
-    pub move_: Move,
+    pub move_: InitMove,
+}
+
+#[derive(Debug, Clone)]
+pub struct ExecuteMoveEvent {
+    pub source: Entity,
+    pub move_: ExecuteMove,
 }
 
 #[derive(

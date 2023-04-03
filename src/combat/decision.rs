@@ -7,7 +7,8 @@ use rand::prelude::*;
 #[sysfail(log(level = "error"))]
 pub fn decide_choreography(
     mut combatant: Query<(Entity, &mut Combatant, &ConditionTracker, &Transform)>,
-    mut move_event_writer: EventWriter<MoveEvent>,
+    mut init_move_event_writer: EventWriter<InitMoveEvent>,
+    mut execute_move_event_writer: EventWriter<ExecuteMoveEvent>,
 ) -> Result<()> {
     for (entity, mut combatant, condition_tracker, transform) in combatant
         .iter_mut()
@@ -22,9 +23,13 @@ pub fn decide_choreography(
             start_transform: *transform,
         });
         let next_move = &combatant.choreographies[next_choreography_index].moves[0];
-        move_event_writer.send(MoveEvent {
+        init_move_event_writer.send(InitMoveEvent {
             source: entity,
-            move_: next_move.clone(),
+            move_: next_move.init.clone(),
+        });
+        execute_move_event_writer.send(ExecuteMoveEvent {
+            source: entity,
+            move_: next_move.execute.clone(),
         });
     }
     Ok(())

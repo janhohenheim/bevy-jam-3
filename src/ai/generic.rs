@@ -1,16 +1,18 @@
-use crate::combat::{TranslationFn, TranslationFnInput};
-use bevy::prelude::*;
+use crate::combat::{ForceFn, ForceFnInput};
+use crate::movement::general_movement::Walking;
 
-pub fn walk_towards_player(speed: f32) -> Box<dyn TranslationFn<Output = Vec3>> {
+pub fn walk_towards_player(ground_acceleration: f32) -> Box<dyn ForceFn<Output = Walking>> {
     Box::new(
-        move |TranslationFnInput {
-                  time,
+        move |ForceFnInput {
                   transform,
-                  start_transform,
-                  player_direction,
-                  start_player_direction,
-                  has_line_of_sight,
                   line_of_sight_path,
-              }: TranslationFnInput| { Vec3::new(speed, 0.0, 0.0) },
+                  mut walking,
+                  ..
+              }: ForceFnInput| {
+            let direction = (transform.translation - line_of_sight_path[0]).normalize();
+            walking.direction = Some(direction);
+            walking.ground_acceleration = ground_acceleration;
+            walking
+        },
     )
 }

@@ -6,8 +6,8 @@ use bevy_mod_sysfail::macros::*;
 use std::time::Duration;
 
 #[sysfail(log(level = "error"))]
-pub fn execute_move(
-    mut move_events: EventReader<MoveEvent>,
+pub fn init_move(
+    mut move_events: EventReader<InitMoveEvent>,
     mut animation_player: Query<&mut AnimationPlayer>,
     mut combatant: Query<(&AnimationEntityLink, &mut CombatantState)>,
 ) -> Result<()> {
@@ -28,10 +28,15 @@ pub fn execute_move(
     Ok(())
 }
 
+pub fn execute_move(mut move_events: EventReader<ExecuteMoveEvent>) {
+    for _event in move_events.iter() {}
+}
+
 pub fn execute_choreography(
     time: Res<Time>,
     mut combatants: Query<(Entity, &mut Combatant, &ConditionTracker, &Transform)>,
-    mut move_event_writer: EventWriter<MoveEvent>,
+    mut init_move_event_writer: EventWriter<InitMoveEvent>,
+    mut execute_move_event_writer: EventWriter<ExecuteMoveEvent>,
 ) {
     for (entity, mut combatant, condition_tracker, transform) in &mut combatants.iter_mut() {
         combatant.time_since_last_move += time.delta_seconds();
@@ -40,7 +45,7 @@ pub fn execute_choreography(
         let (move_duration, choreography_length) = {
             let moves = &combatant.choreographies[current.choreography].moves;
             let move_ = &moves[current.move_];
-            (move_.duration.clone(), moves.len())
+            (move_.init.duration.clone(), moves.len())
         };
 
         let time_for_next_move = match move_duration {
@@ -63,11 +68,21 @@ pub fn execute_choreography(
 
                 let next_move =
                     &combatant.choreographies[current.choreography].moves[current.move_ + 1];
-                move_event_writer.send(MoveEvent {
+                init_move_event_writer.send(InitMoveEvent {
                     source: entity,
-                    move_: next_move.clone(),
+                    move_: next_move.init.clone(),
+                });
+                execute_move_event_writer.send(ExecuteMoveEvent {
+                    source: entity,
+                    move_: next_move.execute.clone(),
                 });
             }
+        } else {
+            let current_move = &combatant.choreographies[current.choreography].moves[current.move_];
+            execute_move_event_writer.send(ExecuteMoveEvent {
+                source: entity,
+                move_: current_move.execute.clone(),
+            });
         }
     }
 }
