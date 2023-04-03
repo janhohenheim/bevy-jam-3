@@ -1,4 +1,5 @@
 use crate::combat::components::*;
+use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::AnimationEntityLink;
 use anyhow::{Context, Result};
 use bevy::prelude::*;
@@ -54,13 +55,22 @@ pub fn execute_move(
         &ReadMassProperties,
         &mut ExternalForce,
         &MoveMetadata,
+        &MeleeAttackLink,
     )>,
+    mut melee_attacks: Query<&mut CollisionGroups, With<MeleeAttack>>,
     mut move_events: EventReader<ExecuteMoveEvent>,
 ) -> Result<()> {
     for event in move_events.iter() {
         let entity = event.source;
-        let (combatant, condition_tracker, mut transform, mass, mut force, move_metadata) =
-            combatants.get_mut(entity)?;
+        let (
+            combatant,
+            condition_tracker,
+            mut transform,
+            mass,
+            mut force,
+            move_metadata,
+            melee_attack_link,
+        ) = combatants.get_mut(entity)?;
         if let Some(force_fn) = &event.move_.force_fn {
             let input = ForceFnInput {
                 time: combatant.time_since_last_move,
@@ -81,7 +91,25 @@ pub fn execute_move(
                 transform.rotation = rotation;
             }
         }
-        if let Some(attack_fn) = &event.move_.attack_fn {}
+
+        let mut melee_attack_collision_groups = melee_attacks.get_mut(melee_attack_link.0)?;
+        if let Some(melee_attack_fn) = &event.move_.melee_attack_fn {
+            melee_attack_collision_groups.filters |= GameCollisionGroup::PLAYER.into();
+            let input = MeleeAttackFnInput {
+                time: combatant.time_since_last_move,
+                transform: *transform,
+                player_direction: condition_tracker.player_direction,
+                start_player_direction: move_metadata.start_player_direction,
+            };
+            let MeleeAttackFnOutput {
+                collider,
+                transform,
+                damage,
+                knockback,
+            } = melee_attack_fn.call(input);
+        } else {
+            melee_attack_collision_groups.filters -= GameCollisionGroup::PLAYER.into();
+        }
     }
     Ok(())
 }

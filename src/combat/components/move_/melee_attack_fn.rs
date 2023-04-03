@@ -2,27 +2,27 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::fmt::Debug;
 
-impl Debug for dyn AttackFn {
+impl Debug for dyn MeleeAttackFn {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("AttackFn").finish()
     }
 }
 
-pub trait AttackFn: Send + Sync {
-    fn call(&self, input: AttackFnInput) -> AttackFnOutput;
-    fn clone_box<'a>(&self) -> Box<dyn AttackFn + 'a>
+pub trait MeleeAttackFn: Send + Sync {
+    fn call(&self, input: MeleeAttackFnInput) -> MeleeAttackFnOutput;
+    fn clone_box<'a>(&self) -> Box<dyn MeleeAttackFn + 'a>
     where
         Self: 'a;
 }
-impl<F> AttackFn for F
+impl<F> MeleeAttackFn for F
 where
-    F: Fn(AttackFnInput) -> AttackFnOutput + Send + Sync + Clone,
+    F: Fn(MeleeAttackFnInput) -> MeleeAttackFnOutput + Send + Sync + Clone,
 {
-    fn call(&self, input: AttackFnInput) -> AttackFnOutput {
+    fn call(&self, input: MeleeAttackFnInput) -> MeleeAttackFnOutput {
         self(input)
     }
 
-    fn clone_box<'a>(&self) -> Box<dyn AttackFn + 'a>
+    fn clone_box<'a>(&self) -> Box<dyn MeleeAttackFn + 'a>
     where
         Self: 'a,
     {
@@ -30,14 +30,14 @@ where
     }
 }
 
-impl<'a> Clone for Box<dyn AttackFn + 'a> {
+impl<'a> Clone for Box<dyn MeleeAttackFn + 'a> {
     fn clone(&self) -> Self {
         (**self).clone_box()
     }
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct AttackFnInput {
+pub struct MeleeAttackFnInput {
     pub time: f32,
     pub transform: Transform,
     pub player_direction: Vec3,
@@ -45,7 +45,7 @@ pub struct AttackFnInput {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct AttackFnOutput {
+pub struct MeleeAttackFnOutput {
     pub collider: Collider,
     pub transform: Transform,
     pub damage: f32,
