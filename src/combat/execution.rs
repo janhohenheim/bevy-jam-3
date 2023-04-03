@@ -19,6 +19,7 @@ pub fn init_move(
         &ConditionTracker,
         &Transform,
     )>,
+    animations: Res<Assets<AnimationClip>>,
 ) -> Result<()> {
     for event in move_events.iter() {
         let move_ = &event.move_;
@@ -34,14 +35,23 @@ pub fn init_move(
             .context("animation_entity_link held entity without animation player")?;
 
         if let Some(animation) = &move_.animation {
-            animation_player
-                .play_with_transition(animation.clone(), Duration::from_secs_f32(0.2))
-                .repeat();
+            animation_player.play_with_transition(animation.clone(), Duration::from_secs_f32(0.2));
+            if move_.duration != MoveDuration::Animation {
+                animation_player.repeat();
+            }
         }
+
+        let animation_duration = move_
+            .animation
+            .as_ref()
+            .and_then(|animation| animations.get(animation))
+            .map(|animation| animation.duration());
+
         *combatant_state = move_.state;
         *move_metadata = MoveMetadata {
             start_transform: *transform,
             start_player_direction: condition_tracker.player_direction,
+            animation_duration,
         };
     }
     Ok(())
@@ -140,13 +150,22 @@ pub fn execute_move(
     Ok(())
 }
 
+#[sysfail(log(level = "error"))]
 pub fn execute_choreography(
     time: Res<Time>,
-    mut combatants: Query<(Entity, &mut Combatant, &ConditionTracker, &Transform)>,
+    mut combatants: Query<(
+        Entity,
+        &mut Combatant,
+        &ConditionTracker,
+        &Transform,
+        &MoveMetadata,
+    )>,
     mut init_move_event_writer: EventWriter<InitMoveEvent>,
     mut execute_move_event_writer: EventWriter<ExecuteMoveEvent>,
-) {
-    for (entity, mut combatant, condition_tracker, transform) in &mut combatants.iter_mut() {
+) -> Result<()> {
+    for (entity, mut combatant, condition_tracker, transform, move_metadata) in
+        &mut combatants.iter_mut()
+    {
         combatant.time_since_last_move += time.delta_seconds();
         let Some(current) = combatant.current else { continue; };
 
@@ -158,6 +177,9 @@ pub fn execute_choreography(
 
         let time_for_next_move = match move_duration {
             MoveDuration::Fixed(time) => combatant.time_since_last_move >= time,
+            MoveDuration::Animation => {
+                combatant.time_since_last_move >= move_metadata.animation_duration.context("MoveDuration::Animation was specified, but no animation duration was found. Did you forget to set an animation?")?
+            }
             MoveDuration::While(condition) => !condition_tracker.fulfilled(&condition),
             MoveDuration::Until(condition) => condition_tracker.fulfilled(&condition),
         };
@@ -193,4 +215,5 @@ pub fn execute_choreography(
             });
         }
     }
+    Ok(())
 }

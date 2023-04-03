@@ -132,6 +132,7 @@ pub struct Choreography {
 pub struct MoveMetadata {
     pub(crate) start_transform: Transform,
     pub(crate) start_player_direction: Vec3,
+    pub(crate) animation_duration: Option<f32>,
 }
 
 #[derive(

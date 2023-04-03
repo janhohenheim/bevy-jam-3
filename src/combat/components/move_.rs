@@ -32,6 +32,7 @@ pub struct ExecuteMove {
 #[derive(Debug, Clone, PartialEq)]
 pub enum MoveDuration {
     Fixed(f32),
+    Animation,
     While(CombatCondition),
     Until(CombatCondition),
 }

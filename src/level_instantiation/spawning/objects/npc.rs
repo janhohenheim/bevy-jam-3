@@ -4,6 +4,7 @@ use crate::file_system_interaction::asset_loading::{AnimationAssets, SceneAssets
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::GameObject;
 use crate::movement::general_movement::{CharacterAnimations, CharacterControllerBundle, Model};
+use crate::util::trait_extension::F32Ext;
 use crate::world_interaction::dialog::{DialogId, DialogTarget};
 use bevy::prelude::*;
 use bevy::utils::HashMap;
@@ -34,7 +35,7 @@ pub(crate) fn spawn(
                         moves: vec![Move {
                             init: InitMove {
                                 duration: MoveDuration::While(
-                                    CombatCondition::PlayerDistanceSquaredOver(2.),
+                                    CombatCondition::PlayerDistanceSquaredOver(2.0.squared()),
                                 ),
                                 animation: Some(animations.character_walking.clone()),
                                 state: CombatantState::OnGuard,
@@ -50,7 +51,7 @@ pub(crate) fn spawn(
                         moves: vec![Move {
                             init: InitMove {
                                 duration: MoveDuration::While(
-                                    CombatCondition::PlayerDistanceSquaredUnder(2.),
+                                    CombatCondition::PlayerDistanceSquaredUnder(2.0.squared()),
                                 ),
                                 animation: Some(animations.character_idle.clone()),
                                 state: CombatantState::OnGuard,
