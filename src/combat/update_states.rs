@@ -26,7 +26,7 @@ pub fn update_condition_tracker(
 
             if let Some(_line_of_sight) = line_of_sight {
                 condition_tracker.has_line_of_sight = true;
-                condition_tracker.line_of_sight_path = vec![condition_tracker.player_direction];
+                condition_tracker.line_of_sight_path = vec![to];
             } else {
                 condition_tracker.has_line_of_sight = false;
                 if let Ok(nav_mesh) = nav_mesh.get().read() {
