@@ -1,10 +1,11 @@
 use crate::combat::{CombatCondition, CombatantState};
+pub use attack_fn::*;
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
-pub use force_fn_trait::*;
+pub use force_fn::*;
 use std::fmt::Debug;
 
-mod force_fn_trait;
+mod attack_fn;
+mod force_fn;
 
 #[derive(Debug, Clone, Default)]
 pub struct Move {
@@ -22,24 +23,7 @@ pub struct InitMove {
 #[derive(Debug, Clone, Default)]
 pub struct ExecuteMove {
     pub force_fn: Option<Box<dyn ForceFn>>,
-}
-
-#[derive(Debug, Clone, Default)]
-pub struct ForceFnInput {
-    pub time: f32,
-    pub transform: Transform,
-    pub start_transform: Transform,
-    pub player_direction: Vec3,
-    pub start_player_direction: Vec3,
-    pub has_line_of_sight: bool,
-    pub line_of_sight_path: Vec<Vec3>,
-    pub mass: f32,
-}
-
-#[derive(Debug, Clone, Default)]
-pub struct ForceFnOutput {
-    pub force: ExternalForce,
-    pub rotation: Option<Quat>,
+    pub attack_fn: Option<Box<dyn AttackFn>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]

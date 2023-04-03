@@ -41,6 +41,7 @@ pub(crate) fn spawn(
                             },
                             execute: ExecuteMove {
                                 force_fn: Some(ai::generic::accelerate_towards_player(14.)),
+                                attack_fn: None,
                             },
                         }],
                     },
@@ -54,7 +55,10 @@ pub(crate) fn spawn(
                                 animation: Some(animations.character_idle.clone()),
                                 state: CombatantState::OnGuard,
                             },
-                            execute: ExecuteMove { force_fn: None },
+                            execute: ExecuteMove {
+                                force_fn: None,
+                                attack_fn: None,
+                            },
                         }],
                     },
                 ],
