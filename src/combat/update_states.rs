@@ -1,4 +1,5 @@
 use crate::combat::ConditionTracker;
+use crate::movement::general_movement::Height;
 use crate::player_control::player_embodiment::Player;
 use anyhow::Result;
 use bevy::prelude::*;
@@ -9,16 +10,19 @@ use oxidized_navigation::{NavMesh, NavMeshSettings};
 
 #[sysfail(log(level = "error"))]
 pub fn update_condition_tracker(
-    mut combatants: Query<(Entity, &mut ConditionTracker, &Transform), Without<Player>>,
-    player: Query<(Entity, &Transform), With<Player>>,
+    mut combatants: Query<(Entity, &mut ConditionTracker, &Transform, &Height), Without<Player>>,
+    player: Query<(Entity, &Transform, &Height), With<Player>>,
     rapier_context: Res<RapierContext>,
     nav_mesh_settings: Res<NavMeshSettings>,
     nav_mesh: Res<NavMesh>,
 ) -> Result<()> {
-    for (combatant_entity, mut condition_tracker, combatant_transform) in combatants.iter_mut() {
-        for (player_entity, player_transform) in player.iter() {
+    for (combatant_entity, mut condition_tracker, combatant_transform, combatant_height) in
+        combatants.iter_mut()
+    {
+        for (player_entity, player_transform, player_height) in player.iter() {
             let from = combatant_transform.translation;
-            let to = player_transform.translation;
+            let to = player_transform.translation
+                + Vec3::Y * (combatant_height.half() - player_height.half());
             let line_of_sight =
                 get_line_of_sight(&rapier_context, from, combatant_entity, to, player_entity);
             condition_tracker.active = true;
@@ -30,10 +34,19 @@ pub fn update_condition_tracker(
             } else {
                 condition_tracker.has_line_of_sight = false;
                 if let Ok(nav_mesh) = nav_mesh.get().read() {
+                    let to_origin = Vec3::Y * combatant_height.half();
                     if let Ok(path) = find_path(&nav_mesh, &nav_mesh_settings, from, to, None, None)
                     {
-                        let path = perform_string_pulling_on_path(&nav_mesh, from, to, &path)
-                            .map_err(|e| anyhow::Error::msg(format!("{e:?}")))?;
+                        let mut path: Vec<_> =
+                            perform_string_pulling_on_path(&nav_mesh, from, to, &path)
+                                .map_err(|e| anyhow::Error::msg(format!("{e:?}")))?
+                                .into_iter()
+                                .filter(|location| (*location - from).length_squared() > 0.1)
+                                .map(|location| location + to_origin)
+                                .skip(1) // to ground
+                                .collect();
+                        path.remove(path.len() - 1); // off from ground to player
+                        let path = if path.is_empty() { vec![to] } else { path };
                         condition_tracker.line_of_sight_path = path;
                     } else {
                         condition_tracker.active = false;

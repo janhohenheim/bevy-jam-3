@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use bevy_dolly::prelude::*;
 use leafwing_input_manager::prelude::*;
 
-pub fn update_kind(
+pub fn _update_kind(
     mut camera_query: Query<(&mut IngameCamera, &ActionState<CameraAction>)>,
     config: Res<GameConfig>,
 ) {

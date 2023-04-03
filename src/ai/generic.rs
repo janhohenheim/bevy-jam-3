@@ -12,7 +12,6 @@ pub fn accelerate_towards_player(acceleration: f32) -> Box<dyn ForceFn> {
               }: ForceFnInput| {
             let direction = (line_of_sight_path[0] - transform.translation).normalize();
             let force = direction * acceleration * mass;
-            info!("accelerate_towards_player: force={:?}", force);
             ForceFnOutput {
                 force: ExternalForce { force, ..default() },
                 ..default()

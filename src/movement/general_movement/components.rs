@@ -18,6 +18,7 @@ pub struct CharacterControllerBundle {
     pub impulse: ExternalImpulse,
     pub velocity: Velocity,
     pub dominance: Dominance,
+    pub height: Height,
 }
 
 impl Default for CharacterControllerBundle {
@@ -40,6 +41,7 @@ impl Default for CharacterControllerBundle {
             impulse: default(),
             velocity: default(),
             dominance: default(),
+            height: default(),
         }
     }
 }
@@ -48,8 +50,27 @@ impl CharacterControllerBundle {
     pub fn capsule(height: f32, radius: f32) -> Self {
         Self {
             collider: Collider::capsule_y(height / 2., radius),
+            height: Height(height),
             ..default()
         }
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Component, Reflect, Serialize, Deserialize, Deref, DerefMut,
+)]
+#[reflect(Component, Serialize, Deserialize)]
+pub struct Height(pub f32);
+
+impl Height {
+    pub fn half(self) -> f32 {
+        self.0 / 2.
+    }
+}
+
+impl Default for Height {
+    fn default() -> Self {
+        Self(1.0)
     }
 }
 
