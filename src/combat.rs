@@ -1,4 +1,5 @@
 use crate::level_instantiation::spawning::animation_link::link_animations;
+use crate::movement::general_movement::GeneralMovementSystemSet;
 use crate::GameState;
 use bevy::prelude::*;
 pub use components::*;
@@ -28,6 +29,7 @@ pub fn combat_plugin(app: &mut App) {
             )
                 .chain()
                 .after(link_animations)
+                .after(GeneralMovementSystemSet)
                 .in_set(OnUpdate(GameState::Playing)),
         );
 }

@@ -9,6 +9,7 @@ pub struct CombatBundle {
     combatant: Combatant,
     combatant_state: CombatantState,
     condition_tracker: ConditionTracker,
+    move_metadata: MoveMetadata,
 }
 
 impl CombatBundle {
@@ -17,6 +18,7 @@ impl CombatBundle {
             combatant,
             combatant_state: default(),
             condition_tracker: default(),
+            move_metadata: default(),
         }
     }
 }
@@ -69,6 +71,15 @@ pub struct CurrentMove {
 pub struct Choreography {
     pub name: String,
     pub moves: Vec<Move>,
+}
+
+#[derive(
+    Debug, Component, Clone, Copy, PartialEq, Default, Reflect, FromReflect, Serialize, Deserialize,
+)]
+#[reflect(Component, Serialize, Deserialize)]
+pub struct MoveMetadata {
+    pub(crate) start_transform: Transform,
+    pub(crate) start_player_direction: Vec3,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -133,7 +144,6 @@ pub struct ForceFnInput {
     pub has_line_of_sight: bool,
     pub line_of_sight_path: Vec<Vec3>,
     pub mass: f32,
-    pub rotation: Quat,
 }
 
 #[derive(Debug, Clone, Default)]

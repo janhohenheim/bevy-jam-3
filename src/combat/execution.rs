@@ -3,17 +3,30 @@ use crate::level_instantiation::spawning::AnimationEntityLink;
 use anyhow::{Context, Result};
 use bevy::prelude::*;
 use bevy_mod_sysfail::macros::*;
+use bevy_rapier3d::prelude::*;
 use std::time::Duration;
 
 #[sysfail(log(level = "error"))]
 pub fn init_move(
     mut move_events: EventReader<InitMoveEvent>,
     mut animation_player: Query<&mut AnimationPlayer>,
-    mut combatant: Query<(&AnimationEntityLink, &mut CombatantState)>,
+    mut combatant: Query<(
+        &AnimationEntityLink,
+        &mut CombatantState,
+        &mut MoveMetadata,
+        &ConditionTracker,
+        &Transform,
+    )>,
 ) -> Result<()> {
     for event in move_events.iter() {
         let move_ = &event.move_;
-        let (animation_entity_link, mut combatant_state) = combatant.get_mut(event.source)?;
+        let (
+            animation_entity_link,
+            mut combatant_state,
+            mut move_metadata,
+            condition_tracker,
+            transform,
+        ) = combatant.get_mut(event.source)?;
         let mut animation_player = animation_player
             .get_mut(**animation_entity_link)
             .context("animation_entity_link held entity without animation player")?;
@@ -24,12 +37,52 @@ pub fn init_move(
                 .repeat();
         }
         *combatant_state = move_.state;
+        *move_metadata = MoveMetadata {
+            start_transform: *transform,
+            start_player_direction: condition_tracker.player_direction,
+        };
     }
     Ok(())
 }
 
-pub fn execute_move(mut move_events: EventReader<ExecuteMoveEvent>) {
-    for _event in move_events.iter() {}
+#[sysfail(log(level = "error"))]
+pub fn execute_move(
+    mut combatants: Query<(
+        &Combatant,
+        &ConditionTracker,
+        &mut Transform,
+        &ReadMassProperties,
+        &mut ExternalForce,
+        &MoveMetadata,
+    )>,
+    mut move_events: EventReader<ExecuteMoveEvent>,
+) -> Result<()> {
+    for (entity, force_fn) in move_events
+        .iter()
+        .filter_map(|event| event.move_.force_fn.as_ref().map(|f| (event.source, f)))
+    {
+        let (combatant, condition_tracker, mut transform, mass, mut force, move_metadata) =
+            combatants.get_mut(entity)?;
+        let input = ForceFnInput {
+            time: combatant.time_since_last_move,
+            transform: *transform,
+            start_transform: move_metadata.start_transform,
+            player_direction: condition_tracker.player_direction,
+            start_player_direction: move_metadata.start_player_direction,
+            has_line_of_sight: condition_tracker.has_line_of_sight,
+            line_of_sight_path: condition_tracker.line_of_sight_path.clone(),
+            mass: mass.0.mass,
+        };
+        let ForceFnOutput {
+            force: output_force,
+            rotation,
+        } = force_fn.call(input);
+        *force = output_force;
+        if let Some(rotation) = rotation {
+            transform.rotation = rotation;
+        }
+    }
+    Ok(())
 }
 
 pub fn execute_choreography(
