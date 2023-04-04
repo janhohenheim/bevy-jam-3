@@ -19,7 +19,7 @@ pub fn accelerate_towards_player(acceleration: f32) -> Box<dyn ForceFn> {
             let direction = (line_of_sight_path[0] - transform.translation).normalize();
             let force = direction * acceleration * mass;
 
-            let rotation = rotate_to_walking_direction(transform, velocity, config, dt);
+            let rotation = rotation_to_horizontal(transform, velocity, config, dt);
             ForceFnOutput {
                 force: ExternalForce { force, ..default() },
                 rotation,
@@ -29,19 +29,37 @@ pub fn accelerate_towards_player(acceleration: f32) -> Box<dyn ForceFn> {
     )
 }
 
-fn rotate_to_walking_direction(
+pub fn face_player() -> Box<dyn ForceFn> {
+    Box::new(
+        move |ForceFnInput {
+                  transform,
+                  player_direction,
+                  config,
+                  dt,
+                  ..
+              }: ForceFnInput| {
+            let rotation = rotation_to_horizontal(transform, player_direction, config, dt);
+            ForceFnOutput {
+                rotation,
+                ..default()
+            }
+        },
+    )
+}
+
+fn rotation_to_horizontal(
     transform: Transform,
-    velocity: Vec3,
+    direction: Vec3,
     config: GameConfig,
     dt: f32,
 ) -> Option<Quat> {
     let up = transform.up();
-    let horizontal_movement = velocity.split(up).horizontal;
-    if horizontal_movement.is_approx_zero() {
+    let horizontal_direction = direction.split(up).horizontal;
+    if horizontal_direction.is_approx_zero() {
         return None;
     }
 
-    let target_rotation = transform.looking_to(horizontal_movement, up).rotation;
+    let target_rotation = transform.looking_to(horizontal_direction, up).rotation;
     let smoothness = config.characters.rotation_smoothing;
     let factor = smoothness_to_lerp_factor(smoothness, dt);
     let rotation = transform.rotation.slerp(target_rotation, factor);

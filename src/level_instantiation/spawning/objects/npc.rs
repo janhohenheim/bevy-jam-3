@@ -4,7 +4,6 @@ use crate::file_system_interaction::asset_loading::{AnimationAssets, SceneAssets
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::GameObject;
 use crate::movement::general_movement::{CharacterControllerBundle, Model};
-use crate::util::trait_extension::F32Ext;
 use crate::world_interaction::dialog::{DialogId, DialogTarget};
 use bevy::prelude::*;
 use bevy::utils::HashMap;
@@ -56,6 +55,10 @@ pub(crate) fn spawn(
                                 ),
                                 animation: Some(animations.dummy_idle.clone()),
                                 state: CombatantState::OnGuard,
+                            },
+                            execute: ExecuteMove {
+                                force_fn: Some(ai::generic::face_player()),
+                                ..default()
                             },
                             ..default()
                         }],
