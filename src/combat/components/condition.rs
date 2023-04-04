@@ -1,9 +1,10 @@
+use crate::util::trait_extension::F32Ext;
 use bevy::prelude::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum CombatCondition {
-    PlayerDistanceSquaredUnder(f32),
-    PlayerDistanceSquaredOver(f32),
+    PlayerDistanceUnder(f32),
+    PlayerDistanceOver(f32),
     HasLineOfSight,
     Not(Box<CombatCondition>),
     And(Vec<CombatCondition>),
@@ -12,7 +13,7 @@ pub enum CombatCondition {
 
 impl Default for CombatCondition {
     fn default() -> Self {
-        Self::PlayerDistanceSquaredUnder(0.0)
+        Self::PlayerDistanceUnder(0.0)
     }
 }
 
@@ -37,11 +38,11 @@ impl ConditionTracker {
     pub fn fulfilled(&self, condition: &CombatCondition) -> bool {
         self.active
             && match condition {
-                CombatCondition::PlayerDistanceSquaredUnder(distance_squared) => {
-                    self.player_direction.length_squared() < *distance_squared
+                CombatCondition::PlayerDistanceUnder(distance) => {
+                    self.player_direction.length_squared() < distance.squared() + 1e-5
                 }
-                CombatCondition::PlayerDistanceSquaredOver(distance_squared) => {
-                    self.player_direction.length_squared() > *distance_squared
+                CombatCondition::PlayerDistanceOver(distance) => {
+                    self.player_direction.length_squared() > distance.squared() - 1e-5
                 }
                 CombatCondition::HasLineOfSight => self.has_line_of_sight,
                 CombatCondition::Not(condition) => !self.fulfilled(condition),

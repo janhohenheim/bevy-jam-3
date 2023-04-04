@@ -34,9 +34,9 @@ pub(crate) fn spawn(
                         name: "Walk toward Player".to_string(),
                         moves: vec![Move {
                             init: InitMove {
-                                duration: MoveDuration::While(
-                                    CombatCondition::PlayerDistanceSquaredOver(2.0.squared()),
-                                ),
+                                duration: MoveDuration::While(CombatCondition::PlayerDistanceOver(
+                                    2.0,
+                                )),
                                 animation: Some(animations.dummy_walk.clone()),
                                 state: CombatantState::OnGuard,
                             },
@@ -52,7 +52,7 @@ pub(crate) fn spawn(
                         moves: vec![Move {
                             init: InitMove {
                                 duration: MoveDuration::While(
-                                    CombatCondition::PlayerDistanceSquaredUnder(2.0.squared()),
+                                    CombatCondition::PlayerDistanceUnder(2.0),
                                 ),
                                 animation: Some(animations.dummy_idle.clone()),
                                 state: CombatantState::OnGuard,
@@ -65,12 +65,12 @@ pub(crate) fn spawn(
                     Tendency {
                         choreography: 0,
                         weight: 1.0,
-                        condition: CombatCondition::PlayerDistanceSquaredOver(2.),
+                        condition: CombatCondition::PlayerDistanceOver(2.0),
                     },
                     Tendency {
                         choreography: 1,
                         weight: 1.0,
-                        condition: CombatCondition::PlayerDistanceSquaredUnder(2.),
+                        condition: CombatCondition::PlayerDistanceUnder(2.0),
                     },
                 ],
                 HashMap::new(),
