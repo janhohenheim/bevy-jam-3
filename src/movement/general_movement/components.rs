@@ -50,7 +50,7 @@ impl CharacterControllerBundle {
     pub fn capsule(height: f32, radius: f32) -> Self {
         Self {
             collider: Collider::capsule_y(height / 2., radius),
-            height: Height(height),
+            height: Height(height + radius * 2.),
             ..default()
         }
     }
