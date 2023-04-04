@@ -11,6 +11,7 @@ mod projectile_attack_fn;
 
 #[derive(Debug, Clone, Default)]
 pub struct Move {
+    pub(crate) name: Option<String>,
     pub(crate) init: InitMove,
     pub(crate) execute: ExecuteMove,
 }

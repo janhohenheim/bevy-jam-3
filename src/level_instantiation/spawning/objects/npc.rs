@@ -44,15 +44,15 @@ pub(crate) fn spawn(
                                 force_fn: Some(ai::generic::accelerate_towards_player(14.)),
                                 ..default()
                             },
+                            ..default()
                         }],
                     },
                     Choreography {
-                        name: "Idle".to_string(),
+                        name: "Attack".to_string(),
                         moves: vec![Move {
+                            name: Some("Swing R -> L".to_string()),
                             init: InitMove {
-                                duration: MoveDuration::While(
-                                    CombatCondition::PlayerDistanceSquaredUnder(2.0.squared()),
-                                ),
+                                duration: MoveDuration::Animation,
                                 animation: Some(animations.character_idle.clone()),
                                 state: CombatantState::OnGuard,
                             },
