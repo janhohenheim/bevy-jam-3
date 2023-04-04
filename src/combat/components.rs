@@ -1,4 +1,5 @@
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
+use crate::movement::general_movement::ManualRotation;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use bevy_rapier3d::prelude::*;
@@ -15,6 +16,7 @@ pub struct CombatBundle {
     combatant_state: CombatantState,
     condition_tracker: ConditionTracker,
     move_metadata: MoveMetadata,
+    manual_rotation: ManualRotation,
 }
 
 impl CombatBundle {
@@ -24,6 +26,7 @@ impl CombatBundle {
             combatant_state: default(),
             condition_tracker: default(),
             move_metadata: default(),
+            manual_rotation: default(),
         }
     }
 }

@@ -3,7 +3,7 @@ use crate::combat::components::*;
 use crate::file_system_interaction::asset_loading::{AnimationAssets, SceneAssets};
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::GameObject;
-use crate::movement::general_movement::{CharacterAnimations, CharacterControllerBundle, Model};
+use crate::movement::general_movement::{CharacterControllerBundle, Model};
 use crate::util::trait_extension::F32Ext;
 use crate::world_interaction::dialog::{DialogId, DialogTarget};
 use bevy::prelude::*;

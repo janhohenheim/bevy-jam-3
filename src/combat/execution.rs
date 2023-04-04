@@ -1,4 +1,5 @@
 use crate::combat::components::*;
+use crate::file_system_interaction::config::GameConfig;
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::AnimationEntityLink;
 use anyhow::{Context, Result};
@@ -59,6 +60,7 @@ pub fn init_move(
 
 #[sysfail(log(level = "error"))]
 pub fn execute_move(
+    time: Res<Time>,
     mut combatants: Query<
         (
             &Combatant,
@@ -68,6 +70,7 @@ pub fn execute_move(
             &mut ExternalForce,
             &MoveMetadata,
             &MeleeAttackLink,
+            &Velocity,
         ),
         Without<MeleeAttack>,
     >,
@@ -79,6 +82,7 @@ pub fn execute_move(
     )>,
     mut move_events: EventReader<ExecuteMoveEvent>,
     mut spawn_event_writer: EventWriter<SpawnEvent<ProjectileKind, ProjectileSpawnInput>>,
+    game_config: Res<GameConfig>,
 ) -> Result<()> {
     for event in move_events.iter() {
         let entity = event.source;
@@ -90,6 +94,7 @@ pub fn execute_move(
             mut force,
             move_metadata,
             melee_attack_link,
+            velocity,
         ) = combatants.get_mut(entity)?;
         if let Some(force_fn) = &event.move_.force_fn {
             let input = ForceFnInput {
@@ -101,6 +106,9 @@ pub fn execute_move(
                 has_line_of_sight: condition_tracker.has_line_of_sight,
                 line_of_sight_path: condition_tracker.line_of_sight_path.clone(),
                 mass: mass.0.mass,
+                velocity: velocity.linvel,
+                config: game_config.clone(),
+                dt: time.delta_seconds(),
             };
             let ForceFnOutput {
                 force: output_force,

@@ -137,7 +137,7 @@ pub fn apply_jumping(
 
 fn rotate_characters(
     time: Res<Time>,
-    mut player_query: Query<(&Velocity, &mut Transform)>,
+    mut player_query: Query<(&Velocity, &mut Transform), Without<ManualRotation>>,
     config: Res<GameConfig>,
 ) {
     #[cfg(feature = "tracing")]

@@ -1,3 +1,4 @@
+use crate::file_system_interaction::config::GameConfig;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::fmt::Debug;
@@ -39,6 +40,7 @@ impl<'a> Clone for Box<dyn ForceFn + 'a> {
 #[derive(Debug, Clone, Default)]
 pub struct ForceFnInput {
     pub time: f32,
+    pub dt: f32,
     pub transform: Transform,
     pub start_transform: Transform,
     pub player_direction: Vec3,
@@ -46,6 +48,8 @@ pub struct ForceFnInput {
     pub has_line_of_sight: bool,
     pub line_of_sight_path: Vec<Vec3>,
     pub mass: f32,
+    pub velocity: Vec3,
+    pub config: GameConfig,
 }
 
 #[derive(Debug, Clone, Default)]

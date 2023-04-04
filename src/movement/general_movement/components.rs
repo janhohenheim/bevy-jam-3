@@ -156,3 +156,7 @@ pub struct CharacterAnimations {
     pub walk: Handle<AnimationClip>,
     pub aerial: Handle<AnimationClip>,
 }
+
+#[derive(Debug, Clone, PartialEq, Component, Reflect, Default)]
+#[reflect(Component)]
+pub struct ManualRotation;
