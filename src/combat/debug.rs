@@ -11,9 +11,11 @@ pub fn display_combatants(
             ui.heading("Choreography");
             if let Some(current) = combatant.current {
                 let choreography = &combatant.choreographies[current.choreography];
+                let move_ = &choreography.moves[current.move_];
                 ui.label(format!("Name: {}", choreography.name));
+                ui.label(format!("Move: {:?}", move_.name));
                 ui.label(format!(
-                    "Move: {}/{}",
+                    "Move index: {}/{}",
                     current.move_ + 1,
                     choreography.moves.len()
                 ));

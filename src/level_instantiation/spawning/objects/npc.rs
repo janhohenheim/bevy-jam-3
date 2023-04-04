@@ -48,12 +48,13 @@ pub(crate) fn spawn(
                         }],
                     },
                     Choreography {
-                        name: "Attack".to_string(),
+                        name: "Idle".to_string(),
                         moves: vec![Move {
-                            name: Some("Swing R -> L".to_string()),
                             init: InitMove {
-                                duration: MoveDuration::Animation,
-                                animation: Some(animations.dummy_walk.clone()),
+                                duration: MoveDuration::While(
+                                    CombatCondition::PlayerDistanceSquaredUnder(2.0.squared()),
+                                ),
+                                animation: Some(animations.dummy_idle.clone()),
                                 state: CombatantState::OnGuard,
                             },
                             ..default()
