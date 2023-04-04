@@ -53,4 +53,5 @@ pub struct InitMoveEvent {
 pub struct ExecuteMoveEvent {
     pub source: Entity,
     pub move_: ExecuteMove,
+    pub duration: MoveDuration,
 }

@@ -30,6 +30,7 @@ pub fn decide_choreography(
         execute_move_event_writer.send(ExecuteMoveEvent {
             source: entity,
             move_: next_move.execute.clone(),
+            duration: next_move.init.duration.clone(),
         });
     }
     Ok(())

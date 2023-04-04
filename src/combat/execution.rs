@@ -97,8 +97,14 @@ pub fn execute_move(
             velocity,
         ) = combatants.get_mut(entity)?;
         if let Some(force_fn) = &event.move_.force_fn {
+            let duration = match event.duration {
+                MoveDuration::Animation => move_metadata.animation_duration,
+                MoveDuration::Fixed(duration) => Some(duration),
+                _ => None,
+            };
             let input = ForceFnInput {
                 time: combatant.time_since_last_move,
+                duration,
                 transform: *transform,
                 start_transform: move_metadata.start_transform,
                 player_direction: condition_tracker.player_direction,
@@ -213,6 +219,7 @@ pub fn execute_choreography(
                 execute_move_event_writer.send(ExecuteMoveEvent {
                     source: entity,
                     move_: next_move.execute.clone(),
+                    duration: next_move.init.duration.clone(),
                 });
             }
         } else {
@@ -220,6 +227,7 @@ pub fn execute_choreography(
             execute_move_event_writer.send(ExecuteMoveEvent {
                 source: entity,
                 move_: current_move.execute.clone(),
+                duration: current_move.init.duration.clone(),
             });
         }
     }

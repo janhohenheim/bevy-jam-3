@@ -41,6 +41,7 @@ impl<'a> Clone for Box<dyn ForceFn + 'a> {
 pub struct ForceFnInput {
     pub time: f32,
     pub dt: f32,
+    pub duration: Option<f32>,
     pub transform: Transform,
     pub start_transform: Transform,
     pub player_direction: Vec3,

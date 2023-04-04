@@ -67,10 +67,10 @@ pub(crate) fn spawn(
                             init: InitMove {
                                 duration: MoveDuration::Animation,
                                 animation: Some(animations.dummy_attack.clone()),
-                                state: CombatantState::OnGuard,
+                                state: CombatantState::Vulnerable,
                             },
                             execute: ExecuteMove {
-                                force_fn: Some(ai::generic::face_player()),
+                                force_fn: Some(ai::generic::step_toward_player(14.)),
                                 ..default()
                             },
                             ..default()
@@ -89,8 +89,8 @@ pub(crate) fn spawn(
                         condition: CombatCondition::PlayerDistanceUnder(2.0),
                     },
                     Tendency {
-                        choreography: 1,
-                        weight: 1.0,
+                        choreography: 2,
+                        weight: 2.0,
                         condition: CombatCondition::PlayerDistanceUnder(2.0),
                     },
                 ],

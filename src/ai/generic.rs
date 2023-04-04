@@ -47,6 +47,39 @@ pub fn face_player() -> Box<dyn ForceFn> {
     )
 }
 
+pub fn step_toward_player(peak_acceleration: f32) -> Box<dyn ForceFn> {
+    Box::new(
+        move |ForceFnInput {
+                  transform,
+                  time,
+                  duration,
+                  start_player_direction,
+                  mass,
+                  dt,
+                  config,
+                  ..
+              }: ForceFnInput| {
+            let time_fraction = time / duration.unwrap();
+            let peak_fraction = 0.5;
+            let acceleration =
+                parabola_through_origin(time_fraction, Vec2::new(peak_fraction, peak_acceleration));
+            let force = (!start_player_direction.is_approx_zero())
+                .then_some(start_player_direction.normalize() * acceleration * mass)
+                .unwrap_or_default();
+            let rotation = rotation_to_horizontal(transform, start_player_direction, config, dt);
+            ForceFnOutput {
+                force: ExternalForce { force, ..default() },
+                rotation,
+                ..default()
+            }
+        },
+    )
+}
+
+fn parabola_through_origin(x: f32, vertex: Vec2) -> f32 {
+    unimplemented!()
+}
+
 fn rotation_to_horizontal(
     transform: Transform,
     direction: Vec3,
