@@ -104,7 +104,7 @@ pub fn execute_move(
                 player_direction: condition_tracker.player_direction,
                 start_player_direction: move_metadata.start_player_direction,
                 has_line_of_sight: condition_tracker.has_line_of_sight,
-                line_of_sight_path: condition_tracker.line_of_sight_path.clone(),
+                line_of_sight_direction: condition_tracker.line_of_sight_direction,
                 mass: mass.0.mass,
                 velocity: velocity.linvel,
                 config: game_config.clone(),
@@ -114,7 +114,9 @@ pub fn execute_move(
                 force: output_force,
                 rotation,
             } = force_fn.call(input);
-            *force = output_force;
+            *force += output_force;
+            info!("force: {:?}", force);
+            info!("output_force: {:?}", output_force);
             if let Some(rotation) = rotation {
                 transform.rotation = rotation;
             }

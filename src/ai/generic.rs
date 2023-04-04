@@ -9,16 +9,16 @@ pub fn accelerate_towards_player(acceleration: f32) -> Box<dyn ForceFn> {
     Box::new(
         move |ForceFnInput {
                   transform,
-                  line_of_sight_path,
+                  line_of_sight_direction,
                   mass,
                   velocity,
                   config,
                   dt,
                   ..
               }: ForceFnInput| {
-            let direction = (line_of_sight_path[0] - transform.translation).normalize();
-            let force = direction * acceleration * mass;
-
+            let force = (!line_of_sight_direction.is_approx_zero())
+                .then_some(line_of_sight_direction.normalize() * acceleration * mass)
+                .unwrap_or_default();
             let rotation = rotation_to_horizontal(transform, velocity, config, dt);
             ForceFnOutput {
                 force: ExternalForce { force, ..default() },

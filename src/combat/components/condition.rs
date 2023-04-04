@@ -21,7 +21,7 @@ impl Default for CombatCondition {
 #[reflect(Component)]
 pub struct ConditionTracker {
     pub player_direction: Vec3,
-    pub line_of_sight_path: Vec<Vec3>,
+    pub line_of_sight_direction: Vec3,
     pub has_line_of_sight: bool,
     pub active: bool,
 }

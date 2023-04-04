@@ -28,10 +28,10 @@ pub fn display_combatants(
                 "Player direction: {}",
                 condition_tracker.player_direction.format()
             ));
-            ui.label("Line of sight path:");
-            for direction in &condition_tracker.line_of_sight_path {
-                ui.label(format!("• {}", direction.format()));
-            }
+            ui.label(format!(
+                "Line of sight direction: {}",
+                condition_tracker.line_of_sight_direction.format()
+            ));
             ui.label(format!(
                 "Has line of sight: {}",
                 condition_tracker.has_line_of_sight

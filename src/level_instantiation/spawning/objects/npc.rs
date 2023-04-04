@@ -40,7 +40,7 @@ pub(crate) fn spawn(
                                 state: CombatantState::OnGuard,
                             },
                             execute: ExecuteMove {
-                                force_fn: Some(ai::generic::accelerate_towards_player(14.)),
+                                force_fn: Some(ai::generic::accelerate_towards_player(16.)),
                                 ..default()
                             },
                             ..default()

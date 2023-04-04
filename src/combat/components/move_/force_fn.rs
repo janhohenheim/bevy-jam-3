@@ -46,7 +46,7 @@ pub struct ForceFnInput {
     pub player_direction: Vec3,
     pub start_player_direction: Vec3,
     pub has_line_of_sight: bool,
-    pub line_of_sight_path: Vec<Vec3>,
+    pub line_of_sight_direction: Vec3,
     pub mass: f32,
     pub velocity: Vec3,
     pub config: GameConfig,

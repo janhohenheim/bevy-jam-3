@@ -30,7 +30,7 @@ pub fn update_condition_tracker(
 
             if let Some(_line_of_sight) = line_of_sight {
                 condition_tracker.has_line_of_sight = true;
-                condition_tracker.line_of_sight_path = vec![to];
+                condition_tracker.line_of_sight_direction = condition_tracker.player_direction;
             } else {
                 condition_tracker.has_line_of_sight = false;
                 if let Ok(nav_mesh) = nav_mesh.get().read() {
@@ -46,8 +46,11 @@ pub fn update_condition_tracker(
                                 .skip(1) // to ground
                                 .collect();
                         path.remove(path.len() - 1); // off from ground to player
-                        let path = if path.is_empty() { vec![to] } else { path };
-                        condition_tracker.line_of_sight_path = path;
+                        condition_tracker.line_of_sight_direction = if path.is_empty() {
+                            condition_tracker.player_direction
+                        } else {
+                            path[0]
+                        };
                     } else {
                         condition_tracker.active = false;
                     }
