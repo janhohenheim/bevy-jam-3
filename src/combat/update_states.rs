@@ -34,17 +34,19 @@ pub fn update_condition_tracker(
             } else {
                 condition_tracker.has_line_of_sight = false;
                 if let Ok(nav_mesh) = nav_mesh.get().read() {
-                    let to_origin = Vec3::Y * combatant_height.half();
                     if let Ok(path) = find_path(&nav_mesh, &nav_mesh_settings, from, to, None, None)
                     {
+                        let to_origin = Vec3::Y * combatant_height.half();
                         let mut path: Vec<_> =
                             perform_string_pulling_on_path(&nav_mesh, from, to, &path)
                                 .map_err(|e| anyhow::Error::msg(format!("{e:?}")))?
                                 .into_iter()
-                                .filter(|location| (*location - from).length_squared() > 0.1)
-                                .map(|location| location + to_origin)
                                 .skip(1) // to ground
+                                .map(|location| location - from + to_origin)
+                                .filter(|dir| dir.length_squared() > 0.1)
+                                .take(2)
                                 .collect();
+
                         path.remove(path.len() - 1); // off from ground to player
                         condition_tracker.line_of_sight_direction = if path.is_empty() {
                             condition_tracker.player_direction

@@ -115,8 +115,6 @@ pub fn execute_move(
                 rotation,
             } = force_fn.call(input);
             *force += output_force;
-            info!("force: {:?}", force);
-            info!("output_force: {:?}", output_force);
             if let Some(rotation) = rotation {
                 transform.rotation = rotation;
             }

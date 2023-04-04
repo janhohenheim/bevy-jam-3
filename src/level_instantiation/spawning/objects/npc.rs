@@ -50,10 +50,23 @@ pub(crate) fn spawn(
                         name: "Idle".to_string(),
                         moves: vec![Move {
                             init: InitMove {
-                                duration: MoveDuration::While(
-                                    CombatCondition::PlayerDistanceUnder(2.0),
-                                ),
+                                duration: MoveDuration::Fixed(2.0),
                                 animation: Some(animations.dummy_idle.clone()),
+                                state: CombatantState::OnGuard,
+                            },
+                            execute: ExecuteMove {
+                                force_fn: Some(ai::generic::face_player()),
+                                ..default()
+                            },
+                            ..default()
+                        }],
+                    },
+                    Choreography {
+                        name: "Attack".to_string(),
+                        moves: vec![Move {
+                            init: InitMove {
+                                duration: MoveDuration::Animation,
+                                animation: Some(animations.dummy_attack.clone()),
                                 state: CombatantState::OnGuard,
                             },
                             execute: ExecuteMove {
@@ -69,6 +82,11 @@ pub(crate) fn spawn(
                         choreography: 0,
                         weight: 1.0,
                         condition: CombatCondition::PlayerDistanceOver(2.0),
+                    },
+                    Tendency {
+                        choreography: 1,
+                        weight: 1.0,
+                        condition: CombatCondition::PlayerDistanceUnder(2.0),
                     },
                     Tendency {
                         choreography: 1,
