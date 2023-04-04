@@ -37,7 +37,7 @@ pub(crate) fn spawn(
                                 duration: MoveDuration::While(
                                     CombatCondition::PlayerDistanceSquaredOver(2.0.squared()),
                                 ),
-                                animation: Some(animations.character_walking.clone()),
+                                animation: Some(animations.dummy_walk.clone()),
                                 state: CombatantState::OnGuard,
                             },
                             execute: ExecuteMove {
@@ -53,7 +53,7 @@ pub(crate) fn spawn(
                             name: Some("Swing R -> L".to_string()),
                             init: InitMove {
                                 duration: MoveDuration::Animation,
-                                animation: Some(animations.character_idle.clone()),
+                                animation: Some(animations.dummy_walk.clone()),
                                 state: CombatantState::OnGuard,
                             },
                             ..default()
@@ -74,11 +74,6 @@ pub(crate) fn spawn(
                 ],
                 HashMap::new(),
             )),
-            CharacterAnimations {
-                idle: animations.character_idle.clone(),
-                walk: animations.character_walking.clone(),
-                aerial: animations.character_running.clone(),
-            },
             DialogTarget {
                 dialog_id: DialogId::new("follower"),
             },
@@ -117,10 +112,10 @@ pub(crate) fn spawn(
         .with_children(|parent| {
             parent.spawn((
                 SceneBundle {
-                    scene: scene_handles.character.clone(),
+                    scene: scene_handles.dummy.clone(),
                     transform: Transform {
                         translation: Vec3::new(0., -HEIGHT / 2. - RADIUS, 0.),
-                        scale: Vec3::splat(0.012),
+                        scale: Vec3::splat(0.25),
                         rotation: Quat::from_rotation_y(TAU / 2.),
                     },
                     ..default()

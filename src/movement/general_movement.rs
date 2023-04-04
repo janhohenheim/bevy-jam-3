@@ -47,7 +47,7 @@ pub fn general_movement_plugin(app: &mut App) {
                 apply_jumping,
                 apply_walking,
                 rotate_characters,
-                //play_animations,
+                play_animations,
                 sync_models,
                 reset_movement_components,
             )
@@ -160,7 +160,7 @@ fn rotate_characters(
 }
 
 #[sysfail(log(level = "error"))]
-fn _play_animations(
+fn play_animations(
     mut animation_player: Query<&mut AnimationPlayer>,
     characters: Query<(
         &Velocity,

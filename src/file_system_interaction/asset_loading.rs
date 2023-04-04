@@ -44,6 +44,8 @@ pub struct AudioAssets {
 pub struct SceneAssets {
     #[asset(path = "scenes/Fox.glb#Scene0")]
     pub character: Handle<Scene>,
+    #[asset(path = "scenes/dummy.glb#Scene0")]
+    pub dummy: Handle<Scene>,
     #[asset(path = "scenes/old_town.glb#Scene0")]
     pub level: Handle<Scene>,
 }
@@ -56,6 +58,8 @@ pub struct AnimationAssets {
     pub character_walking: Handle<AnimationClip>,
     #[asset(path = "scenes/Fox.glb#Animation2")]
     pub character_running: Handle<AnimationClip>,
+    #[asset(path = "scenes/dummy.glb#Animation0")]
+    pub dummy_walk: Handle<AnimationClip>,
 }
 
 #[derive(AssetCollection, Resource, Clone)]

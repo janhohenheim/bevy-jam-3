@@ -3,6 +3,7 @@ use crate::movement::general_movement::GeneralMovementSystemSet;
 use crate::GameState;
 use bevy::prelude::*;
 pub use components::*;
+use spew::prelude::*;
 
 pub mod components;
 #[cfg(feature = "dev")]
@@ -18,6 +19,7 @@ pub fn combat_plugin(app: &mut App) {
         .register_type::<ConditionTracker>()
         .add_event::<InitMoveEvent>()
         .add_event::<ExecuteMoveEvent>()
+        .add_plugin(SpewPlugin::<ProjectileKind, ProjectileSpawnInput>::default())
         .add_systems(
             (
                 linking::link_melee_attack,
