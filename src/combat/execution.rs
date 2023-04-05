@@ -15,6 +15,7 @@ pub fn init_move(
     mut animation_player: Query<&mut AnimationPlayer>,
     mut combatant: Query<(
         &AnimationEntityLink,
+        &mut Combatant,
         &mut CombatantState,
         &mut MoveMetadata,
         &ConditionTracker,
@@ -26,6 +27,7 @@ pub fn init_move(
         let move_ = &event.move_;
         let (
             animation_entity_link,
+            mut combatant,
             mut combatant_state,
             mut move_metadata,
             condition_tracker,
@@ -36,6 +38,7 @@ pub fn init_move(
             .context("animation_entity_link held entity without animation player")?;
 
         if let Some(animation) = &move_.animation {
+            combatant.time_since_last_animation = 0.0;
             animation_player.play_with_transition(animation.clone(), Duration::from_secs_f32(0.2));
             if move_.duration != MoveDuration::Animation {
                 animation_player.repeat();
@@ -46,7 +49,8 @@ pub fn init_move(
             .animation
             .as_ref()
             .and_then(|animation| animations.get(animation))
-            .map(|animation| animation.duration());
+            .map(|animation| animation.duration())
+            .or(move_metadata.animation_duration);
 
         *combatant_state = move_.state;
         *move_metadata = MoveMetadata {
@@ -185,6 +189,7 @@ pub fn execute_choreography(
         &mut combatants.iter_mut()
     {
         combatant.time_since_last_move += time.delta_seconds();
+        combatant.time_since_last_animation += time.delta_seconds();
         let Some(current) = combatant.current else { continue; };
 
         let (move_duration, choreography_length) = {
@@ -197,7 +202,7 @@ pub fn execute_choreography(
         let time_for_next_move = match move_duration {
             MoveDuration::Fixed(time) => combatant.time_since_last_move >= time,
             MoveDuration::Animation => {
-                combatant.time_since_last_move >= move_metadata.animation_duration.context("MoveDuration::Animation was specified, but no animation duration was found. Did you forget to set an animation?")?
+                combatant.time_since_last_animation >= move_metadata.animation_duration.context("MoveDuration::Animation was specified, but no animation duration was found. Did you forget to set an animation?")?
             }
             MoveDuration::Instant => { instant_over=true; false },
             MoveDuration::None => true,

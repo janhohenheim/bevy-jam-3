@@ -91,7 +91,6 @@ pub(crate) fn spawn(
                                 name: Some("Attack".to_string()),
                                 init: InitMove {
                                     duration: MoveDuration::Animation,
-                                    animation: Some(animations.attack.clone()),
                                     state: CombatantState::Vulnerable,
                                     ..default()
                                 },

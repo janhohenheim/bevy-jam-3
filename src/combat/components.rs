@@ -41,6 +41,7 @@ pub struct Combatant {
     /// Currently does not factor in any conditions.
     pub chained_choreographies: HashMap<usize, usize>,
     pub time_since_last_move: f32,
+    pub time_since_last_animation: f32,
 }
 
 impl Combatant {

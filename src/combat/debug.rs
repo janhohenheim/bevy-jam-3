@@ -44,6 +44,10 @@ pub fn display_combatants(
                 "Time since last move: {:.3}",
                 combatant.time_since_last_move
             ));
+            ui.label(format!(
+                "Time since last animation: {:.3}",
+                combatant.time_since_last_animation
+            ));
         });
     }
 }
