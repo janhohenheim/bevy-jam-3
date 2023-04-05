@@ -246,15 +246,6 @@ pub(crate) fn spawn(
         ))
         .with_children(|parent| {
             parent.spawn((
-                Name::new("NPC Melee Attack"),
-                MeleeAttackBundle::from_melee_attack(MeleeAttack {
-                    damage: 10.0,
-                    knockback: 1.0,
-                }),
-            ));
-        })
-        .with_children(|parent| {
-            parent.spawn((
                 Name::new("NPC Dialog Collider"),
                 Collider::cylinder(HEIGHT / 2., RADIUS * 5.),
                 Sensor,
@@ -266,26 +257,16 @@ pub(crate) fn spawn(
                 ),
             ));
         })
-        .id();
-
-    commands
-        .spawn((
-            Model { target: entity },
-            SpatialBundle::default(),
-            Name::new("NPC Model Parent"),
-        ))
         .with_children(|parent| {
-            parent.spawn((
-                SceneBundle {
-                    scene: scene_handles.dummy.clone(),
-                    transform: Transform {
-                        translation: Vec3::new(0., -HEIGHT / 2. - RADIUS, 0.),
-                        scale: Vec3::splat(0.25),
-                        rotation: Quat::from_rotation_y(TAU / 2.),
-                    },
-                    ..default()
+            parent.spawn((SceneBundle {
+                scene: scene_handles.dummy.clone(),
+                transform: Transform {
+                    translation: Vec3::new(0., -HEIGHT / 2. - RADIUS, 0.),
+                    scale: Vec3::splat(0.25),
+                    rotation: Quat::from_rotation_y(TAU / 2.),
                 },
-                Name::new("NPC Model"),
-            ));
-        });
+                ..default()
+            },));
+        })
+        .id();
 }

@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
 use std::fmt::Debug;
 
 impl Debug for dyn MeleeAttackFn {

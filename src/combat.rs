@@ -24,7 +24,7 @@ pub fn combat_plugin(app: &mut App) {
         .add_spawners(((ProjectileKind::Simple, spawn_actual_simple_projectile),))
         .add_systems(
             (
-                linking::link_melee_attack,
+                linking::link_hitbox,
                 update_states::update_condition_tracker,
                 decision::decide_choreography,
                 execution::execute_choreography,

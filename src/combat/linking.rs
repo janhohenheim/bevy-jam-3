@@ -1,12 +1,50 @@
-use crate::combat::{MeleeAttack, MeleeAttackLink};
+use crate::combat::{HitboxToParentLink, ParentToHitboxLink};
+use crate::level_instantiation::spawning::objects::GameCollisionGroup;
+use crate::util::trait_extension::MeshExt;
+use anyhow::{Context, Result};
 use bevy::prelude::*;
+use bevy_mod_sysfail::macros::*;
+use bevy_rapier3d::prelude::*;
 
-pub fn link_melee_attack(
+#[sysfail(log(level = "error"))]
+pub fn link_hitbox(
     mut commands: Commands,
-    melee_attacks: Query<(Entity, &Parent), Added<MeleeAttack>>,
-) {
-    for (entity, parent) in melee_attacks.iter() {
-        let parent = parent.get();
-        commands.entity(parent).insert(MeleeAttackLink(entity));
+    hitboxes: Query<(Entity, &Name), Added<Name>>,
+    parents: Query<&Parent>,
+    children: Query<&Children>,
+    mesh_handles: Query<&Handle<Mesh>>,
+    meshes: Res<Assets<Mesh>>,
+) -> Result<()> {
+    for (entity, name) in hitboxes
+        .iter()
+        .filter(|(_, name)| name.contains("[hitbox]"))
+    {
+        let mesh = Mesh::search_in_children(entity, &children, &meshes, &mesh_handles)
+            .first()
+            .context("Hitbox entity has no mesh")?
+            .1;
+        let collider = Collider::from_bevy_mesh(mesh, &ComputedColliderShape::TriMesh)
+            .context("Failed to create collider from mesh")?;
+        let top_parent = parents
+            .iter_ancestors(entity)
+            .last()
+            .context("Hitbox entity has no parent")?;
+
+        commands.entity(entity).insert((
+            collider,
+            CollisionGroups::new(
+                GameCollisionGroup::ATTACK.into(),
+                GameCollisionGroup::NONE.into(),
+            ),
+            Sensor,
+            ActiveEvents::COLLISION_EVENTS,
+            ActiveCollisionTypes::DYNAMIC_DYNAMIC,
+            HitboxToParentLink(top_parent),
+        ));
+
+        commands
+            .entity(top_parent)
+            .insert(ParentToHitboxLink(entity));
     }
+    Ok(())
 }

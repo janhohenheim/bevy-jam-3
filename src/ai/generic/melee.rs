@@ -7,7 +7,7 @@ pub fn attack_at_keyframes(
     knockback: f32,
 ) -> Box<dyn MeleeAttackFn> {
     Box::new(move |MeleeAttackFnInput { time }: MeleeAttackFnInput| {
-        let times = keyframes.iter().map(|(time, _)| time).collect();
+        let times: Vec<_> = keyframes.iter().map(|(time, _)| *time).collect();
 
         let rotations = Keyframes::Rotation(
             keyframes

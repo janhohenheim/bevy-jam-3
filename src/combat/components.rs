@@ -1,8 +1,6 @@
-use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::movement::general_movement::ManualRotation;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use bevy_rapier3d::prelude::*;
 pub use condition::*;
 pub use move_::*;
 use serde::{Deserialize, Serialize};
@@ -62,52 +60,11 @@ impl Combatant {
     }
 }
 
-#[derive(Debug, Bundle)]
-pub struct MeleeAttackBundle {
-    pub melee_attack: MeleeAttack,
-    pub collider: Collider,
-    pub collision_groups: CollisionGroups,
-    #[bundle]
-    pub spatial_bundle: SpatialBundle,
-    pub sensor: Sensor,
-    pub active_events: ActiveEvents,
-    pub active_collision_types: ActiveCollisionTypes,
-}
-
-impl MeleeAttackBundle {
-    pub fn from_melee_attack(melee_attack: MeleeAttack) -> Self {
-        Self {
-            melee_attack,
-            ..default()
-        }
-    }
-}
-
-impl Default for MeleeAttackBundle {
-    fn default() -> Self {
-        Self {
-            melee_attack: default(),
-            collider: default(),
-            spatial_bundle: default(),
-            collision_groups: CollisionGroups::new(
-                GameCollisionGroup::ATTACK.into(),
-                GameCollisionGroup::NONE.into(),
-            ),
-            sensor: default(),
-            active_events: ActiveEvents::COLLISION_EVENTS,
-            active_collision_types: ActiveCollisionTypes::DYNAMIC_DYNAMIC,
-        }
-    }
-}
-
-#[derive(Debug, Component, Clone, Default)]
-pub struct MeleeAttack {
-    pub(crate) damage: f32,
-    pub(crate) knockback: f32,
-}
+#[derive(Debug, Component, Clone, Deref, DerefMut)]
+pub struct ParentToHitboxLink(pub Entity);
 
 #[derive(Debug, Component, Clone, Deref, DerefMut)]
-pub struct MeleeAttackLink(pub Entity);
+pub struct HitboxToParentLink(pub Entity);
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Tendency {
