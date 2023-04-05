@@ -19,7 +19,7 @@ pub fn accelerate_towards_player(acceleration: f32) -> Box<dyn MotionFn> {
             let force = (!line_of_sight_direction.is_approx_zero())
                 .then_some(line_of_sight_direction.normalize() * acceleration * mass)
                 .unwrap_or_default();
-            let rotation = rotation_to_horizontal(transform, velocity, config, dt);
+            let rotation = asymptotic_rotation_to_horizontal(transform, velocity, config, dt);
             MotionFnOutput {
                 force: ExternalForce { force, ..default() },
                 rotation,
@@ -38,7 +38,8 @@ pub fn face_player() -> Box<dyn MotionFn> {
                   dt,
                   ..
               }: MotionFnInput| {
-            let rotation = rotation_to_horizontal(transform, player_direction, config, dt);
+            let rotation =
+                asymptotic_rotation_to_horizontal(transform, player_direction, config, dt);
             MotionFnOutput {
                 rotation,
                 ..default()
@@ -53,14 +54,12 @@ pub fn step_toward_player(speed: f32) -> Box<dyn MotionFn> {
                   transform,
                   start_player_direction,
                   mass,
-                  dt,
-                  config,
                   ..
               }: MotionFnInput| {
             let impulse = (!start_player_direction.is_approx_zero())
                 .then_some(start_player_direction.normalize() * speed * mass)
                 .unwrap_or_default();
-            let rotation = rotation_to_horizontal(transform, start_player_direction, config, dt);
+            let rotation = rotation_to_horizontal(transform, start_player_direction);
             MotionFnOutput {
                 impulse: ExternalImpulse {
                     impulse,
@@ -73,12 +72,20 @@ pub fn step_toward_player(speed: f32) -> Box<dyn MotionFn> {
     )
 }
 
-fn rotation_to_horizontal(
+fn asymptotic_rotation_to_horizontal(
     transform: Transform,
     direction: Vec3,
     config: GameConfig,
     dt: f32,
 ) -> Option<Quat> {
+    let target_rotation = rotation_to_horizontal(transform, direction)?;
+    let smoothness = config.characters.rotation_smoothing;
+    let factor = smoothness_to_lerp_factor(smoothness, dt);
+    let rotation = transform.rotation.slerp(target_rotation, factor);
+    Some(rotation)
+}
+
+fn rotation_to_horizontal(transform: Transform, direction: Vec3) -> Option<Quat> {
     let up = transform.up();
     let horizontal_direction = direction.split(up).horizontal;
     if horizontal_direction.is_approx_zero() {
@@ -86,8 +93,5 @@ fn rotation_to_horizontal(
     }
 
     let target_rotation = transform.looking_to(horizontal_direction, up).rotation;
-    let smoothness = config.characters.rotation_smoothing;
-    let factor = smoothness_to_lerp_factor(smoothness, dt);
-    let rotation = transform.rotation.slerp(target_rotation, factor);
-    Some(rotation)
+    Some(target_rotation)
 }

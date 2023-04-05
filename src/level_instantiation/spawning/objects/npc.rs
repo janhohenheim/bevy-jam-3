@@ -82,7 +82,7 @@ pub(crate) fn spawn(
                                     ..default()
                                 },
                                 execute: ExecuteMove {
-                                    motion_fn: Some(ai::generic::step_toward_player(10.)),
+                                    motion_fn: Some(ai::generic::step_toward_player(8.)),
                                     ..default()
                                 },
                                 ..default()
