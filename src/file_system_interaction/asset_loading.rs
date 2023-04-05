@@ -22,7 +22,8 @@ pub fn loading_plugin(app: &mut App) {
         .add_loading_state(LoadingState::new(GameState::Loading).continue_to_state(GameState::Menu))
         .add_collection_to_loading_state::<_, AudioAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, SceneAssets>(GameState::Loading)
-        .add_collection_to_loading_state::<_, AnimationAssets>(GameState::Loading)
+        .add_collection_to_loading_state::<_, CharacterAnimationAssets>(GameState::Loading)
+        .add_collection_to_loading_state::<_, DummyAnimationAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, LevelAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, DialogAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, TextureAssets>(GameState::Loading)
@@ -51,19 +52,31 @@ pub struct SceneAssets {
 }
 
 #[derive(AssetCollection, Resource, Clone)]
-pub struct AnimationAssets {
+pub struct CharacterAnimationAssets {
     #[asset(path = "scenes/Fox.glb#Animation0")]
-    pub character_idle: Handle<AnimationClip>,
+    pub idle: Handle<AnimationClip>,
     #[asset(path = "scenes/Fox.glb#Animation1")]
-    pub character_walking: Handle<AnimationClip>,
+    pub walk: Handle<AnimationClip>,
     #[asset(path = "scenes/Fox.glb#Animation2")]
-    pub character_running: Handle<AnimationClip>,
-    #[asset(path = "scenes/dummy.glb#Animation2")]
-    pub dummy_walk: Handle<AnimationClip>,
-    #[asset(path = "scenes/dummy.glb#Animation1")]
-    pub dummy_idle: Handle<AnimationClip>,
+    pub run: Handle<AnimationClip>,
+}
+
+#[derive(AssetCollection, Resource, Clone)]
+pub struct DummyAnimationAssets {
     #[asset(path = "scenes/dummy.glb#Animation0")]
-    pub dummy_attack: Handle<AnimationClip>,
+    pub hurt: Handle<AnimationClip>,
+    #[asset(path = "scenes/dummy.glb#Animation1")]
+    pub block: Handle<AnimationClip>,
+    #[asset(path = "scenes/dummy.glb#Animation2")]
+    pub aerial_toss: Handle<AnimationClip>,
+    #[asset(path = "scenes/dummy.glb#Animation3")]
+    pub aerial: Handle<AnimationClip>,
+    #[asset(path = "scenes/dummy.glb#Animation4")]
+    pub attack: Handle<AnimationClip>,
+    #[asset(path = "scenes/dummy.glb#Animation5")]
+    pub walk: Handle<AnimationClip>,
+    #[asset(path = "scenes/dummy.glb#Animation6")]
+    pub idle: Handle<AnimationClip>,
 }
 
 #[derive(AssetCollection, Resource, Clone)]
@@ -106,7 +119,7 @@ fn show_progress(
     mut last_done: Local<u32>,
     audio_assets: Option<Res<AudioAssets>>,
     scene_assets: Option<Res<SceneAssets>>,
-    animation_assets: Option<Res<AnimationAssets>>,
+    animation_assets: Option<Res<CharacterAnimationAssets>>,
     level_assets: Option<Res<LevelAssets>>,
     dialog_assets: Option<Res<DialogAssets>>,
     texture_assets: Option<Res<TextureAssets>>,

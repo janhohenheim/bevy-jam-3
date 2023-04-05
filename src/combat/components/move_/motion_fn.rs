@@ -3,27 +3,27 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::fmt::Debug;
 
-impl Debug for dyn ForceFn {
+impl Debug for dyn MotionFn {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ForceFn").finish()
     }
 }
 
-pub trait ForceFn: Send + Sync {
-    fn call(&self, input: ForceFnInput) -> ForceFnOutput;
-    fn clone_box<'a>(&self) -> Box<dyn ForceFn + 'a>
+pub trait MotionFn: Send + Sync {
+    fn call(&self, input: MotionFnInput) -> MotionFnOutput;
+    fn clone_box<'a>(&self) -> Box<dyn MotionFn + 'a>
     where
         Self: 'a;
 }
-impl<F> ForceFn for F
+impl<F> MotionFn for F
 where
-    F: Fn(ForceFnInput) -> ForceFnOutput + Send + Sync + Clone,
+    F: Fn(MotionFnInput) -> MotionFnOutput + Send + Sync + Clone,
 {
-    fn call(&self, input: ForceFnInput) -> ForceFnOutput {
+    fn call(&self, input: MotionFnInput) -> MotionFnOutput {
         self(input)
     }
 
-    fn clone_box<'a>(&self) -> Box<dyn ForceFn + 'a>
+    fn clone_box<'a>(&self) -> Box<dyn MotionFn + 'a>
     where
         Self: 'a,
     {
@@ -31,14 +31,14 @@ where
     }
 }
 
-impl<'a> Clone for Box<dyn ForceFn + 'a> {
+impl<'a> Clone for Box<dyn MotionFn + 'a> {
     fn clone(&self) -> Self {
         (**self).clone_box()
     }
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct ForceFnInput {
+pub struct MotionFnInput {
     pub time: f32,
     pub dt: f32,
     pub duration: Option<f32>,
@@ -54,7 +54,8 @@ pub struct ForceFnInput {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct ForceFnOutput {
+pub struct MotionFnOutput {
     pub force: ExternalForce,
+    pub impulse: ExternalImpulse,
     pub rotation: Option<Quat>,
 }

@@ -1,12 +1,12 @@
 use crate::combat::{CombatCondition, CombatantState};
 use bevy::prelude::*;
-pub use force_fn::*;
 pub use melee_attack_fn::*;
+pub use motion_fn::*;
 pub use projectile_attack_fn::*;
 use std::fmt::Debug;
 
-mod force_fn;
 mod melee_attack_fn;
+mod motion_fn;
 mod projectile_attack_fn;
 
 #[derive(Debug, Clone, Default)]
@@ -25,7 +25,7 @@ pub struct InitMove {
 
 #[derive(Debug, Clone, Default)]
 pub struct ExecuteMove {
-    pub force_fn: Option<Box<dyn ForceFn>>,
+    pub motion_fn: Option<Box<dyn MotionFn>>,
     pub melee_attack_fn: Option<Box<dyn MeleeAttackFn>>,
     pub projectile_attack_fn: Option<Box<dyn ProjectileAttackFn>>,
 }
@@ -34,6 +34,8 @@ pub struct ExecuteMove {
 pub enum MoveDuration {
     Fixed(f32),
     Animation,
+    Instant,
+    None,
     While(CombatCondition),
     Until(CombatCondition),
 }

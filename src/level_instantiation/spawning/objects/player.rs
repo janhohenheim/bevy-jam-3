@@ -1,4 +1,4 @@
-use crate::file_system_interaction::asset_loading::{AnimationAssets, SceneAssets};
+use crate::file_system_interaction::asset_loading::{CharacterAnimationAssets, SceneAssets};
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::GameObject;
 use crate::movement::general_movement::{CharacterAnimations, CharacterControllerBundle, Model};
@@ -16,7 +16,7 @@ pub const RADIUS: f32 = 0.3;
 pub(crate) fn spawn(
     In(transform): In<Transform>,
     mut commands: Commands,
-    animations: Res<AnimationAssets>,
+    animations: Res<CharacterAnimationAssets>,
     scene_handles: Res<SceneAssets>,
 ) {
     let entity = commands
@@ -30,9 +30,9 @@ pub(crate) fn spawn(
             Ccd::enabled(),
             CharacterControllerBundle::capsule(HEIGHT, RADIUS),
             CharacterAnimations {
-                idle: animations.character_idle.clone(),
-                walk: animations.character_walking.clone(),
-                aerial: animations.character_running.clone(),
+                idle: animations.idle.clone(),
+                walk: animations.walk.clone(),
+                aerial: animations.run.clone(),
             },
             CollisionGroups::new(
                 GameCollisionGroup::PLAYER.into(),

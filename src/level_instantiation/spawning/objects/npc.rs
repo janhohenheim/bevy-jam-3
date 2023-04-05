@@ -1,6 +1,6 @@
 use crate::ai;
 use crate::combat::components::*;
-use crate::file_system_interaction::asset_loading::{AnimationAssets, SceneAssets};
+use crate::file_system_interaction::asset_loading::{DummyAnimationAssets, SceneAssets};
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::GameObject;
 use crate::movement::general_movement::{CharacterControllerBundle, Model};
@@ -16,7 +16,7 @@ pub const RADIUS: f32 = 0.4;
 pub(crate) fn spawn(
     In(transform): In<Transform>,
     mut commands: Commands,
-    animations: Res<AnimationAssets>,
+    animations: Res<DummyAnimationAssets>,
     scene_handles: Res<SceneAssets>,
 ) {
     let entity = commands
@@ -36,11 +36,11 @@ pub(crate) fn spawn(
                                 duration: MoveDuration::While(CombatCondition::PlayerDistanceOver(
                                     2.0,
                                 )),
-                                animation: Some(animations.dummy_walk.clone()),
+                                animation: Some(animations.walk.clone()),
                                 state: CombatantState::OnGuard,
                             },
                             execute: ExecuteMove {
-                                force_fn: Some(ai::generic::accelerate_towards_player(16.)),
+                                motion_fn: Some(ai::generic::accelerate_towards_player(16.)),
                                 ..default()
                             },
                             ..default()
@@ -51,30 +51,53 @@ pub(crate) fn spawn(
                         moves: vec![Move {
                             init: InitMove {
                                 duration: MoveDuration::Fixed(2.0),
-                                animation: Some(animations.dummy_idle.clone()),
+                                animation: Some(animations.idle.clone()),
                                 state: CombatantState::OnGuard,
                             },
                             execute: ExecuteMove {
-                                force_fn: Some(ai::generic::face_player()),
+                                motion_fn: Some(ai::generic::face_player()),
                                 ..default()
                             },
                             ..default()
                         }],
                     },
                     Choreography {
-                        name: "Attack".to_string(),
-                        moves: vec![Move {
-                            init: InitMove {
-                                duration: MoveDuration::Animation,
-                                animation: Some(animations.dummy_attack.clone()),
-                                state: CombatantState::Vulnerable,
-                            },
-                            execute: ExecuteMove {
-                                force_fn: Some(ai::generic::step_toward_player(14.)),
+                        name: "Ground Attack".to_string(),
+                        moves: vec![
+                            Move {
+                                name: Some("Hold up weapon".to_string()),
+                                init: InitMove {
+                                    duration: MoveDuration::Fixed(0.3),
+                                    animation: Some(animations.attack.clone()),
+                                    state: CombatantState::Vulnerable,
+                                    ..default()
+                                },
                                 ..default()
                             },
-                            ..default()
-                        }],
+                            Move {
+                                name: Some("Dash".to_string()),
+                                init: InitMove {
+                                    duration: MoveDuration::Instant,
+                                    state: CombatantState::Vulnerable,
+                                    ..default()
+                                },
+                                execute: ExecuteMove {
+                                    motion_fn: Some(ai::generic::step_toward_player(10.)),
+                                    ..default()
+                                },
+                                ..default()
+                            },
+                            Move {
+                                name: Some("Attack".to_string()),
+                                init: InitMove {
+                                    duration: MoveDuration::Animation,
+                                    animation: Some(animations.attack.clone()),
+                                    state: CombatantState::Vulnerable,
+                                    ..default()
+                                },
+                                ..default()
+                            },
+                        ],
                     },
                 ],
                 vec![
