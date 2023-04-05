@@ -42,7 +42,7 @@ pub fn spawn_actual_simple_projectile(
     for (player_transform,) in players.iter() {
         let transform = transform
             .looking_at(player_transform.translation, transform.up())
-            .with_scale(Vec3::splat(0.05));
+            .with_scale(Vec3::splat(0.1));
         commands.spawn((
             Name::new("Projectile"),
             SimpleProjectile {

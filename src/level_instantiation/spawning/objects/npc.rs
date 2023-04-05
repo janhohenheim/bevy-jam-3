@@ -71,7 +71,7 @@ pub(crate) fn spawn(
                                 init: InitMove {
                                     duration: MoveDuration::Fixed(0.3),
                                     animation: Some(animations.attack.clone()),
-                                    state: CombatantState::Vulnerable,
+                                    state: CombatantState::OnGuard,
                                     ..default()
                                 },
                                 ..default()

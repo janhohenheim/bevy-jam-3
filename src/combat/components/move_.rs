@@ -35,7 +35,6 @@ pub enum MoveDuration {
     Fixed(f32),
     Animation,
     Instant,
-    None,
     While(CombatCondition),
     Until(CombatCondition),
 }

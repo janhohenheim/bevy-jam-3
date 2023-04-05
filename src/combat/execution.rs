@@ -130,7 +130,7 @@ pub fn execute_move(
             *force += output_force;
             *impulse += output_impulse;
             if impulse.impulse.length_squared() + force.force.length_squared() > 1e-5 {
-                info!("force: {:?}, impulse: {:?}", force, impulse);
+                //info!("force: {:?}, impulse: {:?}", force, impulse);
             }
             if let Some(rotation) = rotation {
                 transform.rotation = rotation;
@@ -201,14 +201,12 @@ pub fn execute_choreography(
             (move_.init.duration.clone(), moves.len())
         };
 
-        let mut instant_over = false;
         let time_for_next_move = match move_duration {
             MoveDuration::Fixed(time) => combatant.time_since_last_move >= time,
             MoveDuration::Animation => {
                 combatant.time_since_last_animation >= move_metadata.animation_duration.context("MoveDuration::Animation was specified, but no animation duration was found. Did you forget to set an animation?")?
             }
-            MoveDuration::Instant => { instant_over=true; false },
-            MoveDuration::None => true,
+            MoveDuration::Instant => true,
             MoveDuration::While(condition) => !condition_tracker.fulfilled(&condition),
             MoveDuration::Until(condition) => condition_tracker.fulfilled(&condition),
         };
@@ -244,12 +242,6 @@ pub fn execute_choreography(
                 move_: current_move.execute.clone(),
                 duration: current_move.init.duration.clone(),
             });
-        }
-
-        if instant_over {
-            let moves = &mut combatant.choreographies[current.choreography].moves;
-            let move_ = &mut moves[current.move_];
-            move_.init.duration = MoveDuration::None;
         }
     }
     Ok(())
