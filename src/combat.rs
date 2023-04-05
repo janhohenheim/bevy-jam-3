@@ -1,3 +1,4 @@
+use crate::ai::generic::projectile::spawn_actual_simple_projectile;
 use crate::level_instantiation::spawning::animation_link::link_animations;
 use crate::movement::general_movement::GeneralMovementSystemSet;
 use crate::GameState;
@@ -19,15 +20,16 @@ pub fn combat_plugin(app: &mut App) {
         .register_type::<ConditionTracker>()
         .add_event::<InitMoveEvent>()
         .add_event::<ExecuteMoveEvent>()
-        .add_plugin(SpewPlugin::<ProjectileKind, ProjectileSpawnInput>::default())
+        .add_plugin(SpewPlugin::<ProjectileKind, (Entity, ProjectileSpawnInput)>::default())
+        .add_spawners(((ProjectileKind::Simple, spawn_actual_simple_projectile),))
         .add_systems(
             (
                 linking::link_melee_attack,
                 update_states::update_condition_tracker,
                 decision::decide_choreography,
+                execution::execute_choreography,
                 execution::init_move,
                 execution::execute_move,
-                execution::execute_choreography,
                 #[cfg(feature = "dev")]
                 debug::display_combatants,
             )

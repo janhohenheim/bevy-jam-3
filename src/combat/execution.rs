@@ -86,7 +86,7 @@ pub fn execute_move(
         &mut Collider,
     )>,
     mut move_events: EventReader<ExecuteMoveEvent>,
-    mut spawn_event_writer: EventWriter<SpawnEvent<ProjectileKind, ProjectileSpawnInput>>,
+    mut spawn_event_writer: EventWriter<SpawnEvent<ProjectileKind, (Entity, ProjectileSpawnInput)>>,
     game_config: Res<GameConfig>,
 ) -> Result<()> {
     for event in move_events.iter() {
@@ -129,6 +129,9 @@ pub fn execute_move(
             } = motion_fn.call(input);
             *force += output_force;
             *impulse += output_impulse;
+            if impulse.impulse.length_squared() > 1e-5 {
+                info!("force: {:?}, impulse: {:?}", force, impulse);
+            }
             if let Some(rotation) = rotation {
                 transform.rotation = rotation;
             }
@@ -161,10 +164,7 @@ pub fn execute_move(
         }
 
         if let Some(attack_fn) = &event.move_.projectile_attack_fn {
-            let input = ProjectileAttackFnInput {
-                time: combatant.time_since_last_move,
-                spawner: entity,
-            };
+            let input = ProjectileAttackFnInput { spawner: entity };
             let ProjectileAttackFnOutput { spawn_events } = attack_fn.call(input);
             spawn_event_writer.send_batch(spawn_events);
         }

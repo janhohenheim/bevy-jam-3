@@ -38,19 +38,24 @@ impl<'a> Clone for Box<dyn ProjectileAttackFn + 'a> {
 
 #[derive(Debug, Clone)]
 pub struct ProjectileAttackFnInput {
-    pub time: f32,
     pub spawner: Entity,
 }
 
 #[derive(Debug, Clone, Default)]
 pub struct ProjectileAttackFnOutput {
-    pub spawn_events: Vec<SpawnEvent<ProjectileKind, ProjectileSpawnInput>>,
+    pub spawn_events: Vec<SpawnEvent<ProjectileKind, (Entity, ProjectileSpawnInput)>>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum ProjectileKind {}
+pub enum ProjectileKind {
+    Simple,
+}
 
 #[derive(Debug, Clone)]
 pub struct ProjectileSpawnInput {
-    spawner: Entity,
+    pub(crate) model: Handle<Scene>,
+    pub(crate) speed: f32,
+    /// 0-1
+    pub(crate) tracking: f32,
+    pub(crate) max_lifetime: f32,
 }

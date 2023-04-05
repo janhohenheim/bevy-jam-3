@@ -40,7 +40,9 @@ pub(crate) fn spawn(
                                 state: CombatantState::OnGuard,
                             },
                             execute: ExecuteMove {
-                                motion_fn: Some(ai::generic::accelerate_towards_player(16.)),
+                                motion_fn: Some(
+                                    ai::generic::motion::continuous::accelerate_towards_player(16.),
+                                ),
                                 ..default()
                             },
                             ..default()
@@ -55,7 +57,7 @@ pub(crate) fn spawn(
                                 state: CombatantState::OnGuard,
                             },
                             execute: ExecuteMove {
-                                motion_fn: Some(ai::generic::face_player()),
+                                motion_fn: Some(ai::generic::motion::continuous::face_player()),
                                 ..default()
                             },
                             ..default()
@@ -82,7 +84,9 @@ pub(crate) fn spawn(
                                     ..default()
                                 },
                                 execute: ExecuteMove {
-                                    motion_fn: Some(ai::generic::step_toward_player(8.)),
+                                    motion_fn: Some(
+                                        ai::generic::motion::instant::step_toward_player(8.),
+                                    ),
                                     ..default()
                                 },
                                 ..default()
@@ -98,22 +102,116 @@ pub(crate) fn spawn(
                             },
                         ],
                     },
+                    Choreography {
+                        name: "Air Attack".to_string(),
+                        moves: vec![
+                            Move {
+                                name: Some("Jump impulse".to_string()),
+                                init: InitMove {
+                                    duration: MoveDuration::Instant,
+                                    state: CombatantState::Vulnerable,
+                                    ..default()
+                                },
+                                execute: ExecuteMove {
+                                    motion_fn: Some(
+                                        ai::generic::motion::instant::jump_relative_to_player(
+                                            10., 45.,
+                                        ),
+                                    ),
+                                    ..default()
+                                },
+                            },
+                            Move {
+                                name: Some("Jump".to_string()),
+                                init: InitMove {
+                                    duration: MoveDuration::Fixed(0.2),
+                                    state: CombatantState::Vulnerable,
+                                    animation: Some(animations.aerial.clone()),
+                                    ..default()
+                                },
+                                ..default()
+                            },
+                            Move {
+                                name: Some("Toss Kunai".to_string()),
+                                init: InitMove {
+                                    duration: MoveDuration::Animation,
+                                    state: CombatantState::Vulnerable,
+                                    animation: Some(animations.aerial_toss.clone()),
+                                    ..default()
+                                },
+                                execute: ExecuteMove {
+                                    motion_fn: Some(ai::generic::motion::continuous::face_player()),
+
+                                    projectile_attack_fn: Some(
+                                        ai::generic::projectile::spawn_simple_projectile(
+                                            ProjectileSpawnInput {
+                                                model: scene_handles.kunai.clone(),
+                                                speed: 10.0,
+                                                tracking: 0.1,
+                                                max_lifetime: 3.0,
+                                            },
+                                        ),
+                                    ),
+                                    ..default()
+                                },
+                            },
+                            Move {
+                                name: Some("Fall".to_string()),
+                                init: InitMove {
+                                    duration: MoveDuration::Until(CombatCondition::Grounded),
+                                    state: CombatantState::Vulnerable,
+                                    animation: Some(animations.aerial.clone()),
+                                    ..default()
+                                },
+                                ..default()
+                            },
+                            Move {
+                                name: Some("Land vulnerability".to_string()),
+                                init: InitMove {
+                                    duration: MoveDuration::Fixed(0.5),
+                                    state: CombatantState::Vulnerable,
+                                    animation: Some(animations.idle.clone()),
+                                    ..default()
+                                },
+                                execute: ExecuteMove {
+                                    motion_fn: Some(
+                                        ai::generic::motion::continuous::accelerate_towards_player(
+                                            14.,
+                                        ),
+                                    ),
+                                    ..default()
+                                },
+                            },
+                        ],
+                    },
                 ],
                 vec![
                     Tendency {
+                        // Walk toward player
                         choreography: 0,
+                        weight: 2.0,
+                        condition: CombatCondition::PlayerDistanceOver(2.0),
+                    },
+                    Tendency {
+                        // Idle
+                        choreography: 1,
                         weight: 1.0,
                         condition: CombatCondition::PlayerDistanceOver(2.0),
                     },
                     Tendency {
-                        choreography: 1,
-                        weight: 1.0,
-                        condition: CombatCondition::PlayerDistanceUnder(2.0),
-                    },
-                    Tendency {
+                        // Ground attack
                         choreography: 2,
                         weight: 2.0,
                         condition: CombatCondition::PlayerDistanceUnder(2.0),
+                    },
+                    Tendency {
+                        // Air attack
+                        choreography: 3,
+                        weight: 0.5,
+                        condition: CombatCondition::And(vec![
+                            CombatCondition::PlayerDistanceUnder(1.5),
+                            CombatCondition::Grounded,
+                        ]),
                     },
                 ],
                 HashMap::new(),

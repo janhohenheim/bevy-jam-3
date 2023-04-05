@@ -1,5 +1,5 @@
 use crate::combat::ConditionTracker;
-use crate::movement::general_movement::Height;
+use crate::movement::general_movement::{Grounded, Height};
 use crate::player_control::player_embodiment::Player;
 use anyhow::Result;
 use bevy::prelude::*;
@@ -10,14 +10,28 @@ use oxidized_navigation::{NavMesh, NavMeshSettings};
 
 #[sysfail(log(level = "error"))]
 pub fn update_condition_tracker(
-    mut combatants: Query<(Entity, &mut ConditionTracker, &Transform, &Height), Without<Player>>,
+    mut combatants: Query<
+        (
+            Entity,
+            &mut ConditionTracker,
+            &Transform,
+            &Height,
+            &Grounded,
+        ),
+        Without<Player>,
+    >,
     player: Query<(Entity, &Transform, &Height), With<Player>>,
     rapier_context: Res<RapierContext>,
     nav_mesh_settings: Res<NavMeshSettings>,
     nav_mesh: Res<NavMesh>,
 ) -> Result<()> {
-    for (combatant_entity, mut condition_tracker, combatant_transform, combatant_height) in
-        combatants.iter_mut()
+    for (
+        combatant_entity,
+        mut condition_tracker,
+        combatant_transform,
+        combatant_height,
+        combatant_grounded,
+    ) in combatants.iter_mut()
     {
         for (player_entity, player_transform, player_height) in player.iter() {
             let from = combatant_transform.translation;
@@ -27,6 +41,7 @@ pub fn update_condition_tracker(
                 get_line_of_sight(&rapier_context, from, combatant_entity, to, player_entity);
             condition_tracker.active = true;
             condition_tracker.player_direction = to - from;
+            condition_tracker.grounded = combatant_grounded.0;
 
             if let Some(_line_of_sight) = line_of_sight {
                 condition_tracker.has_line_of_sight = true;

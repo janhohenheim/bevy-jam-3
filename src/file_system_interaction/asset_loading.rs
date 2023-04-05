@@ -49,6 +49,8 @@ pub struct SceneAssets {
     pub dummy: Handle<Scene>,
     #[asset(path = "scenes/old_town.glb#Scene0")]
     pub level: Handle<Scene>,
+    #[asset(path = "scenes/kunai.glb#Scene0")]
+    pub kunai: Handle<Scene>,
 }
 
 #[derive(AssetCollection, Resource, Clone)]

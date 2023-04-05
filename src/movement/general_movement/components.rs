@@ -127,7 +127,9 @@ impl Default for Walking {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Component, Reflect, Default, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, PartialEq, Component, Reflect, Default, Deref, DerefMut, Serialize, Deserialize,
+)]
 #[reflect(Component, Serialize, Deserialize)]
 pub struct Grounded(pub bool);
 

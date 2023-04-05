@@ -32,6 +32,7 @@ pub mod shader;
 pub mod util;
 pub mod world_interaction;
 
+use crate::ai::ai_plugin;
 use crate::bevy_config::bevy_config_plugin;
 use crate::combat::combat_plugin;
 #[cfg(feature = "dev")]
@@ -99,6 +100,7 @@ impl Plugin for GamePlugin {
             .fn_plugin(level_instantiation_plugin)
             .fn_plugin(file_system_interaction_plugin)
             .fn_plugin(shader_plugin)
+            .fn_plugin(ai_plugin)
             .fn_plugin(ingame_menu_plugin);
         #[cfg(feature = "dev")]
         app.fn_plugin(dev_plugin);

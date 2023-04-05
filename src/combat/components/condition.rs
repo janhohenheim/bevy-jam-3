@@ -5,6 +5,7 @@ use bevy::prelude::*;
 pub enum CombatCondition {
     PlayerDistanceUnder(f32),
     PlayerDistanceOver(f32),
+    Grounded,
     HasLineOfSight,
     Not(Box<CombatCondition>),
     And(Vec<CombatCondition>),
@@ -23,6 +24,7 @@ pub struct ConditionTracker {
     pub player_direction: Vec3,
     pub line_of_sight_direction: Vec3,
     pub has_line_of_sight: bool,
+    pub grounded: bool,
     pub active: bool,
 }
 
@@ -45,6 +47,7 @@ impl ConditionTracker {
                     self.player_direction.length_squared() > distance.squared() - 1e-5
                 }
                 CombatCondition::HasLineOfSight => self.has_line_of_sight,
+                CombatCondition::Grounded => self.grounded,
                 CombatCondition::Not(condition) => !self.fulfilled(condition),
                 CombatCondition::And(conditions) => self.all(conditions),
                 CombatCondition::Or(conditions) => self.any(conditions),
