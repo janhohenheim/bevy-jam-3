@@ -141,7 +141,6 @@ pub(crate) fn spawn(
                                 },
                                 execute: ExecuteMove {
                                     motion_fn: Some(ai::generic::motion::continuous::face_player()),
-
                                     projectile_attack_fn: Some(
                                         ai::generic::projectile::spawn_simple_projectile(
                                             ProjectileSpawnInput {

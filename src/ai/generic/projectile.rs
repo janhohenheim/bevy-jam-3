@@ -14,7 +14,7 @@ pub fn spawn_simple_projectile(input: ProjectileSpawnInput) -> Box<dyn Projectil
     Box::new(
         move |ProjectileAttackFnInput { spawner }: ProjectileAttackFnInput| {
             let object = ProjectileKind::Simple;
-            let input = (spawner, input);
+            let input = (spawner, input.clone());
             let event = SpawnEvent::with_data(object, input);
 
             ProjectileAttackFnOutput {
