@@ -79,15 +79,11 @@ pub fn execute_move(
         ),
         Without<MeleeAttack>,
     >,
-    mut melee_attacks: Query<(
-        &mut MeleeAttack,
-        &mut CollisionGroups,
-        &mut Transform,
-        &mut Collider,
-    )>,
+    mut melee_attacks: Query<(&mut MeleeAttack, &mut CollisionGroups, &mut AnimationPlayer)>,
     mut move_events: EventReader<ExecuteMoveEvent>,
     mut spawn_event_writer: EventWriter<SpawnEvent<ProjectileKind, (Entity, ProjectileSpawnInput)>>,
     game_config: Res<GameConfig>,
+    mut animations: ResMut<Assets<AnimationClip>>,
 ) -> Result<()> {
     for event in move_events.iter() {
         let entity = event.source;
@@ -138,24 +134,18 @@ pub fn execute_move(
         }
 
         if let Some(melee_attack_fn) = &event.move_.melee_attack_fn {
-            let (
-                mut melee_attack,
-                mut attack_collision_groups,
-                mut attack_transform,
-                mut attack_collider,
-            ) = melee_attacks.get_mut(melee_attack_link.0)?;
+            let (mut melee_attack, mut attack_collision_groups, mut animation_player) =
+                melee_attacks.get_mut(melee_attack_link.0)?;
             attack_collision_groups.filters |= GameCollisionGroup::PLAYER.into();
             let input = MeleeAttackFnInput {
                 time: combatant.time_since_last_move,
             };
             let MeleeAttackFnOutput {
-                collider: output_collider,
-                transform: output_transform,
+                animation_clip,
                 damage,
                 knockback,
             } = melee_attack_fn.call(input);
-            *attack_transform = output_transform;
-            *attack_collider = output_collider;
+            animation_player.play(animations.add(animation_clip));
             melee_attack.damage = damage;
             melee_attack.knockback = knockback;
         } else {

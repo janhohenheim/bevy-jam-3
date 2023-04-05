@@ -43,8 +43,7 @@ pub struct MeleeAttackFnInput {
 
 #[derive(Debug, Clone, Default)]
 pub struct MeleeAttackFnOutput {
-    pub collider: Collider,
-    pub transform: Transform,
+    pub animation_clip: AnimationClip,
     pub damage: f32,
     pub knockback: f32,
 }
