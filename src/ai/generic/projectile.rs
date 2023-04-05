@@ -12,7 +12,7 @@ pub mod components;
 
 pub fn spawn_simple_projectile(input: ProjectileSpawnInput) -> Box<dyn ProjectileAttackFn> {
     Box::new(
-        move |ProjectileAttackFnInput { spawner }: ProjectileAttackFnInput| {
+        move |ProjectileAttackFnInput { spawner, .. }: ProjectileAttackFnInput| {
             let object = ProjectileKind::Simple;
             let input = (spawner, input.clone());
             let event = SpawnEvent::with_data(object, input);
@@ -40,7 +40,9 @@ pub fn spawn_actual_simple_projectile(
 ) {
     let (transform,) = spawners.get(spawner).unwrap();
     for (player_transform,) in players.iter() {
-        let transform = transform.looking_at(player_transform.translation, transform.up());
+        let transform = transform
+            .looking_at(player_transform.translation, transform.up())
+            .with_scale(Vec3::splat(0.05));
         commands.spawn((
             Name::new("Projectile"),
             SimpleProjectile {

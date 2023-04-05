@@ -38,6 +38,7 @@ impl<'a> Clone for Box<dyn ProjectileAttackFn + 'a> {
 
 #[derive(Debug, Clone)]
 pub struct ProjectileAttackFnInput {
+    pub time: f32,
     pub spawner: Entity,
 }
 

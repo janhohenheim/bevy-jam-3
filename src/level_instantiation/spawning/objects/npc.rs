@@ -124,7 +124,7 @@ pub(crate) fn spawn(
                             Move {
                                 name: Some("Jump".to_string()),
                                 init: InitMove {
-                                    duration: MoveDuration::Fixed(0.2),
+                                    duration: MoveDuration::Fixed(0.25),
                                     state: CombatantState::Vulnerable,
                                     animation: Some(animations.aerial.clone()),
                                     ..default()
@@ -134,13 +134,24 @@ pub(crate) fn spawn(
                             Move {
                                 name: Some("Toss Kunai".to_string()),
                                 init: InitMove {
-                                    duration: MoveDuration::Animation,
+                                    duration: MoveDuration::Fixed(0.2),
                                     state: CombatantState::Vulnerable,
                                     animation: Some(animations.aerial_toss.clone()),
                                     ..default()
                                 },
                                 execute: ExecuteMove {
                                     motion_fn: Some(ai::generic::motion::continuous::face_player()),
+                                    ..default()
+                                },
+                            },
+                            Move {
+                                name: Some("Spawn Kunai".to_string()),
+                                init: InitMove {
+                                    duration: MoveDuration::Instant,
+                                    state: CombatantState::Vulnerable,
+                                    ..default()
+                                },
+                                execute: ExecuteMove {
                                     projectile_attack_fn: Some(
                                         ai::generic::projectile::spawn_simple_projectile(
                                             ProjectileSpawnInput {
@@ -151,6 +162,19 @@ pub(crate) fn spawn(
                                             },
                                         ),
                                     ),
+                                    ..default()
+                                },
+                            },
+                            Move {
+                                name: Some("Finish Toss Kunai".to_string()),
+                                init: InitMove {
+                                    duration: MoveDuration::Animation,
+                                    state: CombatantState::Vulnerable,
+                                    animation: Some(animations.aerial_toss.clone()),
+                                    ..default()
+                                },
+                                execute: ExecuteMove {
+                                    motion_fn: Some(ai::generic::motion::continuous::face_player()),
                                     ..default()
                                 },
                             },
@@ -195,7 +219,7 @@ pub(crate) fn spawn(
                         // Idle
                         choreography: 1,
                         weight: 1.0,
-                        condition: CombatCondition::PlayerDistanceOver(2.0),
+                        condition: CombatCondition::PlayerDistanceOver(3.0),
                     },
                     Tendency {
                         // Ground attack
