@@ -142,6 +142,7 @@ pub fn execute_move(
                 hitbox_collision_groups.filters -= GameCollisionGroup::PLAYER.into();
             }
         } else {
+            *melee_attack = default();
             hitbox_collision_groups.filters -= GameCollisionGroup::PLAYER.into();
         }
 
