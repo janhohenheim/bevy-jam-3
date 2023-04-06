@@ -110,7 +110,7 @@ fn handle_camera_kind(
                     let horizontal_direction = camera_transform.forward().split(up).horizontal;
                     let looking_target = player_transform.translation + horizontal_direction;
                     player_transform.look_at(looking_target, up);
-                    *visibility = Visibility::Hidden;
+                    //*visibility = Visibility::Hidden;
                 }
                 IngameCameraKind::ThirdPerson | IngameCameraKind::FixedAngle => {
                     *visibility = Visibility::Inherited;

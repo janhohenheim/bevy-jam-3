@@ -24,6 +24,7 @@ pub fn loading_plugin(app: &mut App) {
         .add_collection_to_loading_state::<_, SceneAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, CharacterAnimationAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, DummyAnimationAssets>(GameState::Loading)
+        .add_collection_to_loading_state::<_, FpsDummyAnimationAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, LevelAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, DialogAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, TextureAssets>(GameState::Loading)
@@ -45,6 +46,8 @@ pub struct AudioAssets {
 pub struct SceneAssets {
     #[asset(path = "scenes/Fox.glb#Scene0")]
     pub character: Handle<Scene>,
+    #[asset(path = "scenes/fps_dummy.glb#Scene0")]
+    pub fps_dummy: Handle<Scene>,
     #[asset(path = "scenes/dummy.glb#Scene0")]
     pub dummy: Handle<Scene>,
     #[asset(path = "scenes/old_town.glb#Scene0")]
@@ -79,6 +82,14 @@ pub struct DummyAnimationAssets {
     pub walk: Handle<AnimationClip>,
     #[asset(path = "scenes/dummy.glb#Animation6")]
     pub idle: Handle<AnimationClip>,
+}
+
+#[derive(AssetCollection, Resource, Clone)]
+pub struct FpsDummyAnimationAssets {
+    #[asset(path = "scenes/fps_dummy.glb#Animation0")]
+    pub idle: Handle<AnimationClip>,
+    #[asset(path = "scenes/fps_dummy.glb#Animation1")]
+    pub attack: Handle<AnimationClip>,
 }
 
 #[derive(AssetCollection, Resource, Clone)]

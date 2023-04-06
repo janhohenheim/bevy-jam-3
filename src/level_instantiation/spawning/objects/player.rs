@@ -1,7 +1,7 @@
-use crate::file_system_interaction::asset_loading::{CharacterAnimationAssets, SceneAssets};
+use crate::file_system_interaction::asset_loading::SceneAssets;
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::GameObject;
-use crate::movement::general_movement::{CharacterAnimations, CharacterControllerBundle, Model};
+use crate::movement::general_movement::{CharacterControllerBundle, ManualRotation, Model};
 use crate::player_control::actions::{
     create_player_action_input_manager_bundle, create_ui_action_input_manager_bundle,
 };
@@ -16,7 +16,6 @@ pub const RADIUS: f32 = 0.3;
 pub(crate) fn spawn(
     In(transform): In<Transform>,
     mut commands: Commands,
-    animations: Res<CharacterAnimationAssets>,
     scene_handles: Res<SceneAssets>,
 ) {
     let entity = commands
@@ -28,12 +27,8 @@ pub(crate) fn spawn(
             Player,
             Name::new("Player"),
             Ccd::enabled(),
+            ManualRotation,
             CharacterControllerBundle::capsule(HEIGHT, RADIUS),
-            CharacterAnimations {
-                idle: animations.idle.clone(),
-                walk: animations.walk.clone(),
-                aerial: animations.run.clone(),
-            },
             CollisionGroups::new(
                 GameCollisionGroup::PLAYER.into(),
                 GameCollisionGroup::ALL.into(),
@@ -53,11 +48,11 @@ pub(crate) fn spawn(
         .with_children(|parent| {
             parent.spawn((
                 SceneBundle {
-                    scene: scene_handles.character.clone(),
+                    scene: scene_handles.fps_dummy.clone(),
                     transform: Transform {
-                        translation: Vec3::new(0., -HEIGHT / 2. - RADIUS, 0.),
+                        translation: Vec3::new(0., -0.1, -0.1),
                         rotation: Quat::from_rotation_y(TAU / 2.),
-                        scale: Vec3::splat(0.01),
+                        scale: Vec3::splat(0.15),
                     },
                     ..default()
                 },

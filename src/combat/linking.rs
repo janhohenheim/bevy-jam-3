@@ -1,5 +1,6 @@
 use crate::combat::{AttackHitbox, Combatant, HitboxToParentLink, ParentToHitboxLink, Projectile};
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
+use crate::util::trait_extension::MeshExt;
 use anyhow::{Context, Result};
 use bevy::prelude::*;
 use bevy_mod_sysfail::macros::*;
