@@ -58,6 +58,20 @@ impl Combatant {
     pub fn is_ready_for_next_choreography(&self) -> bool {
         self.current.is_none()
     }
+
+    pub fn current_choreography(&self) -> Option<&Choreography> {
+        self.current
+            .as_ref()
+            .map(|current| &self.choreographies[current.choreography])
+    }
+
+    pub fn current_move(&self) -> Option<&Move> {
+        self.current.as_ref().and_then(|current| {
+            self.choreographies
+                .get(current.choreography)
+                .and_then(|choreography| choreography.moves.get(current.move_))
+        })
+    }
 }
 
 #[derive(Debug, Component, Clone, Deref, DerefMut)]

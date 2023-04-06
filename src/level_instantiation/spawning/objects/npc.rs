@@ -94,7 +94,7 @@ pub(crate) fn spawn(
                             Move {
                                 name: Some("Attack".to_string()),
                                 init: InitMove {
-                                    duration: MoveDuration::Animation,
+                                    duration: MoveDuration::Fixed(0.3),
                                     state: CombatantState::Vulnerable,
                                     ..default()
                                 },
@@ -104,6 +104,15 @@ pub(crate) fn spawn(
                                     )),
                                     ..default()
                                 },
+                            },
+                            Move {
+                                name: Some("Attack finish".to_string()),
+                                init: InitMove {
+                                    duration: MoveDuration::Animation,
+                                    state: CombatantState::Vulnerable,
+                                    ..default()
+                                },
+                                ..default()
                             },
                         ],
                     },

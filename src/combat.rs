@@ -6,6 +6,7 @@ use bevy::prelude::*;
 pub use components::*;
 use spew::prelude::*;
 
+mod collision;
 pub mod components;
 #[cfg(feature = "dev")]
 pub mod debug;
@@ -34,6 +35,7 @@ pub fn combat_plugin(app: &mut App) {
                 execution::init_move,
                 execution::execute_move,
                 linking::sync_projectile_attack_hitbox,
+                collision::on_hit,
                 #[cfg(feature = "dev")]
                 debug::display_combatants,
             )

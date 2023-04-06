@@ -105,7 +105,7 @@ fn update_interaction_ui(
     Ok(())
 }
 
-fn unpack_event(event: &CollisionEvent) -> (Entity, Entity, bool) {
+pub fn unpack_event(event: &CollisionEvent) -> (Entity, Entity, bool) {
     match event {
         CollisionEvent::Started(entity_a, entity_b, _kind) => (*entity_a, *entity_b, true),
         CollisionEvent::Stopped(entity_a, entity_b, _kind) => (*entity_a, *entity_b, false),
