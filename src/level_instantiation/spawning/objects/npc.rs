@@ -161,6 +161,11 @@ pub(crate) fn spawn(
                                         ai::generic::projectile::spawn_simple_projectile(
                                             ProjectileSpawnInput {
                                                 model: scene_handles.kunai.clone(),
+                                                attack: AttackHitbox {
+                                                    damage: 5.0,
+                                                    knockback: 10.0,
+                                                    ..default()
+                                                },
                                                 speed: 10.0,
                                                 tracking: 0.1,
                                                 max_lifetime: 3.0,

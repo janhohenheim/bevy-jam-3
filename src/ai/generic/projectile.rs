@@ -1,7 +1,7 @@
 use crate::ai::generic::projectile::components::SimpleProjectile;
 use crate::combat::{
-    ProjectileAttackFn, ProjectileAttackFnInput, ProjectileAttackFnOutput, ProjectileKind,
-    ProjectileSpawnInput,
+    Projectile, ProjectileAttackFn, ProjectileAttackFnInput, ProjectileAttackFnOutput,
+    ProjectileKind, ProjectileSpawnInput,
 };
 use crate::player_control::player_embodiment::Player;
 use bevy::prelude::*;
@@ -29,6 +29,7 @@ pub fn spawn_actual_simple_projectile(
         spawner,
         ProjectileSpawnInput {
             speed,
+            attack,
             model,
             tracking,
             max_lifetime,
@@ -56,6 +57,8 @@ pub fn spawn_actual_simple_projectile(
                 transform,
                 ..Default::default()
             },
+            Projectile,
+            attack,
         ));
     }
 }

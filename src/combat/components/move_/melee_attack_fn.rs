@@ -1,4 +1,4 @@
-use crate::combat::MeleeAttack;
+use crate::combat::AttackHitbox;
 use std::fmt::Debug;
 
 impl Debug for dyn MeleeAttackFn {
@@ -42,5 +42,5 @@ pub struct MeleeAttackFnInput {
 
 #[derive(Debug, Clone, Default)]
 pub struct MeleeAttackFnOutput {
-    pub melee_attack: MeleeAttack,
+    pub melee_attack: AttackHitbox,
 }

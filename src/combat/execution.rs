@@ -76,7 +76,7 @@ pub fn execute_move(
         &Velocity,
         &ParentToHitboxLink,
     )>,
-    mut melee_attacks: Query<(&mut MeleeAttack, &mut CollisionGroups)>,
+    mut melee_attacks: Query<(&mut AttackHitbox, &mut CollisionGroups)>,
     mut move_events: EventReader<ExecuteMoveEvent>,
     mut spawn_event_writer: EventWriter<SpawnEvent<ProjectileKind, (Entity, ProjectileSpawnInput)>>,
     game_config: Res<GameConfig>,

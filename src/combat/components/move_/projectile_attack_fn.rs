@@ -1,3 +1,4 @@
+use crate::combat::AttackHitbox;
 use bevy::prelude::*;
 use spew::prelude::*;
 use std::fmt::Debug;
@@ -55,6 +56,7 @@ pub enum ProjectileKind {
 #[derive(Debug, Clone)]
 pub struct ProjectileSpawnInput {
     pub(crate) model: Handle<Scene>,
+    pub(crate) attack: AttackHitbox,
     pub(crate) speed: f32,
     /// 0-1
     pub(crate) tracking: f32,

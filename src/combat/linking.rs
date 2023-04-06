@@ -1,4 +1,4 @@
-use crate::combat::{Combatant, HitboxToParentLink, MeleeAttack, ParentToHitboxLink};
+use crate::combat::{AttackHitbox, Combatant, HitboxToParentLink, ParentToHitboxLink, Projectile};
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::util::trait_extension::MeshExt;
 use anyhow::{Context, Result};
@@ -9,13 +9,19 @@ use bevy_rapier3d::prelude::*;
 #[sysfail(log(level = "error"))]
 pub fn link_hitbox(
     mut commands: Commands,
-    hitboxes: Query<(Entity,), (With<Combatant>, Without<ParentToHitboxLink>)>,
+    parents: Query<
+        (Entity,),
+        (
+            Or<(With<Combatant>, With<Projectile>)>,
+            Without<ParentToHitboxLink>,
+        ),
+    >,
     children: Query<&Children>,
     mesh_handles: Query<&Handle<Mesh>>,
     meshes: Res<Assets<Mesh>>,
     names: Query<&Name>,
 ) -> Result<()> {
-    for (parent,) in hitboxes.iter() {
+    for (parent,) in parents.iter() {
         for child in children.iter_descendants(parent) {
             let Ok(name) = names.get(child) else {
                 continue;
@@ -39,10 +45,29 @@ pub fn link_hitbox(
                 ActiveEvents::COLLISION_EVENTS,
                 ActiveCollisionTypes::DYNAMIC_DYNAMIC,
                 HitboxToParentLink(parent),
-                MeleeAttack::default(),
+                AttackHitbox::default(),
             ));
             commands.entity(parent).insert(ParentToHitboxLink(child));
             break;
+        }
+    }
+    Ok(())
+}
+
+#[sysfail(log(level = "error"))]
+pub fn sync_projectile_attack_hitbox(
+    projectiles: Query<(&AttackHitbox, &ParentToHitboxLink)>,
+    mut hitboxes: Query<(&mut AttackHitbox, &mut CollisionGroups), Without<ParentToHitboxLink>>,
+) -> Result<()> {
+    for (attack, link) in projectiles.iter() {
+        let (mut hitbox, mut collision_groups) = hitboxes
+            .get_mut(link.0)
+            .context("ParentToHitboxLink of projectile holds invalid entity")?;
+        *hitbox = *attack;
+        if attack.active {
+            collision_groups.filters |= GameCollisionGroup::PLAYER.into();
+        } else {
+            collision_groups.filters -= GameCollisionGroup::PLAYER.into();
         }
     }
     Ok(())

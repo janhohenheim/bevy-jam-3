@@ -109,11 +109,27 @@ pub enum CombatantState {
 }
 
 #[derive(
-    Debug, Component, Clone, Copy, PartialEq, Default, Reflect, FromReflect, Serialize, Deserialize,
+    Debug, Component, Clone, Copy, PartialEq, Reflect, FromReflect, Serialize, Deserialize,
 )]
 #[reflect(Component, Serialize, Deserialize)]
-pub struct MeleeAttack {
+pub struct AttackHitbox {
     pub(crate) active: bool,
     pub(crate) damage: f32,
     pub(crate) knockback: f32,
 }
+
+impl Default for AttackHitbox {
+    fn default() -> Self {
+        Self {
+            active: true,
+            damage: default(),
+            knockback: default(),
+        }
+    }
+}
+
+#[derive(
+    Debug, Component, Clone, Copy, PartialEq, Default, Reflect, FromReflect, Serialize, Deserialize,
+)]
+#[reflect(Component, Serialize, Deserialize)]
+pub struct Projectile;
