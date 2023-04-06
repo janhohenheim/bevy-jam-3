@@ -3,7 +3,7 @@ use crate::combat::components::*;
 use crate::file_system_interaction::asset_loading::{DummyAnimationAssets, SceneAssets};
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::GameObject;
-use crate::movement::general_movement::{CharacterControllerBundle, Model};
+use crate::movement::general_movement::CharacterControllerBundle;
 use crate::world_interaction::dialog::{DialogId, DialogTarget};
 use bevy::prelude::*;
 use bevy::utils::HashMap;
@@ -19,7 +19,7 @@ pub(crate) fn spawn(
     animations: Res<DummyAnimationAssets>,
     scene_handles: Res<SceneAssets>,
 ) {
-    let entity = commands
+    commands
         .spawn((
             PbrBundle {
                 transform,
@@ -98,7 +98,12 @@ pub(crate) fn spawn(
                                     state: CombatantState::Vulnerable,
                                     ..default()
                                 },
-                                ..default()
+                                execute: ExecuteMove {
+                                    melee_attack_fn: Some(ai::generic::melee::whole_animation(
+                                        10.0, 5.0,
+                                    )),
+                                    ..default()
+                                },
                             },
                         ],
                     },
@@ -258,15 +263,17 @@ pub(crate) fn spawn(
             ));
         })
         .with_children(|parent| {
-            parent.spawn((SceneBundle {
-                scene: scene_handles.dummy.clone(),
-                transform: Transform {
-                    translation: Vec3::new(0., -HEIGHT / 2. - RADIUS, 0.),
-                    scale: Vec3::splat(0.25),
-                    rotation: Quat::from_rotation_y(TAU / 2.),
+            parent.spawn((
+                Name::new("NPC Model"),
+                SceneBundle {
+                    scene: scene_handles.dummy.clone(),
+                    transform: Transform {
+                        translation: Vec3::new(0., -HEIGHT / 2. - RADIUS, 0.),
+                        scale: Vec3::splat(0.25),
+                        rotation: Quat::from_rotation_y(TAU / 2.),
+                    },
+                    ..default()
                 },
-                ..default()
-            },));
-        })
-        .id();
+            ));
+        });
 }

@@ -107,3 +107,13 @@ pub enum CombatantState {
     OnGuard,
     HyperArmor,
 }
+
+#[derive(
+    Debug, Component, Clone, Copy, PartialEq, Default, Reflect, FromReflect, Serialize, Deserialize,
+)]
+#[reflect(Component, Serialize, Deserialize)]
+pub struct MeleeAttack {
+    pub(crate) active: bool,
+    pub(crate) damage: f32,
+    pub(crate) knockback: f32,
+}

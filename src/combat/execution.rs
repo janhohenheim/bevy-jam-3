@@ -1,5 +1,6 @@
 use crate::combat::components::*;
 use crate::file_system_interaction::config::GameConfig;
+use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::AnimationEntityLink;
 use anyhow::{Context, Result};
 use bevy::prelude::*;
@@ -73,12 +74,12 @@ pub fn execute_move(
         &mut ExternalImpulse,
         &MoveMetadata,
         &Velocity,
+        &ParentToHitboxLink,
     )>,
-    mut melee_attacks: Query<(&mut CollisionGroups, &mut AnimationPlayer)>,
+    mut melee_attacks: Query<(&mut MeleeAttack, &mut CollisionGroups)>,
     mut move_events: EventReader<ExecuteMoveEvent>,
     mut spawn_event_writer: EventWriter<SpawnEvent<ProjectileKind, (Entity, ProjectileSpawnInput)>>,
     game_config: Res<GameConfig>,
-    mut animations: ResMut<Assets<AnimationClip>>,
 ) -> Result<()> {
     for event in move_events.iter() {
         let entity = event.source;
@@ -91,6 +92,7 @@ pub fn execute_move(
             mut impulse,
             move_metadata,
             velocity,
+            hitbox_link,
         ) = combatants.get_mut(entity)?;
         if let Some(motion_fn) = &event.move_.motion_fn {
             let duration = match event.duration {
@@ -119,32 +121,28 @@ pub fn execute_move(
             } = motion_fn.call(input);
             *force += output_force;
             *impulse += output_impulse;
-            if impulse.impulse.length_squared() + force.force.length_squared() > 1e-5 {
-                //info!("force: {:?}, impulse: {:?}", force, impulse);
-            }
             if let Some(rotation) = rotation {
                 transform.rotation = rotation;
             }
         }
 
+        let (mut melee_attack, mut hitbox_collision_groups) =
+            melee_attacks.get_mut(hitbox_link.0)?;
         if let Some(melee_attack_fn) = &event.move_.melee_attack_fn {
-            /*
-            let (mut attack_collision_groups, mut animation_player) =
-                melee_attacks.get_mut(melee_attack_link.0)?;
-            attack_collision_groups.filters |= GameCollisionGroup::PLAYER.into();
             let input = MeleeAttackFnInput {
                 time: combatant.time_since_last_move,
             };
             let MeleeAttackFnOutput {
-                animation_clip,
-                damage,
-                knockback,
+                melee_attack: output_melee_attack,
             } = melee_attack_fn.call(input);
-            animation_player.play(animations.add(animation_clip));
-             */
+            *melee_attack = output_melee_attack;
+            if melee_attack.active {
+                hitbox_collision_groups.filters |= GameCollisionGroup::PLAYER.into();
+            } else {
+                hitbox_collision_groups.filters -= GameCollisionGroup::PLAYER.into();
+            }
         } else {
-            // let mut attack_collision_groups = melee_attacks.get_mut(melee_attack_link.0)?.1;
-            //attack_collision_groups.filters -= GameCollisionGroup::PLAYER.into();
+            hitbox_collision_groups.filters -= GameCollisionGroup::PLAYER.into();
         }
 
         if let Some(attack_fn) = &event.move_.projectile_attack_fn {

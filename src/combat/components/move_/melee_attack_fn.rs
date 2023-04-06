@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use crate::combat::MeleeAttack;
 use std::fmt::Debug;
 
 impl Debug for dyn MeleeAttackFn {
@@ -42,7 +42,5 @@ pub struct MeleeAttackFnInput {
 
 #[derive(Debug, Clone, Default)]
 pub struct MeleeAttackFnOutput {
-    pub animation_clip: AnimationClip,
-    pub damage: f32,
-    pub knockback: f32,
+    pub melee_attack: MeleeAttack,
 }
