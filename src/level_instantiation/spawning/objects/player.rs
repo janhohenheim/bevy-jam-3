@@ -105,7 +105,10 @@ pub(crate) fn spawn(
                         },
                     ],
                 },
-                constitution: Constitution::from_max_health_and_posture(100.0, 100.0),
+                constitution: Constitution::default()
+                    .with_max_health(100.0)
+                    .with_max_posture(100.0)
+                    .with_base_posture_recovery(20.0),
             },
             GameObject::Player,
         ))

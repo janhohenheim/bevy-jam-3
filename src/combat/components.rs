@@ -8,27 +8,14 @@ use serde::{Deserialize, Serialize};
 mod condition;
 mod move_;
 
-#[derive(Debug, Clone, Bundle)]
+#[derive(Debug, Clone, Bundle, Default)]
 pub struct CombatBundle {
-    combatant: Combatant,
-    combatant_state: CombatantState,
-    condition_tracker: ConditionTracker,
-    move_metadata: MoveMetadata,
-    manual_rotation: ManualRotation,
-    constitution: Constitution,
-}
-
-impl CombatBundle {
-    pub fn new(combatant: Combatant, constitution: Constitution) -> Self {
-        Self {
-            combatant,
-            constitution,
-            combatant_state: default(),
-            condition_tracker: default(),
-            move_metadata: default(),
-            manual_rotation: default(),
-        }
-    }
+    pub(crate) combatant: Combatant,
+    pub(crate) combatant_state: CombatantState,
+    pub(crate) condition_tracker: ConditionTracker,
+    pub(crate) move_metadata: MoveMetadata,
+    pub(crate) manual_rotation: ManualRotation,
+    pub(crate) constitution: Constitution,
 }
 
 #[derive(Debug, Component, Clone, Default)]
@@ -76,23 +63,38 @@ impl Combatant {
     }
 }
 
-#[derive(Debug, Clone, Component, Reflect, FromReflect)]
+#[derive(Debug, Clone, Copy, Component, Reflect, FromReflect)]
 #[reflect(Component)]
 pub struct Constitution {
     pub health: f32,
     pub max_health: f32,
     pub posture: f32,
     pub max_posture: f32,
+    pub base_posture_recovery: f32,
 }
 
 impl Constitution {
-    pub fn from_max_health_and_posture(max_health: f32, max_posture: f32) -> Self {
-        Self {
-            health: max_health,
-            max_health,
-            posture: 0.0,
-            max_posture,
-        }
+    pub fn with_max_health(mut self, max_health: f32) -> Self {
+        self.max_health = max_health;
+        self
+    }
+
+    pub fn with_max_posture(mut self, max_posture: f32) -> Self {
+        self.max_posture = max_posture;
+        self
+    }
+
+    pub fn with_base_posture_recovery(mut self, base_posture_recovery: f32) -> Self {
+        self.base_posture_recovery = base_posture_recovery;
+        self
+    }
+
+    pub fn take_health_damage(&mut self, damage: f32) {
+        self.health -= damage;
+    }
+
+    pub fn take_posture_damage(&mut self, damage: f32) {
+        self.posture += damage;
     }
 
     pub fn is_alive(&self) -> bool {
@@ -106,7 +108,13 @@ impl Constitution {
 
 impl Default for Constitution {
     fn default() -> Self {
-        Self::from_max_health_and_posture(100.0, 100.0)
+        Self {
+            health: 100.0,
+            max_health: 100.0,
+            posture: 0.0,
+            max_posture: 100.0,
+            base_posture_recovery: 20.0,
+        }
     }
 }
 

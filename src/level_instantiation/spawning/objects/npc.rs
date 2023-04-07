@@ -27,8 +27,8 @@ pub(crate) fn spawn(
             },
             Name::new("NPC"),
             CharacterControllerBundle::capsule(HEIGHT, RADIUS),
-            CombatBundle::new(
-                Combatant::new(
+            CombatBundle {
+                combatant: Combatant::new(
                     vec![
                         Choreography {
                             name: "Walk toward Player".to_string(),
@@ -123,106 +123,106 @@ pub(crate) fn spawn(
                         Choreography {
                             name: "Air Attack".to_string(),
                             moves: vec![
-                            Move {
-                                name: Some("Jump impulse".to_string()),
-                                init: InitMove {
-                                    duration: MoveDuration::Instant,
-                                    state: CombatantState::Vulnerable,
-                                    ..default()
-                                },
-                                execute: ExecuteMove {
-                                    motion_fn: Some(
-                                        ai::generic::motion::instant::jump_relative_to_player(
-                                            10., 45.,
+                                Move {
+                                    name: Some("Jump impulse".to_string()),
+                                    init: InitMove {
+                                        duration: MoveDuration::Instant,
+                                        state: CombatantState::Vulnerable,
+                                        ..default()
+                                    },
+                                    execute: ExecuteMove {
+                                        motion_fn: Some(
+                                            ai::generic::motion::instant::jump_relative_to_player(
+                                                10., 45.,
+                                            ),
                                         ),
-                                    ),
+                                        ..default()
+                                    },
+                                },
+                                Move {
+                                    name: Some("Jump".to_string()),
+                                    init: InitMove {
+                                        duration: MoveDuration::Fixed(0.25),
+                                        state: CombatantState::Vulnerable,
+                                        animation: Some(animations.aerial.clone()),
+                                    },
                                     ..default()
                                 },
-                            },
-                            Move {
-                                name: Some("Jump".to_string()),
-                                init: InitMove {
-                                    duration: MoveDuration::Fixed(0.25),
-                                    state: CombatantState::Vulnerable,
-                                    animation: Some(animations.aerial.clone()),
+                                Move {
+                                    name: Some("Toss Kunai".to_string()),
+                                    init: InitMove {
+                                        duration: MoveDuration::Fixed(0.2),
+                                        state: CombatantState::Vulnerable,
+                                        animation: Some(animations.aerial_toss.clone()),
+                                    },
+                                    execute: ExecuteMove {
+                                        motion_fn: Some(ai::generic::motion::continuous::face_player()),
+                                        ..default()
+                                    },
                                 },
-                                ..default()
-                            },
-                            Move {
-                                name: Some("Toss Kunai".to_string()),
-                                init: InitMove {
-                                    duration: MoveDuration::Fixed(0.2),
-                                    state: CombatantState::Vulnerable,
-                                    animation: Some(animations.aerial_toss.clone()),
-                                },
-                                execute: ExecuteMove {
-                                    motion_fn: Some(ai::generic::motion::continuous::face_player()),
-                                    ..default()
-                                },
-                            },
-                            Move {
-                                name: Some("Spawn Kunai".to_string()),
-                                init: InitMove {
-                                    duration: MoveDuration::Instant,
-                                    state: CombatantState::Vulnerable,
-                                    ..default()
-                                },
-                                execute: ExecuteMove {
-                                    projectile_attack_fn: Some(
-                                        ai::generic::projectile::spawn_simple_projectile(
-                                            ProjectileSpawnInput {
-                                                model: scene_handles.kunai.clone(),
-                                                attack: AttackHitbox::from_attack(Attack {
-                                                    damage: 5.0,
-                                                    knockback: 10.0,
-                                                }),
-                                                speed: 10.0,
-                                                tracking: 0.1,
-                                                max_lifetime: 3.0,
-                                            },
+                                Move {
+                                    name: Some("Spawn Kunai".to_string()),
+                                    init: InitMove {
+                                        duration: MoveDuration::Instant,
+                                        state: CombatantState::Vulnerable,
+                                        ..default()
+                                    },
+                                    execute: ExecuteMove {
+                                        projectile_attack_fn: Some(
+                                            ai::generic::projectile::spawn_simple_projectile(
+                                                ProjectileSpawnInput {
+                                                    model: scene_handles.kunai.clone(),
+                                                    attack: AttackHitbox::from_attack(Attack {
+                                                        damage: 5.0,
+                                                        knockback: 10.0,
+                                                    }),
+                                                    speed: 10.0,
+                                                    tracking: 0.1,
+                                                    max_lifetime: 3.0,
+                                                },
+                                            ),
                                         ),
-                                    ),
+                                        ..default()
+                                    },
+                                },
+                                Move {
+                                    name: Some("Finish Toss Kunai".to_string()),
+                                    init: InitMove {
+                                        duration: MoveDuration::Animation,
+                                        state: CombatantState::Vulnerable,
+                                        animation: Some(animations.aerial_toss.clone()),
+                                    },
+                                    execute: ExecuteMove {
+                                        motion_fn: Some(ai::generic::motion::continuous::face_player()),
+                                        ..default()
+                                    },
+                                },
+                                Move {
+                                    name: Some("Fall".to_string()),
+                                    init: InitMove {
+                                        duration: MoveDuration::Until(CombatCondition::Grounded),
+                                        state: CombatantState::Vulnerable,
+                                        animation: Some(animations.aerial.clone()),
+                                    },
                                     ..default()
                                 },
-                            },
-                            Move {
-                                name: Some("Finish Toss Kunai".to_string()),
-                                init: InitMove {
-                                    duration: MoveDuration::Animation,
-                                    state: CombatantState::Vulnerable,
-                                    animation: Some(animations.aerial_toss.clone()),
-                                },
-                                execute: ExecuteMove {
-                                    motion_fn: Some(ai::generic::motion::continuous::face_player()),
-                                    ..default()
-                                },
-                            },
-                            Move {
-                                name: Some("Fall".to_string()),
-                                init: InitMove {
-                                    duration: MoveDuration::Until(CombatCondition::Grounded),
-                                    state: CombatantState::Vulnerable,
-                                    animation: Some(animations.aerial.clone()),
-                                },
-                                ..default()
-                            },
-                            Move {
-                                name: Some("Land vulnerability".to_string()),
-                                init: InitMove {
-                                    duration: MoveDuration::Fixed(0.5),
-                                    state: CombatantState::Vulnerable,
-                                    animation: Some(animations.idle.clone()),
-                                },
-                                execute: ExecuteMove {
-                                    motion_fn: Some(
-                                        ai::generic::motion::continuous::accelerate_towards_player(
-                                            14.,
+                                Move {
+                                    name: Some("Land vulnerability".to_string()),
+                                    init: InitMove {
+                                        duration: MoveDuration::Fixed(0.5),
+                                        state: CombatantState::Vulnerable,
+                                        animation: Some(animations.idle.clone()),
+                                    },
+                                    execute: ExecuteMove {
+                                        motion_fn: Some(
+                                            ai::generic::motion::continuous::accelerate_towards_player(
+                                                14.,
+                                            ),
                                         ),
-                                    ),
-                                    ..default()
+                                        ..default()
+                                    },
                                 },
-                            },
-                        ],
+                            ],
                         },
                     ],
                     vec![
@@ -256,8 +256,9 @@ pub(crate) fn spawn(
                     ],
                     HashMap::new(),
                 ),
-                Constitution::from_max_health_and_posture(100.0, 100.0),
-            ),
+                constitution: Constitution::default().with_max_health(100.0).with_max_posture(100.0).with_base_posture_recovery(20.0),
+                ..default()
+            },
             DialogTarget {
                 dialog_id: DialogId::new("follower"),
             },
