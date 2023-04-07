@@ -6,6 +6,7 @@ use crate::player_control::actions::{
     create_player_action_input_manager_bundle, create_ui_action_input_manager_bundle,
 };
 use crate::player_control::camera::IngameCamera;
+use crate::player_control::player_embodiment::combat::PlayerCombatState;
 use crate::player_control::player_embodiment::Player;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
@@ -36,6 +37,7 @@ pub(crate) fn spawn(
         ),
         create_player_action_input_manager_bundle(),
         create_ui_action_input_manager_bundle(),
+        PlayerCombatState::default(),
         GameObject::Player,
     ));
 

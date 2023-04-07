@@ -27,7 +27,9 @@ pub fn player_embodiment_plugin(app: &mut App) {
             (
                 handle_jump,
                 handle_horizontal_movement,
+                combat::update_states,
                 combat::attack,
+                combat::set_animations,
                 handle_speed_effects,
                 rotate_to_speaker.run_if(resource_exists::<CurrentDialog>()),
                 control_walking_sound,
