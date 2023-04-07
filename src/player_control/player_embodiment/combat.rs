@@ -76,18 +76,25 @@ pub fn update_states(
 #[sysfail(log(level = "error"))]
 pub fn play_animations(
     mut players: Query<(
-        &PlayerCombatState,
+        &mut PlayerCombatState,
         &PlayerCombatAnimations,
         &AnimationEntityLink,
     )>,
     mut animation_players: Query<&mut AnimationPlayer>,
 ) -> Result<()> {
-    for (combat_state, animations, animation_entity_link) in players.iter_mut() {
+    for (mut combat_state, animations, animation_entity_link) in players.iter_mut() {
+        if combat_state.started_animation {
+            continue;
+        }
         let mut animation_player = animation_players.get_mut(animation_entity_link.0).context(
             "Animation entity link points to an entity that does not have an animation player",
         )?;
         let animation = combat_state.kind.get_animation(animations).handle.clone();
-        animation_player.play_with_transition(animation, Duration::from_secs_f32(0.1));
+        animation_player.start_with_transition(animation, Duration::from_secs_f32(0.1));
+        if combat_state.kind == PlayerCombatKind::Idle {
+            animation_player.repeat();
+        }
+        combat_state.started_animation = true;
     }
     Ok(())
 }

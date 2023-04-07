@@ -14,6 +14,7 @@ pub struct PlayerCombatState {
     pub buffer: Option<PlayerCombatKind>,
     pub commitment: AttackCommitment,
     pub time_in_state: f32,
+    pub started_animation: bool,
 }
 
 impl PlayerCombatState {
