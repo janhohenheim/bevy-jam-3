@@ -29,7 +29,15 @@ pub fn attack(
                 PlayerCombatKind::Attack(0)
             };
             match combat_state.commitment {
-                AttackCommitment::Cancellable => combat_state.use_next_kind(desired_state),
+                AttackCommitment::EarlyCancellable => {
+                    let is_chaining_attack = combat_state.kind.is_attack();
+                    if !is_chaining_attack {
+                        combat_state.use_next_kind(desired_state)
+                    }
+                }
+                AttackCommitment::LateCancellable => {
+                    combat_state.use_next_kind(desired_state);
+                }
                 AttackCommitment::InBufferPeriod => {
                     combat_state.buffer = Some(desired_state);
                 }
@@ -37,6 +45,15 @@ pub fn attack(
             }
         }
     }
+}
+
+pub fn block(
+    mut players: Query<(
+        &ActionState<PlayerAction>,
+        &mut PlayerCombatState,
+        &PlayerCombatAnimations,
+    )>,
+) {
 }
 
 pub fn update_states(
@@ -47,7 +64,7 @@ pub fn update_states(
     for (mut combat_state, animation_handles) in players.iter_mut() {
         combat_state.time_in_state += time.delta_seconds();
         if combat_state.kind == PlayerCombatKind::Idle {
-            combat_state.commitment = AttackCommitment::Cancellable;
+            combat_state.commitment = AttackCommitment::EarlyCancellable;
             continue;
         }
         let animation = combat_state.kind.get_animation(animation_handles);
@@ -57,7 +74,7 @@ pub fn update_states(
                 let next_kind = combat_state.buffer.take().unwrap_or(PlayerCombatKind::Idle);
                 combat_state.use_next_kind(next_kind);
             } else if time_fraction < animation.early_cancel_end {
-                combat_state.commitment = AttackCommitment::Cancellable;
+                combat_state.commitment = AttackCommitment::EarlyCancellable;
             } else if time_fraction > animation.early_cancel_end
                 && time_fraction < animation.buffer_start
             {
@@ -67,7 +84,7 @@ pub fn update_states(
             {
                 combat_state.commitment = AttackCommitment::InBufferPeriod;
             } else if time_fraction > animation.late_cancel_start {
-                combat_state.commitment = AttackCommitment::Cancellable;
+                combat_state.commitment = AttackCommitment::LateCancellable;
             }
         }
     }

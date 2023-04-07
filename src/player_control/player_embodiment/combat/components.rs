@@ -28,10 +28,20 @@ impl PlayerCombatState {
 )]
 #[reflect(Serialize, Deserialize)]
 pub enum AttackCommitment {
-    Cancellable,
+    EarlyCancellable,
+    LateCancellable,
     InBufferPeriod,
     #[default]
     Committed,
+}
+
+impl AttackCommitment {
+    pub fn is_cancellable(&self) -> bool {
+        matches!(
+            self,
+            AttackCommitment::EarlyCancellable | AttackCommitment::LateCancellable
+        )
+    }
 }
 
 #[derive(Debug, Clone, Component, Reflect, FromReflect, Default)]
@@ -59,8 +69,8 @@ impl PlayerCombatAnimation {
     pub fn with_defaults(handle: Handle<AnimationClip>) -> Self {
         Self {
             handle,
-            early_cancel_end: 0.1,
-            late_cancel_start: 0.9,
+            early_cancel_end: 0.2,
+            late_cancel_start: 0.85,
             buffer_start: 0.7,
         }
     }
@@ -94,5 +104,9 @@ impl PlayerCombatKind {
             PlayerCombatKind::PerfectParried => &animations.perfect_parried,
             PlayerCombatKind::PostureBroken => &animations.posture_broken,
         }
+    }
+
+    pub fn is_attack(&self) -> bool {
+        matches!(self, PlayerCombatKind::Attack(_))
     }
 }
