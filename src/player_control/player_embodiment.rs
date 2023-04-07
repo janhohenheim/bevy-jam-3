@@ -35,6 +35,9 @@ pub fn player_embodiment_plugin(app: &mut App) {
                 handle_horizontal_movement,
                 combat::update_states,
                 combat::attack,
+                combat::block,
+                #[cfg(feature = "dev")]
+                combat::debug::display_combat_state,
                 combat::play_animations,
                 handle_speed_effects,
                 rotate_to_speaker.run_if(resource_exists::<CurrentDialog>()),

@@ -8,6 +8,8 @@ use leafwing_input_manager::prelude::*;
 use std::time::Duration;
 
 mod components;
+#[cfg(feature = "dev")]
+pub mod debug;
 
 pub fn attack(
     mut players: Query<(
@@ -47,13 +49,20 @@ pub fn attack(
     }
 }
 
-pub fn block(
-    mut players: Query<(
-        &ActionState<PlayerAction>,
-        &mut PlayerCombatState,
-        &PlayerCombatAnimations,
-    )>,
-) {
+pub fn block(mut players: Query<(&ActionState<PlayerAction>, &mut PlayerCombatState)>) {
+    for (actions, mut combat_state) in players.iter_mut() {
+        if actions.just_released(PlayerAction::Block) {
+            match combat_state.commitment {
+                AttackCommitment::EarlyCancellable | AttackCommitment::LateCancellable => {
+                    combat_state.use_next_kind(PlayerCombatKind::Block);
+                }
+                AttackCommitment::InBufferPeriod => {
+                    combat_state.buffer = Some(PlayerCombatKind::Block);
+                }
+                AttackCommitment::Committed => {}
+            }
+        }
+    }
 }
 
 pub fn update_states(
