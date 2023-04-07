@@ -1,4 +1,4 @@
-use crate::combat::Attack;
+use crate::combat::{Attack, Constitution};
 use crate::file_system_interaction::asset_loading::{FpsDummyAnimationAssets, SceneAssets};
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::GameObject;
@@ -105,6 +105,7 @@ pub(crate) fn spawn(
                         },
                     ],
                 },
+                constitution: Constitution::from_max_health_and_posture(100.0, 100.0),
             },
             GameObject::Player,
         ))

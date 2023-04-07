@@ -15,12 +15,14 @@ pub struct CombatBundle {
     condition_tracker: ConditionTracker,
     move_metadata: MoveMetadata,
     manual_rotation: ManualRotation,
+    constitution: Constitution,
 }
 
 impl CombatBundle {
-    pub fn new(combatant: Combatant) -> Self {
+    pub fn new(combatant: Combatant, constitution: Constitution) -> Self {
         Self {
             combatant,
+            constitution,
             combatant_state: default(),
             condition_tracker: default(),
             move_metadata: default(),
@@ -71,6 +73,40 @@ impl Combatant {
                 .get(current.choreography)
                 .and_then(|choreography| choreography.moves.get(current.move_))
         })
+    }
+}
+
+#[derive(Debug, Clone, Component, Reflect, FromReflect)]
+#[reflect(Component)]
+pub struct Constitution {
+    pub health: f32,
+    pub max_health: f32,
+    pub posture: f32,
+    pub max_posture: f32,
+}
+
+impl Constitution {
+    pub fn from_max_health_and_posture(max_health: f32, max_posture: f32) -> Self {
+        Self {
+            health: max_health,
+            max_health,
+            posture: 0.0,
+            max_posture,
+        }
+    }
+
+    pub fn is_alive(&self) -> bool {
+        self.health > 0.0
+    }
+
+    pub fn is_posture_broken(&self) -> bool {
+        self.posture > self.max_posture
+    }
+}
+
+impl Default for Constitution {
+    fn default() -> Self {
+        Self::from_max_health_and_posture(100.0, 100.0)
     }
 }
 

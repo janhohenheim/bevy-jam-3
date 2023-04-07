@@ -1,4 +1,4 @@
-use crate::combat::Attack;
+use crate::combat::{Attack, Constitution};
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -7,6 +7,7 @@ pub struct PlayerCombatBundle {
     pub player_combat: PlayerCombatState,
     pub player_combat_animations: PlayerCombatAnimations,
     pub player_attacks: PlayerAttacks,
+    pub constitution: Constitution,
 }
 
 #[derive(Debug, Clone, Copy, Component, Reflect, FromReflect, Serialize, Deserialize, Default)]

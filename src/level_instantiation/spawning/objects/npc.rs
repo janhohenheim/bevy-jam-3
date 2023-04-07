@@ -27,99 +27,102 @@ pub(crate) fn spawn(
             },
             Name::new("NPC"),
             CharacterControllerBundle::capsule(HEIGHT, RADIUS),
-            CombatBundle::new(Combatant::new(
-                vec![
-                    Choreography {
-                        name: "Walk toward Player".to_string(),
-                        moves: vec![Move {
-                            init: InitMove {
-                                duration: MoveDuration::While(CombatCondition::PlayerDistanceOver(
-                                    2.0,
-                                )),
-                                animation: Some(animations.walk.clone()),
-                                state: CombatantState::OnGuard,
-                            },
-                            execute: ExecuteMove {
-                                motion_fn: Some(
-                                    ai::generic::motion::continuous::accelerate_towards_player(16.),
-                                ),
-                                ..default()
-                            },
-                            ..default()
-                        }],
-                    },
-                    Choreography {
-                        name: "Idle".to_string(),
-                        moves: vec![Move {
-                            init: InitMove {
-                                duration: MoveDuration::Fixed(2.0),
-                                animation: Some(animations.idle.clone()),
-                                state: CombatantState::OnGuard,
-                            },
-                            execute: ExecuteMove {
-                                motion_fn: Some(ai::generic::motion::continuous::face_player()),
-                                ..default()
-                            },
-                            ..default()
-                        }],
-                    },
-                    Choreography {
-                        name: "Ground Attack".to_string(),
-                        moves: vec![
-                            Move {
-                                name: Some("Hold up weapon".to_string()),
+            CombatBundle::new(
+                Combatant::new(
+                    vec![
+                        Choreography {
+                            name: "Walk toward Player".to_string(),
+                            moves: vec![Move {
                                 init: InitMove {
-                                    duration: MoveDuration::Fixed(0.3),
-                                    animation: Some(animations.attack.clone()),
+                                    duration: MoveDuration::While(
+                                        CombatCondition::PlayerDistanceOver(2.0),
+                                    ),
+                                    animation: Some(animations.walk.clone()),
                                     state: CombatantState::OnGuard,
-                                },
-                                ..default()
-                            },
-                            Move {
-                                name: Some("Dash".to_string()),
-                                init: InitMove {
-                                    duration: MoveDuration::Instant,
-                                    state: CombatantState::Vulnerable,
-                                    ..default()
                                 },
                                 execute: ExecuteMove {
                                     motion_fn: Some(
-                                        ai::generic::motion::instant::step_toward_player(8.),
+                                        ai::generic::motion::continuous::accelerate_towards_player(
+                                            16.,
+                                        ),
                                     ),
                                     ..default()
                                 },
-                            },
-                            Move {
-                                name: Some("Attack".to_string()),
+                                ..default()
+                            }],
+                        },
+                        Choreography {
+                            name: "Idle".to_string(),
+                            moves: vec![Move {
                                 init: InitMove {
-                                    duration: MoveDuration::Fixed(0.3),
-                                    state: CombatantState::Vulnerable,
-                                    ..default()
+                                    duration: MoveDuration::Fixed(2.0),
+                                    animation: Some(animations.idle.clone()),
+                                    state: CombatantState::OnGuard,
                                 },
                                 execute: ExecuteMove {
-                                    melee_attack_fn: Some(ai::generic::melee::whole_animation(
-                                        Attack {
-                                            damage: 10.0,
-                                            knockback: 5.0,
-                                        },
-                                    )),
-                                    ..default()
-                                },
-                            },
-                            Move {
-                                name: Some("Attack finish".to_string()),
-                                init: InitMove {
-                                    duration: MoveDuration::Animation,
-                                    state: CombatantState::Vulnerable,
+                                    motion_fn: Some(ai::generic::motion::continuous::face_player()),
                                     ..default()
                                 },
                                 ..default()
-                            },
-                        ],
-                    },
-                    Choreography {
-                        name: "Air Attack".to_string(),
-                        moves: vec![
+                            }],
+                        },
+                        Choreography {
+                            name: "Ground Attack".to_string(),
+                            moves: vec![
+                                Move {
+                                    name: Some("Hold up weapon".to_string()),
+                                    init: InitMove {
+                                        duration: MoveDuration::Fixed(0.3),
+                                        animation: Some(animations.attack.clone()),
+                                        state: CombatantState::OnGuard,
+                                    },
+                                    ..default()
+                                },
+                                Move {
+                                    name: Some("Dash".to_string()),
+                                    init: InitMove {
+                                        duration: MoveDuration::Instant,
+                                        state: CombatantState::Vulnerable,
+                                        ..default()
+                                    },
+                                    execute: ExecuteMove {
+                                        motion_fn: Some(
+                                            ai::generic::motion::instant::step_toward_player(8.),
+                                        ),
+                                        ..default()
+                                    },
+                                },
+                                Move {
+                                    name: Some("Attack".to_string()),
+                                    init: InitMove {
+                                        duration: MoveDuration::Fixed(0.3),
+                                        state: CombatantState::Vulnerable,
+                                        ..default()
+                                    },
+                                    execute: ExecuteMove {
+                                        melee_attack_fn: Some(ai::generic::melee::whole_animation(
+                                            Attack {
+                                                damage: 10.0,
+                                                knockback: 5.0,
+                                            },
+                                        )),
+                                        ..default()
+                                    },
+                                },
+                                Move {
+                                    name: Some("Attack finish".to_string()),
+                                    init: InitMove {
+                                        duration: MoveDuration::Animation,
+                                        state: CombatantState::Vulnerable,
+                                        ..default()
+                                    },
+                                    ..default()
+                                },
+                            ],
+                        },
+                        Choreography {
+                            name: "Air Attack".to_string(),
+                            moves: vec![
                             Move {
                                 name: Some("Jump impulse".to_string()),
                                 init: InitMove {
@@ -220,39 +223,41 @@ pub(crate) fn spawn(
                                 },
                             },
                         ],
-                    },
-                ],
-                vec![
-                    Tendency {
-                        // Walk toward player
-                        choreography: 0,
-                        weight: 2.0,
-                        condition: CombatCondition::PlayerDistanceOver(2.0),
-                    },
-                    Tendency {
-                        // Idle
-                        choreography: 1,
-                        weight: 1.0,
-                        condition: CombatCondition::PlayerDistanceOver(3.0),
-                    },
-                    Tendency {
-                        // Ground attack
-                        choreography: 2,
-                        weight: 2.0,
-                        condition: CombatCondition::PlayerDistanceUnder(2.0),
-                    },
-                    Tendency {
-                        // Air attack
-                        choreography: 3,
-                        weight: 0.5,
-                        condition: CombatCondition::And(vec![
-                            CombatCondition::PlayerDistanceUnder(1.5),
-                            CombatCondition::Grounded,
-                        ]),
-                    },
-                ],
-                HashMap::new(),
-            )),
+                        },
+                    ],
+                    vec![
+                        Tendency {
+                            // Walk toward player
+                            choreography: 0,
+                            weight: 2.0,
+                            condition: CombatCondition::PlayerDistanceOver(2.0),
+                        },
+                        Tendency {
+                            // Idle
+                            choreography: 1,
+                            weight: 1.0,
+                            condition: CombatCondition::PlayerDistanceOver(3.0),
+                        },
+                        Tendency {
+                            // Ground attack
+                            choreography: 2,
+                            weight: 2.0,
+                            condition: CombatCondition::PlayerDistanceUnder(2.0),
+                        },
+                        Tendency {
+                            // Air attack
+                            choreography: 3,
+                            weight: 0.5,
+                            condition: CombatCondition::And(vec![
+                                CombatCondition::PlayerDistanceUnder(1.5),
+                                CombatCondition::Grounded,
+                            ]),
+                        },
+                    ],
+                    HashMap::new(),
+                ),
+                Constitution::from_max_health_and_posture(100.0, 100.0),
+            ),
             DialogTarget {
                 dialog_id: DialogId::new("follower"),
             },

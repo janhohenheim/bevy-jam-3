@@ -27,6 +27,7 @@ pub fn combat_plugin(app: &mut App) {
         .register_type::<ProjectileSpawnInput>()
         .register_type::<PlayerHitEvent>()
         .register_type::<EnemyHitEvent>()
+        .register_type::<Constitution>()
         .add_event::<PlayerHitEvent>()
         .add_event::<EnemyHitEvent>()
         .add_event::<InitMoveEvent>()
