@@ -47,6 +47,7 @@ pub enum PlayerAction {
     #[default]
     Move,
     Attack,
+    Block,
     Sprint,
     Jump,
     Interact,
@@ -117,6 +118,7 @@ pub fn create_player_action_input_manager_bundle() -> InputManagerBundle<PlayerA
         ])
         .insert(VirtualDPad::wasd(), PlayerAction::Move)
         .insert(MouseButton::Left, PlayerAction::Attack)
+        .insert(MouseButton::Right, PlayerAction::Attack)
         .build(),
         ..default()
     }

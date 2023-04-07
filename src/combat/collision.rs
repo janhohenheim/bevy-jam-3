@@ -11,7 +11,7 @@ pub fn on_hit(
 ) {
     for event in collision_events.iter() {
         let (entity_a, entity_b, ongoing) = unpack_event(event);
-        let Some((player, hitbox)) = determine_player_and_target(&players, &attacks, entity_a, entity_b) else {
+        let Some((_player,_hitbox)) = determine_player_and_target(&players, &attacks, entity_a, entity_b) else {
             continue;
         };
         info!("Player hit by attack: {ongoing}");

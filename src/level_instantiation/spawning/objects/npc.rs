@@ -262,6 +262,10 @@ pub(crate) fn spawn(
                 dialog_id: DialogId::new("follower"),
             },
             GameObject::Npc,
+            CollisionGroups::new(
+                GameCollisionGroup::ENEMY.into(),
+                GameCollisionGroup::PLAYER.into(),
+            ),
         ))
         .with_children(|parent| {
             parent.spawn((
