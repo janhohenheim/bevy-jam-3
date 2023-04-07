@@ -4,7 +4,7 @@ use bevy_egui::{egui, EguiContexts};
 
 pub fn display_combat_state(player: Query<(&PlayerCombatState,)>, mut egui_contexts: EguiContexts) {
     for (combat_state,) in player.iter() {
-        egui::Window::new(format!("Player")).show(egui_contexts.ctx_mut(), |ui| {
+        egui::Window::new("Player".to_string()).show(egui_contexts.ctx_mut(), |ui| {
             ui.heading("Combat State");
             ui.label(format!("Kind: {:?}", combat_state.kind));
             ui.label(format!("Buffer: {:?}", combat_state.buffer));

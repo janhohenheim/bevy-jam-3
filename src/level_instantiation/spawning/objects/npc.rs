@@ -72,7 +72,6 @@ pub(crate) fn spawn(
                                     duration: MoveDuration::Fixed(0.3),
                                     animation: Some(animations.attack.clone()),
                                     state: CombatantState::OnGuard,
-                                    ..default()
                                 },
                                 ..default()
                             },
@@ -89,7 +88,6 @@ pub(crate) fn spawn(
                                     ),
                                     ..default()
                                 },
-                                ..default()
                             },
                             Move {
                                 name: Some("Attack".to_string()),
@@ -141,7 +139,6 @@ pub(crate) fn spawn(
                                     duration: MoveDuration::Fixed(0.25),
                                     state: CombatantState::Vulnerable,
                                     animation: Some(animations.aerial.clone()),
-                                    ..default()
                                 },
                                 ..default()
                             },
@@ -151,7 +148,6 @@ pub(crate) fn spawn(
                                     duration: MoveDuration::Fixed(0.2),
                                     state: CombatantState::Vulnerable,
                                     animation: Some(animations.aerial_toss.clone()),
-                                    ..default()
                                 },
                                 execute: ExecuteMove {
                                     motion_fn: Some(ai::generic::motion::continuous::face_player()),
@@ -190,7 +186,6 @@ pub(crate) fn spawn(
                                     duration: MoveDuration::Animation,
                                     state: CombatantState::Vulnerable,
                                     animation: Some(animations.aerial_toss.clone()),
-                                    ..default()
                                 },
                                 execute: ExecuteMove {
                                     motion_fn: Some(ai::generic::motion::continuous::face_player()),
@@ -203,7 +198,6 @@ pub(crate) fn spawn(
                                     duration: MoveDuration::Until(CombatCondition::Grounded),
                                     state: CombatantState::Vulnerable,
                                     animation: Some(animations.aerial.clone()),
-                                    ..default()
                                 },
                                 ..default()
                             },
@@ -213,7 +207,6 @@ pub(crate) fn spawn(
                                     duration: MoveDuration::Fixed(0.5),
                                     state: CombatantState::Vulnerable,
                                     animation: Some(animations.idle.clone()),
-                                    ..default()
                                 },
                                 execute: ExecuteMove {
                                     motion_fn: Some(
