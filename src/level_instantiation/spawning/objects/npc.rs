@@ -259,7 +259,7 @@ pub(crate) fn spawn(
             GameObject::Npc,
             CollisionGroups::new(
                 GameCollisionGroup::ENEMY.into(),
-                GameCollisionGroup::PLAYER.into(),
+                (GameCollisionGroup::PLAYER | GameCollisionGroup::ATTACK).into(),
             ),
         ))
         .with_children(|parent| {
