@@ -40,9 +40,9 @@ pub fn general_movement_plugin(app: &mut App) {
         .register_type::<Velocity>()
         .register_type::<Walking>()
         .register_type::<CharacterAnimations>()
+        .add_system(reset_forces_and_impulses.in_set(OnUpdate(GameState::Playing)))
         .add_systems(
             (
-                reset_forces_and_impulses,
                 update_grounded,
                 apply_jumping,
                 apply_walking,
@@ -52,6 +52,7 @@ pub fn general_movement_plugin(app: &mut App) {
                 reset_movement_components,
             )
                 .chain()
+                .after(reset_forces_and_impulses)
                 .in_set(GeneralMovementSystemSet)
                 .in_set(OnUpdate(GameState::Playing)),
         );

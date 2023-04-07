@@ -86,7 +86,7 @@ pub fn sync_projectile_attack_hitbox(
         let (mut hitbox, mut collision_groups) = hitboxes
             .get_mut(link.0)
             .context("ParentToHitboxLink of projectile holds invalid entity")?;
-        *hitbox = *attack;
+        *hitbox = attack.clone();
         if attack.active {
             collision_groups.filters |= GameCollisionGroup::PLAYER.into();
         } else {

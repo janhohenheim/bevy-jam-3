@@ -7,13 +7,19 @@ use bevy_mod_sysfail::macros::*;
 #[sysfail(log(level = "error"))]
 pub fn handle_enemy_being_hit(
     mut hit_events: EventReader<EnemyHitEvent>,
-    mut combatants: Query<(&mut Combatant, &mut Constitution)>,
+    mut combatants: Query<(&mut Combatant, &mut Constitution, &Transform)>,
 ) -> Result<()> {
     for event in hit_events.iter() {
-        info!("Enemy hit: {:?}", event);
-        let (mut combatant, mut constitution) = combatants
+        let (mut combatant, mut constitution, transform) = combatants
             .get_mut(event.target)
             .expect("Failed to get combatant from hit event");
+
+        let angle = transform.forward().angle_between(event.normal);
+        info!(
+            "Enemy hit by {} at angle: {}",
+            event.attack.name,
+            angle.to_degrees()
+        );
         match combatant.current_move() {
             Some(move_) => match move_.init.state {
                 CombatantState::Deathblow => {

@@ -178,7 +178,7 @@ impl PlayerCombatKind {
 
     pub fn get_attack(self, attacks: &PlayerAttacks) -> Option<Attack> {
         match self {
-            PlayerCombatKind::Attack(attack) => Some(attacks.attacks[attack as usize]),
+            PlayerCombatKind::Attack(attack) => Some(attacks.attacks[attack as usize].clone()),
             _ => None,
         }
     }

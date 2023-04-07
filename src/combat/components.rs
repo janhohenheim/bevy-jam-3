@@ -166,9 +166,7 @@ pub enum CombatantState {
     HyperArmor,
 }
 
-#[derive(
-    Debug, Component, Clone, Copy, PartialEq, Reflect, FromReflect, Serialize, Deserialize,
-)]
+#[derive(Debug, Component, Clone, PartialEq, Reflect, FromReflect, Serialize, Deserialize)]
 #[reflect(Component, Serialize, Deserialize)]
 pub struct AttackHitbox {
     pub(crate) active: bool,
@@ -194,10 +192,11 @@ impl Default for AttackHitbox {
 }
 
 #[derive(
-    Debug, Component, Clone, Copy, PartialEq, Reflect, FromReflect, Serialize, Deserialize, Default,
+    Debug, Component, Clone, PartialEq, Reflect, FromReflect, Serialize, Deserialize, Default,
 )]
 #[reflect(Component, Serialize, Deserialize)]
 pub struct Attack {
+    pub(crate) name: String,
     pub(crate) damage: f32,
     pub(crate) knockback: f32,
 }

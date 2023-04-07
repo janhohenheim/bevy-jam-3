@@ -102,6 +102,7 @@ pub(crate) fn spawn(
                                     execute: ExecuteMove {
                                         melee_attack_fn: Some(ai::generic::melee::whole_animation(
                                             Attack {
+                                                name: "Attack".to_string(),
                                                 damage: 10.0,
                                                 knockback: 5.0,
                                             },
@@ -173,6 +174,7 @@ pub(crate) fn spawn(
                                                 ProjectileSpawnInput {
                                                     model: scene_handles.kunai.clone(),
                                                     attack: AttackHitbox::from_attack(Attack {
+                                                        name: "Kunai Throw".to_string(),
                                                         damage: 5.0,
                                                         knockback: 10.0,
                                                     }),

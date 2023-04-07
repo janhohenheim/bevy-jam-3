@@ -1,3 +1,4 @@
+use crate::combat::CombatSystemSet;
 use crate::file_system_interaction::audio::AudioHandles;
 use crate::file_system_interaction::config::GameConfig;
 use crate::movement::general_movement::{GeneralMovementSystemSet, Grounded, Jumping, Walking};
@@ -52,6 +53,7 @@ pub fn player_embodiment_plugin(app: &mut App) {
             )
                 .chain()
                 .after(CameraUpdateSystemSet)
+                .after(CombatSystemSet)
                 .before(GeneralMovementSystemSet)
                 .in_set(OnUpdate(GameState::Playing)),
         );

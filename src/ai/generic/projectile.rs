@@ -58,7 +58,7 @@ pub fn spawn_actual_simple_projectile(
                 ..Default::default()
             },
             Projectile,
-            attack,
+            attack.clone(),
         ));
     }
 }

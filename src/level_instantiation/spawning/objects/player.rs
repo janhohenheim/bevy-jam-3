@@ -54,7 +54,7 @@ pub(crate) fn spawn(
                                 PeriodicCancellationTimes {
                                     early_cancel_end: 0.2,
                                     late_cancel_start: 0.7,
-                                    buffer_start: 0.6,
+                                    buffer_start: 0.5,
                                 },
                             ),
                         },
@@ -92,14 +92,17 @@ pub(crate) fn spawn(
                 player_attacks: PlayerAttacks {
                     attacks: [
                         Attack {
+                            name: "Attack 1".to_string(),
                             damage: 10.0,
                             knockback: 1.0,
                         },
                         Attack {
+                            name: "Attack 2".to_string(),
                             damage: 8.0,
                             knockback: 1.0,
                         },
                         Attack {
+                            name: "Attack 3".to_string(),
                             damage: 15.0,
                             knockback: 3.0,
                         },

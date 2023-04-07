@@ -103,7 +103,7 @@ pub fn update_hitbox(
         let (mut hitbox, mut collision_groups) = hitboxes
             .get_mut(parent_to_hitbox_link.0)
             .context("Hitbox entity link points to an entity that does not have a hitbox")?;
-        hitbox.active = combat_state.kind.is_attack();
+        hitbox.active = combat_state.kind.is_attack() && !combat_state.commitment.is_cancellable();
         if hitbox.active {
             collision_groups.filters |= GameCollisionGroup::ENEMY.into();
             hitbox.attack = combat_state.kind.get_attack(&attacks).context("Failed to get attack from combat state even though according to hitbox activation it should be an attack")?;

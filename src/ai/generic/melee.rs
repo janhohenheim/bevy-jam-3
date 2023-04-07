@@ -5,7 +5,7 @@ pub fn whole_animation(attack: Attack) -> Box<dyn MeleeAttackFn> {
         move |MeleeAttackFnInput { time: _time }: MeleeAttackFnInput| MeleeAttackFnOutput {
             melee_attack: AttackHitbox {
                 active: true,
-                attack,
+                attack: attack.clone(),
             },
         },
     )
