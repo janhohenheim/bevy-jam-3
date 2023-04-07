@@ -69,11 +69,7 @@ pub fn update_states(
                     let next_kind = combat_state.buffer.take().unwrap_or(PlayerCombatKind::Idle);
                     combat_state.force_use_next_kind(next_kind);
                 } else if time_fraction < cancellation_times.early_cancel_end {
-                    if let Some(buffered_state) = combat_state.buffer {
-                        combat_state.force_use_next_kind(buffered_state);
-                    } else {
-                        combat_state.commitment = AttackCommitment::EarlyCancellable;
-                    }
+                    combat_state.commitment = AttackCommitment::EarlyCancellable;
                 } else if time_fraction > cancellation_times.early_cancel_end
                     && time_fraction < cancellation_times.buffer_start
                 {
@@ -83,7 +79,11 @@ pub fn update_states(
                 {
                     combat_state.commitment = AttackCommitment::InBufferPeriod;
                 } else if time_fraction > cancellation_times.late_cancel_start {
-                    combat_state.commitment = AttackCommitment::LateCancellable;
+                    if let Some(buffered_state) = combat_state.buffer {
+                        combat_state.force_use_next_kind(buffered_state);
+                    } else {
+                        combat_state.commitment = AttackCommitment::LateCancellable;
+                    }
                 }
             }
         }

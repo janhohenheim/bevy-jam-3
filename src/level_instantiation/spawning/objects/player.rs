@@ -52,8 +52,8 @@ pub(crate) fn spawn(
                             cancellation_times: CancellationTimes::Periodic(
                                 PeriodicCancellationTimes {
                                     early_cancel_end: 0.2,
-                                    late_cancel_start: 0.65,
-                                    buffer_start: 0.5,
+                                    late_cancel_start: 0.7,
+                                    buffer_start: 0.6,
                                 },
                             ),
                         },
@@ -61,9 +61,9 @@ pub(crate) fn spawn(
                             handle: animations.attack_two.clone(),
                             cancellation_times: CancellationTimes::Periodic(
                                 PeriodicCancellationTimes {
-                                    early_cancel_end: 0.1,
-                                    late_cancel_start: 0.5,
-                                    buffer_start: 0.3,
+                                    early_cancel_end: 0.08,
+                                    late_cancel_start: 0.9,
+                                    buffer_start: 0.6,
                                 },
                             ),
                         },
@@ -73,7 +73,7 @@ pub(crate) fn spawn(
                                 PeriodicCancellationTimes {
                                     early_cancel_end: 0.0,
                                     late_cancel_start: 0.9,
-                                    buffer_start: 0.8,
+                                    buffer_start: 0.7,
                                 },
                             ),
                         },
