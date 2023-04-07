@@ -56,7 +56,10 @@ pub fn link_hitbox(
                 GameCollisionGroup::ATTACK.into(),
                 GameCollisionGroup::NONE.into(),
             ),
-            Sensor,
+            SolverGroups {
+                memberships: GameCollisionGroup::ATTACK.into(),
+                filters: GameCollisionGroup::NONE.into(),
+            },
             ActiveEvents::COLLISION_EVENTS,
             ActiveCollisionTypes::all(),
             HitboxToParentLink(parent),

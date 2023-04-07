@@ -10,6 +10,7 @@ pub fn handle_enemy_being_hit(
     mut combatants: Query<(&mut Combatant, &mut Constitution)>,
 ) -> Result<()> {
     for event in hit_events.iter() {
+        info!("Enemy hit: {:?}", event);
         let (mut combatant, mut constitution) = combatants
             .get_mut(event.target)
             .expect("Failed to get combatant from hit event");

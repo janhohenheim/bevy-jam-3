@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 #[reflect(Serialize, Deserialize)]
 pub struct PlayerHitEvent {
     pub(crate) attack: Attack,
+    pub(crate) normal: Vec3,
 }
 
 #[derive(Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect)]
@@ -18,6 +19,7 @@ pub struct PlayerHitEvent {
 pub struct EnemyHitEvent {
     pub(crate) target: Entity,
     pub(crate) attack: Attack,
+    pub(crate) normal: Vec3,
 }
 
 #[sysfail(log(level = "error"))]
@@ -28,6 +30,7 @@ pub fn detect_hits(
     attacks: Query<(&AttackHitbox,)>,
     mut player_hit_events: EventWriter<PlayerHitEvent>,
     mut enemy_hit_events: EventWriter<EnemyHitEvent>,
+    rapier_context: Res<RapierContext>,
 ) -> Result<()> {
     let get_active_hitbox = |entity: Entity| -> Result<Option<&AttackHitbox>> {
         let (hitbox,) = attacks
@@ -42,26 +45,46 @@ pub fn detect_hits(
         if !ongoing {
             continue;
         }
-        if let Some((_player, hitbox)) =
+
+        if let Some((player_entity, hitbox_entity)) =
             determine_player_and_hitbox(&players, &attacks, entity_a, entity_b)
         {
-            if let Some(hitbox) = get_active_hitbox(hitbox)? {
+            if let Some(hitbox) = get_active_hitbox(hitbox_entity)? {
+                let normal = get_contact_normal(player_entity, hitbox_entity, &rapier_context)?;
                 player_hit_events.send(PlayerHitEvent {
                     attack: hitbox.attack,
+                    normal,
                 });
             }
-        } else if let Some((enemy, hitbox)) =
+        } else if let Some((enemy_entity, hitbox_entity)) =
             determine_enemy_and_hitbox(&combatants, &attacks, entity_a, entity_b)
         {
-            if let Some(hitbox) = get_active_hitbox(hitbox)? {
+            if let Some(hitbox) = get_active_hitbox(hitbox_entity)? {
+                let normal = get_contact_normal(enemy_entity, hitbox_entity, &rapier_context)?;
                 enemy_hit_events.send(EnemyHitEvent {
-                    target: enemy,
+                    target: enemy_entity,
                     attack: hitbox.attack,
+                    normal,
                 });
             }
         }
     }
     Ok(())
+}
+
+fn get_contact_normal(
+    target: Entity,
+    hitbox: Entity,
+    rapier_context: &RapierContext,
+) -> Result<Vec3> {
+    let contact_pair = rapier_context
+        .contact_pair(target, hitbox)
+        .context("Failed to get contact pair")?;
+    let (manifold, _contact) = contact_pair
+        .find_deepest_contact()
+        .context("Failed to get deepest contact manifold")?;
+    let normal = manifold.local_n1();
+    Ok(normal)
 }
 
 fn determine_player_and_hitbox(
