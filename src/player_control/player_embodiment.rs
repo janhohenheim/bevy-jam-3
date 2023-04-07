@@ -3,6 +3,7 @@ use crate::file_system_interaction::config::GameConfig;
 use crate::movement::general_movement::{GeneralMovementSystemSet, Grounded, Jumping, Walking};
 use crate::player_control::actions::{DualAxisDataExt, PlayerAction};
 use crate::player_control::camera::{CameraUpdateSystemSet, IngameCamera, IngameCameraKind};
+use crate::player_control::player_embodiment::combat::*;
 use crate::util::smoothness_to_lerp_factor;
 use crate::util::trait_extension::{F32Ext, TransformExt, Vec3Ext};
 use crate::world_interaction::dialog::CurrentDialog;
@@ -23,13 +24,18 @@ pub mod combat;
 pub fn player_embodiment_plugin(app: &mut App) {
     app.register_type::<Timer>()
         .register_type::<Player>()
+        .register_type::<PlayerCombatState>()
+        .register_type::<AttackCommitment>()
+        .register_type::<PlayerCombatAnimations>()
+        .register_type::<PlayerCombatAnimation>()
+        .register_type::<PlayerCombatKind>()
         .add_systems(
             (
                 handle_jump,
                 handle_horizontal_movement,
                 combat::update_states,
                 combat::attack,
-                combat::set_animations,
+                combat::play_animations,
                 handle_speed_effects,
                 rotate_to_speaker.run_if(resource_exists::<CurrentDialog>()),
                 control_walking_sound,

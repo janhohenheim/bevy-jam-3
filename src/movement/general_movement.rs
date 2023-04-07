@@ -243,7 +243,7 @@ fn sync_models(
 ) -> Result<()> {
     let dt = time.delta_seconds();
     for (model_entity, mut model_transform, mut visibility, model) in with_model.iter_mut() {
-        if let Ok((target_transform, target_visibility)) = without_model.get(model.target) {
+        if let Ok((target_transform, target_visibility)) = without_model.get(model.follow_target) {
             let smoothness = game_config.characters.model_sync_smoothing;
             let factor = smoothness_to_lerp_factor(smoothness, dt);
             *model_transform = model_transform.lerp(*target_transform, factor);

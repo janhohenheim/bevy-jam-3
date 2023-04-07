@@ -76,7 +76,17 @@ impl Default for Height {
 
 #[derive(Debug, Clone, Eq, PartialEq, Component, Serialize, Deserialize)]
 pub struct Model {
-    pub(crate) target: Entity,
+    pub(crate) follow_target: Entity,
+    pub(crate) animation_target: Entity,
+}
+
+impl Model {
+    pub fn with_same_follow_and_animation_targets(both_targets: Entity) -> Self {
+        Self {
+            follow_target: both_targets,
+            animation_target: both_targets,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Component, Reflect, Serialize, Deserialize)]

@@ -3,76 +3,11 @@ use crate::player_control::player_embodiment::PlayerAction;
 use anyhow::{Context, Result};
 use bevy::prelude::*;
 use bevy_mod_sysfail::sysfail;
+pub use components::*;
 use leafwing_input_manager::prelude::*;
-use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
-#[derive(Debug, Clone, Bundle)]
-pub struct PlayerCombatBundle {
-    pub player_combat: PlayerCombatState,
-    pub player_combat_animations: PlayerCombatAnimations,
-}
-
-#[derive(Debug, Clone, Copy, Component, Reflect, FromReflect, Serialize, Deserialize, Default)]
-#[reflect(Component, Serialize, Deserialize)]
-pub struct PlayerCombatState {
-    pub kind: PlayerCombatKind,
-    pub buffer: Option<PlayerCombatKind>,
-    pub cancellation: Cancellation,
-    pub time_in_state: f32,
-}
-
-impl PlayerCombatState {
-    pub fn use_next_kind(&mut self, kind: PlayerCombatKind) {
-        *self = Self { kind, ..default() };
-    }
-}
-
-#[derive(
-    Debug, Clone, Copy, Reflect, FromReflect, Serialize, Deserialize, Default, Eq, PartialEq,
-)]
-#[reflect(Serialize, Deserialize)]
-pub enum Cancellation {
-    Cancelable,
-    InBufferPeriod,
-    #[default]
-    NotCancelable,
-}
-
-#[derive(Debug, Clone, Component, Reflect, FromReflect, Default)]
-#[reflect(Component)]
-pub struct PlayerCombatAnimations {
-    pub idle: Handle<AnimationClip>,
-    pub attacks: [Handle<AnimationClip>; 3],
-    pub block: Handle<AnimationClip>,
-    pub hurt: Handle<AnimationClip>,
-}
-
-#[derive(
-    Debug, Clone, Copy, Reflect, FromReflect, Serialize, Deserialize, Default, Eq, PartialEq,
-)]
-#[reflect(Serialize, Deserialize)]
-pub enum PlayerCombatKind {
-    #[default]
-    Idle,
-    Attack(u16),
-    Block,
-    Hurt,
-}
-
-impl PlayerCombatKind {
-    pub fn get_animation<'a>(
-        &self,
-        animations: &'a PlayerCombatAnimations,
-    ) -> &'a Handle<AnimationClip> {
-        match self {
-            PlayerCombatKind::Idle => &animations.idle,
-            PlayerCombatKind::Attack(attack) => &animations.attacks[*attack as usize],
-            PlayerCombatKind::Block => &animations.block,
-            PlayerCombatKind::Hurt => &animations.hurt,
-        }
-    }
-}
+mod components;
 
 pub fn attack(
     mut players: Query<(
@@ -93,12 +28,12 @@ pub fn attack(
             } else {
                 PlayerCombatKind::Attack(0)
             };
-            match combat_state.cancellation {
-                Cancellation::Cancelable => combat_state.use_next_kind(desired_state),
-                Cancellation::InBufferPeriod => {
+            match combat_state.commitment {
+                AttackCommitment::Cancellable => combat_state.use_next_kind(desired_state),
+                AttackCommitment::InBufferPeriod => {
                     combat_state.buffer = Some(desired_state);
                 }
-                Cancellation::NotCancelable => {}
+                AttackCommitment::Committed => {}
             }
         }
     }
@@ -111,18 +46,35 @@ pub fn update_states(
 ) {
     for (mut combat_state, animation_handles) in players.iter_mut() {
         combat_state.time_in_state += time.delta_seconds();
-        let animation_handle = combat_state.kind.get_animation(animation_handles);
-        if let Some(animation) = animations.get(animation_handle) {
-            if combat_state.time_in_state > animation.duration() {
-                combat_state.time_in_state = 0.0;
-                combat_state.kind = PlayerCombatKind::Idle;
+        if combat_state.kind == PlayerCombatKind::Idle {
+            combat_state.commitment = AttackCommitment::Cancellable;
+            continue;
+        }
+        let animation = combat_state.kind.get_animation(animation_handles);
+        if let Some(animation_clip) = animations.get(&animation.handle) {
+            let time_fraction = combat_state.time_in_state / animation_clip.duration();
+            if time_fraction > 1.0 {
+                let next_kind = combat_state.buffer.take().unwrap_or(PlayerCombatKind::Idle);
+                combat_state.use_next_kind(next_kind);
+            } else if time_fraction < animation.early_cancel_end {
+                combat_state.commitment = AttackCommitment::Cancellable;
+            } else if time_fraction > animation.early_cancel_end
+                && time_fraction < animation.buffer_start
+            {
+                combat_state.commitment = AttackCommitment::Committed;
+            } else if time_fraction > animation.buffer_start
+                && time_fraction < animation.late_cancel_start
+            {
+                combat_state.commitment = AttackCommitment::InBufferPeriod;
+            } else if time_fraction > animation.late_cancel_start {
+                combat_state.commitment = AttackCommitment::Cancellable;
             }
         }
     }
 }
 
 #[sysfail(log(level = "error"))]
-pub fn set_animations(
+pub fn play_animations(
     mut players: Query<(
         &PlayerCombatState,
         &PlayerCombatAnimations,
@@ -134,7 +86,7 @@ pub fn set_animations(
         let mut animation_player = animation_players.get_mut(animation_entity_link.0).context(
             "Animation entity link points to an entity that does not have an animation player",
         )?;
-        let animation = combat_state.kind.get_animation(animations).clone();
+        let animation = combat_state.kind.get_animation(animations).handle.clone();
         animation_player.play_with_transition(animation, Duration::from_secs_f32(0.1));
     }
     Ok(())

@@ -29,7 +29,7 @@ pub fn link_animations(
             warn!("Multiple `AnimationPlayer`s are ambiguous for the same top parent");
         } else {
             let link_target = if let Ok(model) = models.get(top_entity) {
-                model.target
+                model.animation_target
             } else {
                 top_entity
             };

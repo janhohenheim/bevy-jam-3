@@ -1,4 +1,4 @@
-use crate::file_system_interaction::asset_loading::SceneAssets;
+use crate::file_system_interaction::asset_loading::{FpsDummyAnimationAssets, SceneAssets};
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::GameObject;
 use crate::movement::general_movement::{CharacterControllerBundle, ManualRotation, Model};
@@ -6,7 +6,9 @@ use crate::player_control::actions::{
     create_player_action_input_manager_bundle, create_ui_action_input_manager_bundle,
 };
 use crate::player_control::camera::IngameCamera;
-use crate::player_control::player_embodiment::combat::PlayerCombatState;
+use crate::player_control::player_embodiment::combat::{
+    PlayerCombatAnimation, PlayerCombatAnimations, PlayerCombatBundle,
+};
 use crate::player_control::player_embodiment::Player;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
@@ -19,32 +21,51 @@ pub(crate) fn spawn(
     In(transform): In<Transform>,
     mut commands: Commands,
     scene_handles: Res<SceneAssets>,
+    animations: Res<FpsDummyAnimationAssets>,
     cameras: Query<Entity, With<IngameCamera>>,
 ) {
-    commands.spawn((
-        PbrBundle {
-            transform,
-            ..default()
-        },
-        Player,
-        Name::new("Player"),
-        Ccd::enabled(),
-        ManualRotation,
-        CharacterControllerBundle::capsule(HEIGHT, RADIUS),
-        CollisionGroups::new(
-            GameCollisionGroup::PLAYER.into(),
-            GameCollisionGroup::ALL.into(),
-        ),
-        create_player_action_input_manager_bundle(),
-        create_ui_action_input_manager_bundle(),
-        PlayerCombatState::default(),
-        GameObject::Player,
-    ));
+    let player_entity = commands
+        .spawn((
+            PbrBundle {
+                transform,
+                ..default()
+            },
+            Player,
+            Name::new("Player"),
+            Ccd::enabled(),
+            ManualRotation,
+            CharacterControllerBundle::capsule(HEIGHT, RADIUS),
+            CollisionGroups::new(
+                GameCollisionGroup::PLAYER.into(),
+                GameCollisionGroup::ALL.into(),
+            ),
+            create_player_action_input_manager_bundle(),
+            create_ui_action_input_manager_bundle(),
+            PlayerCombatBundle {
+                player_combat: default(),
+                player_combat_animations: PlayerCombatAnimations {
+                    idle: PlayerCombatAnimation::with_defaults(animations.idle.clone()),
+                    attacks: [
+                        PlayerCombatAnimation::with_defaults(animations.attack.clone()),
+                        PlayerCombatAnimation::with_defaults(animations.attack.clone()),
+                        PlayerCombatAnimation::with_defaults(animations.attack.clone()),
+                    ],
+                    block: PlayerCombatAnimation::with_defaults(animations.idle.clone()),
+                    hurt: PlayerCombatAnimation::with_defaults(animations.idle.clone()),
+                    parried: PlayerCombatAnimation::with_defaults(animations.idle.clone()),
+                    perfect_parried: PlayerCombatAnimation::with_defaults(animations.idle.clone()),
+                    posture_broken: PlayerCombatAnimation::with_defaults(animations.idle.clone()),
+                },
+            },
+            GameObject::Player,
+        ))
+        .id();
 
     commands
         .spawn((
             Model {
-                target: cameras.single(),
+                follow_target: cameras.single(),
+                animation_target: player_entity,
             },
             SpatialBundle::default(),
             Name::new("Player Model Parent"),
