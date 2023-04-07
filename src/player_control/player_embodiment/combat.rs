@@ -37,10 +37,18 @@ pub fn attack(
 
 pub fn block(mut players: Query<(&ActionState<PlayerAction>, &mut PlayerCombatState)>) {
     for (actions, mut combat_state) in players.iter_mut() {
-        if actions.just_released(PlayerAction::Block) {
-            combat_state.try_use_next_kind(PlayerCombatKind::Block, |current| {
-                current != PlayerCombatKind::Block
-            });
+        let disallow_block_chaining = |current: PlayerCombatKind| !current.is_block();
+        if actions.just_pressed(PlayerAction::Block) {
+            combat_state.try_use_next_kind(PlayerCombatKind::Block, disallow_block_chaining);
+        } else if actions.pressed(PlayerAction::Block) {
+            let block_state = if combat_state.kind.is_block() {
+                PlayerCombatKind::HoldBlock
+            } else {
+                PlayerCombatKind::Block
+            };
+            combat_state.try_use_next_kind(block_state, disallow_block_chaining);
+        } else if actions.just_released(PlayerAction::Block) {
+            combat_state.try_use_next_kind(PlayerCombatKind::Idle, disallow_block_chaining);
         }
     }
 }
@@ -52,7 +60,7 @@ pub fn update_states(
 ) {
     for (mut combat_state, animation_handles) in players.iter_mut() {
         combat_state.time_in_state += time.delta_seconds();
-        if combat_state.kind == PlayerCombatKind::Idle {
+        if combat_state.kind.is_holding() {
             combat_state.commitment = AttackCommitment::EarlyCancellable;
             continue;
         }
@@ -97,7 +105,7 @@ pub fn play_animations(
         )?;
         let animation = combat_state.kind.get_animation(animations).handle.clone();
         animation_player.start_with_transition(animation, Duration::from_secs_f32(0.1));
-        if combat_state.kind == PlayerCombatKind::Idle {
+        if combat_state.kind.is_holding() {
             animation_player.repeat();
         }
         combat_state.started_animation = true;

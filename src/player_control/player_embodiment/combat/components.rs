@@ -19,7 +19,9 @@ pub struct PlayerCombatState {
 
 impl PlayerCombatState {
     pub fn force_use_next_kind(&mut self, kind: PlayerCombatKind) {
-        *self = Self { kind, ..default() };
+        if self.kind != kind {
+            *self = Self { kind, ..default() };
+        }
     }
 
     pub fn try_use_next_kind(
@@ -41,6 +43,10 @@ impl PlayerCombatState {
             }
             AttackCommitment::Committed => {}
         }
+    }
+
+    pub fn do_not_block_early_cancel(_kind: PlayerCombatKind) -> bool {
+        true
     }
 }
 
@@ -71,6 +77,7 @@ pub struct PlayerCombatAnimations {
     pub idle: PlayerCombatAnimation,
     pub attacks: [PlayerCombatAnimation; 3],
     pub block: PlayerCombatAnimation,
+    pub hold_block: PlayerCombatAnimation,
     pub hurt: PlayerCombatAnimation,
     pub parried: PlayerCombatAnimation,
     pub perfect_parried: PlayerCombatAnimation,
@@ -112,6 +119,7 @@ pub enum PlayerCombatKind {
     Idle,
     Attack(u16),
     Block,
+    HoldBlock,
     Parried,
     PerfectParried,
     PostureBroken,
@@ -124,6 +132,7 @@ impl PlayerCombatKind {
             PlayerCombatKind::Idle => &animations.idle,
             PlayerCombatKind::Attack(attack) => &animations.attacks[attack as usize],
             PlayerCombatKind::Block => &animations.block,
+            PlayerCombatKind::HoldBlock => &animations.hold_block,
             PlayerCombatKind::Hurt => &animations.hurt,
             PlayerCombatKind::Parried => &animations.parried,
             PlayerCombatKind::PerfectParried => &animations.perfect_parried,
@@ -133,5 +142,13 @@ impl PlayerCombatKind {
 
     pub fn is_attack(self) -> bool {
         matches!(self, PlayerCombatKind::Attack(_))
+    }
+
+    pub fn is_block(self) -> bool {
+        matches!(self, PlayerCombatKind::Block | PlayerCombatKind::HoldBlock)
+    }
+
+    pub fn is_holding(self) -> bool {
+        matches!(self, PlayerCombatKind::Idle | PlayerCombatKind::HoldBlock)
     }
 }

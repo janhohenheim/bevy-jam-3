@@ -50,7 +50,8 @@ pub(crate) fn spawn(
                         PlayerCombatAnimation::with_defaults(animations.attack.clone()),
                         PlayerCombatAnimation::with_defaults(animations.attack.clone()),
                     ],
-                    block: PlayerCombatAnimation::with_defaults(animations.idle.clone()),
+                    block: PlayerCombatAnimation::with_defaults(animations.block.clone()),
+                    hold_block: PlayerCombatAnimation::with_defaults(animations.hold_block.clone()),
                     hurt: PlayerCombatAnimation::without_early_cancel(animations.idle.clone()),
                     parried: PlayerCombatAnimation::without_early_cancel(animations.idle.clone()),
                     perfect_parried: PlayerCombatAnimation::without_early_cancel(
