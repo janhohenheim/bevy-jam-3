@@ -89,8 +89,12 @@ pub struct FpsDummyAnimationAssets {
     #[asset(path = "scenes/fps_dummy.glb#Animation0")]
     pub idle: Handle<AnimationClip>,
     #[asset(path = "scenes/fps_dummy.glb#Animation1")]
-    pub attack: Handle<AnimationClip>,
+    pub attack_one: Handle<AnimationClip>,
     #[asset(path = "scenes/fps_dummy.glb#Animation2")]
+    pub attack_two: Handle<AnimationClip>,
+    #[asset(path = "scenes/fps_dummy.glb#Animation3")]
+    pub attack_three: Handle<AnimationClip>,
+    #[asset(path = "scenes/fps_dummy.glb#Animation4")]
     pub block: Handle<AnimationClip>,
 }
 

@@ -41,7 +41,6 @@ pub fn block(mut players: Query<(&ActionState<PlayerAction>, &mut PlayerCombatSt
             combat_state.try_use_next_kind(PlayerCombatKind::Block, |current: PlayerCombatKind| {
                 current != PlayerCombatKind::Block
             });
-            info!("Block pressed");
         } else if actions.just_released(PlayerAction::Block) {
             combat_state.try_use_next_kind(
                 PlayerCombatKind::Idle,
@@ -64,13 +63,17 @@ pub fn update_states(
                 combat_state.commitment = AttackCommitment::EarlyCancellable;
             }
             CancellationTimes::Periodic(cancellation_times) => {
-                let Some(animation_clip) = animation_clips.get(&animation.handle) else {continue;};
+                let Some(animation_clip) = animation_clips.get(&animation.handle) else { continue; };
                 let time_fraction = combat_state.time_in_state / animation_clip.duration();
                 if time_fraction > 1.0 {
                     let next_kind = combat_state.buffer.take().unwrap_or(PlayerCombatKind::Idle);
                     combat_state.force_use_next_kind(next_kind);
                 } else if time_fraction < cancellation_times.early_cancel_end {
-                    combat_state.commitment = AttackCommitment::EarlyCancellable;
+                    if let Some(buffered_state) = combat_state.buffer {
+                        combat_state.force_use_next_kind(buffered_state);
+                    } else {
+                        combat_state.commitment = AttackCommitment::EarlyCancellable;
+                    }
                 } else if time_fraction > cancellation_times.early_cancel_end
                     && time_fraction < cancellation_times.buffer_start
                 {

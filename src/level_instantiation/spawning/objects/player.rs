@@ -7,7 +7,8 @@ use crate::player_control::actions::{
 };
 use crate::player_control::camera::IngameCamera;
 use crate::player_control::player_embodiment::combat::{
-    PlayerCombatAnimation, PlayerCombatAnimations, PlayerCombatBundle,
+    CancellationTimes, PeriodicCancellationTimes, PlayerCombatAnimation, PlayerCombatAnimations,
+    PlayerCombatBundle,
 };
 use crate::player_control::player_embodiment::Player;
 use bevy::prelude::*;
@@ -46,9 +47,36 @@ pub(crate) fn spawn(
                 player_combat_animations: PlayerCombatAnimations {
                     idle: PlayerCombatAnimation::always_cancellable(animations.idle.clone()),
                     attacks: [
-                        PlayerCombatAnimation::with_defaults(animations.attack.clone()),
-                        PlayerCombatAnimation::with_defaults(animations.attack.clone()),
-                        PlayerCombatAnimation::with_defaults(animations.attack.clone()),
+                        PlayerCombatAnimation {
+                            handle: animations.attack_one.clone(),
+                            cancellation_times: CancellationTimes::Periodic(
+                                PeriodicCancellationTimes {
+                                    early_cancel_end: 0.2,
+                                    late_cancel_start: 0.65,
+                                    buffer_start: 0.5,
+                                },
+                            ),
+                        },
+                        PlayerCombatAnimation {
+                            handle: animations.attack_two.clone(),
+                            cancellation_times: CancellationTimes::Periodic(
+                                PeriodicCancellationTimes {
+                                    early_cancel_end: 0.1,
+                                    late_cancel_start: 0.5,
+                                    buffer_start: 0.3,
+                                },
+                            ),
+                        },
+                        PlayerCombatAnimation {
+                            handle: animations.attack_three.clone(),
+                            cancellation_times: CancellationTimes::Periodic(
+                                PeriodicCancellationTimes {
+                                    early_cancel_end: 0.0,
+                                    late_cancel_start: 0.9,
+                                    buffer_start: 0.8,
+                                },
+                            ),
+                        },
                     ],
                     block: PlayerCombatAnimation::always_cancellable(animations.block.clone()),
                     hurt: PlayerCombatAnimation::without_early_cancel(animations.idle.clone()),

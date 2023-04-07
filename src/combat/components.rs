@@ -128,18 +128,34 @@ pub enum CombatantState {
 #[reflect(Component, Serialize, Deserialize)]
 pub struct AttackHitbox {
     pub(crate) active: bool,
-    pub(crate) damage: f32,
-    pub(crate) knockback: f32,
+    pub(crate) attack: Attack,
+}
+
+impl AttackHitbox {
+    pub fn from_attack(attack: Attack) -> Self {
+        Self {
+            attack,
+            ..default()
+        }
+    }
 }
 
 impl Default for AttackHitbox {
     fn default() -> Self {
         Self {
             active: true,
-            damage: default(),
-            knockback: default(),
+            attack: default(),
         }
     }
+}
+
+#[derive(
+    Debug, Component, Clone, Copy, PartialEq, Reflect, FromReflect, Serialize, Deserialize, Default,
+)]
+#[reflect(Component, Serialize, Deserialize)]
+pub struct Attack {
+    pub(crate) damage: f32,
+    pub(crate) knockback: f32,
 }
 
 #[derive(

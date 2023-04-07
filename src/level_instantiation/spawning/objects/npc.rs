@@ -98,7 +98,10 @@ pub(crate) fn spawn(
                                 },
                                 execute: ExecuteMove {
                                     melee_attack_fn: Some(ai::generic::melee::whole_animation(
-                                        10.0, 5.0,
+                                        Attack {
+                                            damage: 10.0,
+                                            knockback: 5.0,
+                                        },
                                     )),
                                     ..default()
                                 },
@@ -166,11 +169,10 @@ pub(crate) fn spawn(
                                         ai::generic::projectile::spawn_simple_projectile(
                                             ProjectileSpawnInput {
                                                 model: scene_handles.kunai.clone(),
-                                                attack: AttackHitbox {
+                                                attack: AttackHitbox::from_attack(Attack {
                                                     damage: 5.0,
                                                     knockback: 10.0,
-                                                    ..default()
-                                                },
+                                                }),
                                                 speed: 10.0,
                                                 tracking: 0.1,
                                                 max_lifetime: 3.0,
