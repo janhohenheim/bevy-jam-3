@@ -40,6 +40,7 @@ pub fn player_embodiment_plugin(app: &mut App) {
                 combat::update_states,
                 combat::attack,
                 combat::block,
+                combat::collision::handle_player_being_hit,
                 #[cfg(feature = "dev")]
                 combat::debug::display_combat_state,
                 combat::update_hitbox,

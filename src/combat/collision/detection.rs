@@ -10,14 +10,14 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect)]
 #[reflect(Serialize, Deserialize)]
 pub struct PlayerHitEvent {
-    attack: Attack,
+    pub(crate) attack: Attack,
 }
 
 #[derive(Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect)]
 #[reflect(Serialize, Deserialize)]
 pub struct EnemyHitEvent {
-    target: Entity,
-    attack: Attack,
+    pub(crate) target: Entity,
+    pub(crate) attack: Attack,
 }
 
 #[sysfail(log(level = "error"))]

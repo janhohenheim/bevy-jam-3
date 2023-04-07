@@ -1,2 +1,5 @@
-pub mod detection;
-pub mod handling;
+pub use detection::*;
+pub use handling::*;
+
+mod detection;
+mod handling;

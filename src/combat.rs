@@ -1,5 +1,5 @@
 use crate::ai::generic::projectile::spawn_actual_simple_projectile;
-use crate::combat::collision::detection::{EnemyHitEvent, PlayerHitEvent};
+use crate::combat::collision::{EnemyHitEvent, PlayerHitEvent};
 use crate::level_instantiation::spawning::animation_link::link_animations;
 use crate::movement::general_movement::GeneralMovementSystemSet;
 use crate::GameState;
@@ -7,7 +7,7 @@ use bevy::prelude::*;
 pub use components::*;
 use spew::prelude::*;
 
-mod collision;
+pub(crate) mod collision;
 pub mod components;
 #[cfg(feature = "dev")]
 pub mod debug;
@@ -36,13 +36,14 @@ pub fn combat_plugin(app: &mut App) {
         .add_systems(
             (
                 linking::link_hitbox,
+                collision::detect_hits,
+                collision::handle_enemy_being_hit,
                 update_states::update_condition_tracker,
                 decision::decide_choreography,
                 execution::execute_choreography,
                 execution::init_move,
                 execution::execute_move,
                 linking::sync_projectile_attack_hitbox,
-                collision::detection::detect_hits,
                 #[cfg(feature = "dev")]
                 debug::display_combatants,
             )
