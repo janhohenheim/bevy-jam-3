@@ -92,8 +92,6 @@ pub struct FpsDummyAnimationAssets {
     pub attack: Handle<AnimationClip>,
     #[asset(path = "scenes/fps_dummy.glb#Animation2")]
     pub block: Handle<AnimationClip>,
-    #[asset(path = "scenes/fps_dummy.glb#Animation3")]
-    pub hold_block: Handle<AnimationClip>,
 }
 
 #[derive(AssetCollection, Resource, Clone)]

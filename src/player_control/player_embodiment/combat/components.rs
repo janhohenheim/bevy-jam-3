@@ -77,7 +77,6 @@ pub struct PlayerCombatAnimations {
     pub idle: PlayerCombatAnimation,
     pub attacks: [PlayerCombatAnimation; 3],
     pub block: PlayerCombatAnimation,
-    pub hold_block: PlayerCombatAnimation,
     pub hurt: PlayerCombatAnimation,
     pub parried: PlayerCombatAnimation,
     pub perfect_parried: PlayerCombatAnimation,
@@ -88,28 +87,64 @@ pub struct PlayerCombatAnimations {
 #[reflect(Component)]
 pub struct PlayerCombatAnimation {
     pub handle: Handle<AnimationClip>,
-    pub early_cancel_end: f32,
-    pub late_cancel_start: f32,
-    pub buffer_start: f32,
+    pub cancellation_times: CancellationTimes,
 }
 
 impl PlayerCombatAnimation {
     pub fn with_defaults(handle: Handle<AnimationClip>) -> Self {
         Self {
             handle,
-            early_cancel_end: 0.2,
-            late_cancel_start: 0.85,
-            buffer_start: 0.7,
+            ..default()
         }
     }
 
     pub fn without_early_cancel(handle: Handle<AnimationClip>) -> Self {
         Self {
-            early_cancel_end: 0.,
+            cancellation_times: CancellationTimes::Periodic(PeriodicCancellationTimes {
+                early_cancel_end: 0.0,
+                ..default()
+            }),
+            ..Self::with_defaults(handle)
+        }
+    }
+
+    pub fn always_cancellable(handle: Handle<AnimationClip>) -> Self {
+        Self {
+            cancellation_times: CancellationTimes::Always,
             ..Self::with_defaults(handle)
         }
     }
 }
+
+#[derive(Debug, Clone, Copy, Reflect, FromReflect)]
+pub enum CancellationTimes {
+    Always,
+    Periodic(PeriodicCancellationTimes),
+}
+
+impl Default for CancellationTimes {
+    fn default() -> Self {
+        Self::Periodic(default())
+    }
+}
+
+#[derive(Debug, Clone, Copy, Reflect, FromReflect)]
+pub struct PeriodicCancellationTimes {
+    pub early_cancel_end: f32,
+    pub late_cancel_start: f32,
+    pub buffer_start: f32,
+}
+
+impl Default for PeriodicCancellationTimes {
+    fn default() -> Self {
+        Self {
+            early_cancel_end: 0.2,
+            late_cancel_start: 0.85,
+            buffer_start: 0.7,
+        }
+    }
+}
+
 #[derive(
     Debug, Clone, Copy, Reflect, FromReflect, Serialize, Deserialize, Default, Eq, PartialEq,
 )]
@@ -119,7 +154,6 @@ pub enum PlayerCombatKind {
     Idle,
     Attack(u16),
     Block,
-    HoldBlock,
     Parried,
     PerfectParried,
     PostureBroken,
@@ -132,7 +166,6 @@ impl PlayerCombatKind {
             PlayerCombatKind::Idle => &animations.idle,
             PlayerCombatKind::Attack(attack) => &animations.attacks[attack as usize],
             PlayerCombatKind::Block => &animations.block,
-            PlayerCombatKind::HoldBlock => &animations.hold_block,
             PlayerCombatKind::Hurt => &animations.hurt,
             PlayerCombatKind::Parried => &animations.parried,
             PlayerCombatKind::PerfectParried => &animations.perfect_parried,
@@ -142,13 +175,5 @@ impl PlayerCombatKind {
 
     pub fn is_attack(self) -> bool {
         matches!(self, PlayerCombatKind::Attack(_))
-    }
-
-    pub fn is_block(self) -> bool {
-        matches!(self, PlayerCombatKind::Block | PlayerCombatKind::HoldBlock)
-    }
-
-    pub fn is_holding(self) -> bool {
-        matches!(self, PlayerCombatKind::Idle | PlayerCombatKind::HoldBlock)
     }
 }

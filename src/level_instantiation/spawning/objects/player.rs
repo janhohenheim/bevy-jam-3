@@ -44,14 +44,13 @@ pub(crate) fn spawn(
             PlayerCombatBundle {
                 player_combat: default(),
                 player_combat_animations: PlayerCombatAnimations {
-                    idle: PlayerCombatAnimation::with_defaults(animations.idle.clone()),
+                    idle: PlayerCombatAnimation::always_cancellable(animations.idle.clone()),
                     attacks: [
                         PlayerCombatAnimation::with_defaults(animations.attack.clone()),
                         PlayerCombatAnimation::with_defaults(animations.attack.clone()),
                         PlayerCombatAnimation::with_defaults(animations.attack.clone()),
                     ],
-                    block: PlayerCombatAnimation::with_defaults(animations.block.clone()),
-                    hold_block: PlayerCombatAnimation::with_defaults(animations.hold_block.clone()),
+                    block: PlayerCombatAnimation::always_cancellable(animations.block.clone()),
                     hurt: PlayerCombatAnimation::without_early_cancel(animations.idle.clone()),
                     parried: PlayerCombatAnimation::without_early_cancel(animations.idle.clone()),
                     perfect_parried: PlayerCombatAnimation::without_early_cancel(
@@ -80,9 +79,9 @@ pub(crate) fn spawn(
                 SceneBundle {
                     scene: scene_handles.fps_dummy.clone(),
                     transform: Transform {
-                        translation: Vec3::new(0., -0.1, -0.2),
+                        translation: Vec3::new(-0.05, -0.15, -0.2),
                         rotation: Quat::from_rotation_y(TAU / 2.),
-                        scale: Vec3::splat(0.2),
+                        scale: Vec3::new(0.2, 0.2, 0.4),
                     },
                     ..default()
                 },
