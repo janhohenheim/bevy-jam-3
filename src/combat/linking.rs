@@ -50,11 +50,6 @@ pub fn link_hitbox(
             .1;
         let collider = Collider::from_bevy_mesh(mesh, &ComputedColliderShape::TriMesh)
             .context("Failed to create collider from mesh")?;
-        let parent = if let Some(model) = model {
-            model.animation_target
-        } else {
-            parent
-        };
         commands.entity(bone_child).insert((
             collider,
             CollisionGroups::new(
@@ -70,13 +65,18 @@ pub fn link_hitbox(
         commands
             .entity(parent)
             .insert(ParentToHitboxLink(bone_child));
+        if let Some(model) = model {
+            commands
+                .entity(model.animation_target)
+                .insert(ParentToHitboxLink(bone_child));
+        }
     }
     Ok(())
 }
 
 #[sysfail(log(level = "error"))]
 pub fn sync_projectile_attack_hitbox(
-    projectiles: Query<(&AttackHitbox, &ParentToHitboxLink)>,
+    projectiles: Query<(&AttackHitbox, &ParentToHitboxLink), With<Projectile>>,
     mut hitboxes: Query<(&mut AttackHitbox, &mut CollisionGroups), Without<ParentToHitboxLink>>,
 ) -> Result<()> {
     for (attack, link) in projectiles.iter() {
