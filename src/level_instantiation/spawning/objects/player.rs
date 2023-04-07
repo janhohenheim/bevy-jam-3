@@ -1,3 +1,4 @@
+use crate::combat::Attack;
 use crate::file_system_interaction::asset_loading::{FpsDummyAnimationAssets, SceneAssets};
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::GameObject;
@@ -7,10 +8,10 @@ use crate::player_control::actions::{
 };
 use crate::player_control::camera::IngameCamera;
 use crate::player_control::player_embodiment::combat::{
-    CancellationTimes, PeriodicCancellationTimes, PlayerCombatAnimation, PlayerCombatAnimations,
-    PlayerCombatBundle,
+    CancellationTimes, PeriodicCancellationTimes, PlayerAttacks, PlayerCombatAnimation,
+    PlayerCombatAnimations, PlayerCombatBundle,
 };
-use crate::player_control::player_embodiment::Player;
+use crate::player_control::player_embodiment::{Player, PlayerModel};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::TAU;
@@ -88,6 +89,22 @@ pub(crate) fn spawn(
                         animations.idle.clone(),
                     ),
                 },
+                player_attacks: PlayerAttacks {
+                    attacks: [
+                        Attack {
+                            damage: 10.0,
+                            knockback: 1.0,
+                        },
+                        Attack {
+                            damage: 8.0,
+                            knockback: 1.0,
+                        },
+                        Attack {
+                            damage: 15.0,
+                            knockback: 3.0,
+                        },
+                    ],
+                },
             },
             GameObject::Player,
         ))
@@ -99,6 +116,7 @@ pub(crate) fn spawn(
                 follow_target: cameras.single(),
                 animation_target: player_entity,
             },
+            PlayerModel,
             SpatialBundle::default(),
             Name::new("Player Model Parent"),
         ))

@@ -1,5 +1,7 @@
 use crate::combat::{AttackHitbox, Combatant, HitboxToParentLink, ParentToHitboxLink, Projectile};
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
+use crate::movement::general_movement::Model;
+use crate::player_control::player_embodiment::PlayerModel;
 use crate::util::trait_extension::MeshExt;
 use anyhow::{Context, Result};
 use bevy::prelude::*;
@@ -10,9 +12,9 @@ use bevy_rapier3d::prelude::*;
 pub fn link_hitbox(
     mut commands: Commands,
     parents: Query<
-        (Entity,),
+        (Entity, Option<&Model>),
         (
-            Or<(With<Combatant>, With<Projectile>)>,
+            Or<(With<Combatant>, With<Projectile>, With<PlayerModel>)>,
             Without<ParentToHitboxLink>,
         ),
     >,
@@ -21,7 +23,7 @@ pub fn link_hitbox(
     meshes: Res<Assets<Mesh>>,
     names: Query<&Name>,
 ) -> Result<()> {
-    for (parent,) in parents.iter() {
+    for (parent, model) in parents.iter() {
         let mut mesh_child = None;
         let mut bone_child = None;
         for child in children.iter_descendants(parent) {
@@ -48,6 +50,11 @@ pub fn link_hitbox(
             .1;
         let collider = Collider::from_bevy_mesh(mesh, &ComputedColliderShape::TriMesh)
             .context("Failed to create collider from mesh")?;
+        let parent = if let Some(model) = model {
+            model.animation_target
+        } else {
+            parent
+        };
         commands.entity(bone_child).insert((
             collider,
             CollisionGroups::new(

@@ -1,3 +1,4 @@
+use crate::combat::Attack;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -5,6 +6,7 @@ use serde::{Deserialize, Serialize};
 pub struct PlayerCombatBundle {
     pub player_combat: PlayerCombatState,
     pub player_combat_animations: PlayerCombatAnimations,
+    pub player_attacks: PlayerAttacks,
 }
 
 #[derive(Debug, Clone, Copy, Component, Reflect, FromReflect, Serialize, Deserialize, Default)]
@@ -173,7 +175,20 @@ impl PlayerCombatKind {
         }
     }
 
+    pub fn get_attack(self, attacks: &PlayerAttacks) -> Option<Attack> {
+        match self {
+            PlayerCombatKind::Attack(attack) => Some(attacks.attacks[attack as usize]),
+            _ => None,
+        }
+    }
+
     pub fn is_attack(self) -> bool {
         matches!(self, PlayerCombatKind::Attack(_))
     }
+}
+
+#[derive(Debug, Clone, Component, Reflect, FromReflect, Default)]
+#[reflect(Component)]
+pub struct PlayerAttacks {
+    pub attacks: [Attack; 3],
 }

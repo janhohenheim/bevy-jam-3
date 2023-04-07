@@ -53,7 +53,7 @@ pub enum ProjectileKind {
     Simple,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Reflect, FromReflect, Default)]
 pub struct ProjectileSpawnInput {
     pub(crate) model: Handle<Scene>,
     pub(crate) attack: AttackHitbox,

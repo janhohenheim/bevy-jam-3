@@ -24,11 +24,15 @@ pub mod combat;
 pub fn player_embodiment_plugin(app: &mut App) {
     app.register_type::<Timer>()
         .register_type::<Player>()
+        .register_type::<PlayerModel>()
         .register_type::<PlayerCombatState>()
         .register_type::<AttackCommitment>()
         .register_type::<PlayerCombatAnimations>()
         .register_type::<PlayerCombatAnimation>()
         .register_type::<PlayerCombatKind>()
+        .register_type::<CancellationTimes>()
+        .register_type::<PeriodicCancellationTimes>()
+        .register_type::<PlayerAttacks>()
         .add_systems(
             (
                 handle_jump,
@@ -38,6 +42,7 @@ pub fn player_embodiment_plugin(app: &mut App) {
                 combat::block,
                 #[cfg(feature = "dev")]
                 combat::debug::display_combat_state,
+                combat::update_hitbox,
                 combat::play_animations,
                 handle_speed_effects,
                 rotate_to_speaker.run_if(resource_exists::<CurrentDialog>()),
@@ -54,6 +59,10 @@ pub fn player_embodiment_plugin(app: &mut App) {
 #[derive(Debug, Clone, Eq, PartialEq, Component, Reflect, Serialize, Deserialize, Default)]
 #[reflect(Component, Serialize, Deserialize)]
 pub struct Player;
+
+#[derive(Debug, Clone, Eq, PartialEq, Component, Reflect, Serialize, Deserialize, Default)]
+#[reflect(Component, Serialize, Deserialize)]
+pub struct PlayerModel;
 
 fn handle_jump(mut player_query: Query<(&ActionState<PlayerAction>, &mut Jumping), With<Player>>) {
     #[cfg(feature = "tracing")]

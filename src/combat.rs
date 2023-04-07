@@ -1,5 +1,5 @@
 use crate::ai::generic::projectile::spawn_actual_simple_projectile;
-use crate::combat::collision::HitEvent;
+use crate::combat::collision::detection::{EnemyHitEvent, PlayerHitEvent};
 use crate::level_instantiation::spawning::animation_link::link_animations;
 use crate::movement::general_movement::GeneralMovementSystemSet;
 use crate::GameState;
@@ -24,8 +24,11 @@ pub fn combat_plugin(app: &mut App) {
         .register_type::<AttackHitbox>()
         .register_type::<Attack>()
         .register_type::<Projectile>()
-        .register_type::<HitEvent>()
-        .add_event::<HitEvent>()
+        .register_type::<ProjectileSpawnInput>()
+        .register_type::<PlayerHitEvent>()
+        .register_type::<EnemyHitEvent>()
+        .add_event::<PlayerHitEvent>()
+        .add_event::<EnemyHitEvent>()
         .add_event::<InitMoveEvent>()
         .add_event::<ExecuteMoveEvent>()
         .add_plugin(SpewPlugin::<ProjectileKind, (Entity, ProjectileSpawnInput)>::default())
@@ -39,7 +42,7 @@ pub fn combat_plugin(app: &mut App) {
                 execution::init_move,
                 execution::execute_move,
                 linking::sync_projectile_attack_hitbox,
-                collision::on_hit,
+                collision::detection::detect_hits,
                 #[cfg(feature = "dev")]
                 debug::display_combatants,
             )

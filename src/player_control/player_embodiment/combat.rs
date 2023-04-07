@@ -1,8 +1,11 @@
+use crate::combat::{AttackHitbox, ParentToHitboxLink};
+use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::AnimationEntityLink;
 use crate::player_control::player_embodiment::PlayerAction;
 use anyhow::{Context, Result};
 use bevy::prelude::*;
 use bevy_mod_sysfail::sysfail;
+use bevy_rapier3d::prelude::*;
 pub use components::*;
 use leafwing_input_manager::prelude::*;
 use std::time::Duration;
@@ -88,6 +91,26 @@ pub fn update_states(
             }
         }
     }
+}
+
+#[sysfail(log(level = "error"))]
+pub fn update_hitbox(
+    players: Query<(&PlayerCombatState, &ParentToHitboxLink, &PlayerAttacks)>,
+    mut hitboxes: Query<(&mut AttackHitbox, &mut CollisionGroups)>,
+) -> Result<()> {
+    for (combat_state, parent_to_hitbox_link, attacks) in players.iter() {
+        let (mut hitbox, mut collision_groups) = hitboxes
+            .get_mut(parent_to_hitbox_link.0)
+            .context("Hitbox entity link points to an entity that does not have a hitbox")?;
+        hitbox.active = combat_state.kind.is_attack();
+        if hitbox.active {
+            collision_groups.filters |= GameCollisionGroup::ENEMY.into();
+            hitbox.attack = combat_state.kind.get_attack(&attacks).context("Failed to get attack from combat state even though according to hitbox activation it should be an attack")?;
+        } else {
+            collision_groups.filters -= GameCollisionGroup::ENEMY.into();
+        }
+    }
+    Ok(())
 }
 
 #[sysfail(log(level = "error"))]
