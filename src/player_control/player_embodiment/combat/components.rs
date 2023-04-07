@@ -18,8 +18,29 @@ pub struct PlayerCombatState {
 }
 
 impl PlayerCombatState {
-    pub fn use_next_kind(&mut self, kind: PlayerCombatKind) {
+    pub fn force_use_next_kind(&mut self, kind: PlayerCombatKind) {
         *self = Self { kind, ..default() };
+    }
+
+    pub fn try_use_next_kind(
+        &mut self,
+        kind: PlayerCombatKind,
+        early_cancel_guard: impl Fn(PlayerCombatKind) -> bool,
+    ) {
+        match self.commitment {
+            AttackCommitment::EarlyCancellable => {
+                if early_cancel_guard(self.kind) {
+                    self.force_use_next_kind(kind)
+                }
+            }
+            AttackCommitment::LateCancellable => {
+                self.force_use_next_kind(kind);
+            }
+            AttackCommitment::InBufferPeriod => {
+                self.buffer = Some(kind);
+            }
+            AttackCommitment::Committed => {}
+        }
     }
 }
 
@@ -36,7 +57,7 @@ pub enum AttackCommitment {
 }
 
 impl AttackCommitment {
-    pub fn is_cancellable(&self) -> bool {
+    pub fn is_cancellable(self) -> bool {
         matches!(
             self,
             AttackCommitment::EarlyCancellable | AttackCommitment::LateCancellable
@@ -74,6 +95,13 @@ impl PlayerCombatAnimation {
             buffer_start: 0.7,
         }
     }
+
+    pub fn without_early_cancel(handle: Handle<AnimationClip>) -> Self {
+        Self {
+            early_cancel_end: 0.,
+            ..Self::with_defaults(handle)
+        }
+    }
 }
 #[derive(
     Debug, Clone, Copy, Reflect, FromReflect, Serialize, Deserialize, Default, Eq, PartialEq,
@@ -91,13 +119,10 @@ pub enum PlayerCombatKind {
 }
 
 impl PlayerCombatKind {
-    pub fn get_animation<'a>(
-        &self,
-        animations: &'a PlayerCombatAnimations,
-    ) -> &'a PlayerCombatAnimation {
+    pub fn get_animation(self, animations: &PlayerCombatAnimations) -> &PlayerCombatAnimation {
         match self {
             PlayerCombatKind::Idle => &animations.idle,
-            PlayerCombatKind::Attack(attack) => &animations.attacks[*attack as usize],
+            PlayerCombatKind::Attack(attack) => &animations.attacks[attack as usize],
             PlayerCombatKind::Block => &animations.block,
             PlayerCombatKind::Hurt => &animations.hurt,
             PlayerCombatKind::Parried => &animations.parried,
@@ -106,7 +131,7 @@ impl PlayerCombatKind {
         }
     }
 
-    pub fn is_attack(&self) -> bool {
+    pub fn is_attack(self) -> bool {
         matches!(self, PlayerCombatKind::Attack(_))
     }
 }

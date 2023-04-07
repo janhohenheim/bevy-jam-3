@@ -30,21 +30,7 @@ pub fn attack(
             } else {
                 PlayerCombatKind::Attack(0)
             };
-            match combat_state.commitment {
-                AttackCommitment::EarlyCancellable => {
-                    let is_chaining_attack = combat_state.kind.is_attack();
-                    if !is_chaining_attack {
-                        combat_state.use_next_kind(desired_state)
-                    }
-                }
-                AttackCommitment::LateCancellable => {
-                    combat_state.use_next_kind(desired_state);
-                }
-                AttackCommitment::InBufferPeriod => {
-                    combat_state.buffer = Some(desired_state);
-                }
-                AttackCommitment::Committed => {}
-            }
+            combat_state.try_use_next_kind(desired_state, |current| !current.is_attack());
         }
     }
 }
@@ -52,15 +38,9 @@ pub fn attack(
 pub fn block(mut players: Query<(&ActionState<PlayerAction>, &mut PlayerCombatState)>) {
     for (actions, mut combat_state) in players.iter_mut() {
         if actions.just_released(PlayerAction::Block) {
-            match combat_state.commitment {
-                AttackCommitment::EarlyCancellable | AttackCommitment::LateCancellable => {
-                    combat_state.use_next_kind(PlayerCombatKind::Block);
-                }
-                AttackCommitment::InBufferPeriod => {
-                    combat_state.buffer = Some(PlayerCombatKind::Block);
-                }
-                AttackCommitment::Committed => {}
-            }
+            combat_state.try_use_next_kind(PlayerCombatKind::Block, |current| {
+                current != PlayerCombatKind::Block
+            });
         }
     }
 }
@@ -81,7 +61,7 @@ pub fn update_states(
             let time_fraction = combat_state.time_in_state / animation_clip.duration();
             if time_fraction > 1.0 {
                 let next_kind = combat_state.buffer.take().unwrap_or(PlayerCombatKind::Idle);
-                combat_state.use_next_kind(next_kind);
+                combat_state.force_use_next_kind(next_kind);
             } else if time_fraction < animation.early_cancel_end {
                 combat_state.commitment = AttackCommitment::EarlyCancellable;
             } else if time_fraction > animation.early_cancel_end

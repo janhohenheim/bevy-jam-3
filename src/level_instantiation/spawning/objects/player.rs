@@ -51,10 +51,14 @@ pub(crate) fn spawn(
                         PlayerCombatAnimation::with_defaults(animations.attack.clone()),
                     ],
                     block: PlayerCombatAnimation::with_defaults(animations.idle.clone()),
-                    hurt: PlayerCombatAnimation::with_defaults(animations.idle.clone()),
-                    parried: PlayerCombatAnimation::with_defaults(animations.idle.clone()),
-                    perfect_parried: PlayerCombatAnimation::with_defaults(animations.idle.clone()),
-                    posture_broken: PlayerCombatAnimation::with_defaults(animations.idle.clone()),
+                    hurt: PlayerCombatAnimation::without_early_cancel(animations.idle.clone()),
+                    parried: PlayerCombatAnimation::without_early_cancel(animations.idle.clone()),
+                    perfect_parried: PlayerCombatAnimation::without_early_cancel(
+                        animations.idle.clone(),
+                    ),
+                    posture_broken: PlayerCombatAnimation::without_early_cancel(
+                        animations.idle.clone(),
+                    ),
                 },
             },
             GameObject::Player,
