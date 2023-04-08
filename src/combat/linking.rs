@@ -124,22 +124,18 @@ pub fn sync_projectile_attack_hitbox(
 #[sysfail(log(level = "error"))]
 pub fn sync_colliders(
     mut rapier: ResMut<RapierContext>,
-    hitboxes: Query<(Entity, &GlobalTransform), With<HitboxToParentLink>>,
+    hitboxes: Query<(Entity, &Transform), With<HitboxToParentLink>>,
     parents: Query<&Parent>,
-    colliders: Query<&GlobalTransform, (With<Collider>, Without<HitboxToParentLink>)>,
+    transforms: Query<&Transform>,
+    colliders: Query<(), (With<Collider>, Without<HitboxToParentLink>)>,
 ) -> Result<()> {
     for (entity, hitbox_transform) in hitboxes.iter() {
-        let hitbox_transform = hitbox_transform.compute_transform();
         let parent_collider_transform = parents
             .iter_ancestors(entity)
-            .find_map(|entity| {
-                colliders
-                    .get(entity)
-                    .map(|transform| transform.compute_transform())
-                    .ok()
-            })
-            .context("Hitbox has no parent collider")?;
-        let relative_transform = hitbox_transform * parent_collider_transform.inverse();
+            .take_while(|entity| !colliders.contains(*entity))
+            .map(|entity| *transforms.get(entity).unwrap())
+            .fold(Transform::default(), |acc, transform| acc * transform);
+        let relative_transform = *hitbox_transform * parent_collider_transform;
         info!("relative_transform: {:?}", relative_transform);
 
         let handle = rapier.entity2collider().get(&entity).unwrap().clone();
