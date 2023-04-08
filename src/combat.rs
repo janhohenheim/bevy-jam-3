@@ -43,6 +43,7 @@ pub fn combat_plugin(app: &mut App) {
         .add_systems(
             (
                 linking::link_hitbox,
+                linking::sync_colliders,
                 collision::clear_cache,
                 collision::detect_hits,
                 collision::handle_enemy_being_hit,

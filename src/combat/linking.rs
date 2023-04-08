@@ -8,6 +8,7 @@ use bevy::prelude::*;
 use bevy::render::mesh::PrimitiveTopology;
 use bevy_mod_sysfail::macros::*;
 use bevy_rapier3d::prelude::*;
+use bevy_rapier3d::rapier::prelude::Isometry;
 
 #[sysfail(log(level = "error"))]
 pub fn link_hitbox(
@@ -60,10 +61,13 @@ pub fn link_hitbox(
                 GameCollisionGroup::ATTACK.into(),
                 GameCollisionGroup::NONE.into(),
             ),
+            SolverGroups {
+                memberships: GameCollisionGroup::ATTACK.into(),
+                filters: GameCollisionGroup::NONE.into(),
+            },
             ActiveEvents::COLLISION_EVENTS,
             ActiveCollisionTypes::all(),
             HitboxToParentLink(parent),
-            Sensor,
             AttackHitbox::default(),
             #[cfg(feature = "dev")]
             PbrBundle {
@@ -115,4 +119,48 @@ pub fn sync_projectile_attack_hitbox(
         }
     }
     Ok(())
+}
+
+#[sysfail(log(level = "error"))]
+pub fn sync_colliders(
+    mut rapier: ResMut<RapierContext>,
+    hitboxes: Query<(Entity, &GlobalTransform), With<HitboxToParentLink>>,
+    parents: Query<&Parent>,
+    colliders: Query<&GlobalTransform, (With<Collider>, Without<HitboxToParentLink>)>,
+) -> Result<()> {
+    for (entity, hitbox_transform) in hitboxes.iter() {
+        let hitbox_transform = hitbox_transform.compute_transform();
+        let parent_collider_transform = parents
+            .iter_ancestors(entity)
+            .find_map(|entity| {
+                colliders
+                    .get(entity)
+                    .map(|transform| transform.compute_transform())
+                    .ok()
+            })
+            .context("Hitbox has no parent collider")?;
+        let relative_transform = hitbox_transform * parent_collider_transform.inverse();
+        info!("relative_transform: {:?}", relative_transform);
+
+        let handle = rapier.entity2collider().get(&entity).unwrap().clone();
+        let collider = rapier.colliders.get_mut(handle).unwrap();
+
+        let translation = relative_transform.translation * relative_transform.scale;
+        let rotation = relative_transform.rotation;
+        collider.set_position_wrt_parent(Isometry::from_parts(translation.into(), rotation.into()));
+    }
+    Ok(())
+}
+
+trait TransformExt: Copy {
+    fn inverse(self) -> Self;
+}
+impl TransformExt for Transform {
+    fn inverse(self) -> Self {
+        Self {
+            translation: -self.translation,
+            rotation: self.rotation.inverse(),
+            scale: 1.0 / self.scale,
+        }
+    }
 }

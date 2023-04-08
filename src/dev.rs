@@ -20,6 +20,7 @@ pub fn dev_plugin(app: &mut App) {
             .add_plugin(LogDiagnosticsPlugin::filtered(vec![]))
             .add_plugin(RapierDebugRenderPlugin {
                 enabled: false,
+                always_on_top: true,
                 ..default()
             });
     }
