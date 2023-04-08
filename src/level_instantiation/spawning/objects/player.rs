@@ -1,4 +1,4 @@
-use crate::combat::{Attack, Constitution};
+use crate::combat::{Attack, Constitution, HitboxParentModel};
 use crate::file_system_interaction::asset_loading::{FpsDummyAnimationAssets, SceneAssets};
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::GameObject;
@@ -11,7 +11,7 @@ use crate::player_control::player_embodiment::combat::{
     CancellationTimes, PeriodicCancellationTimes, PlayerAttacks, PlayerCombatAnimation,
     PlayerCombatAnimations, PlayerCombatBundle,
 };
-use crate::player_control::player_embodiment::{Player, PlayerModel};
+use crate::player_control::player_embodiment::Player;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::TAU;
@@ -119,11 +119,11 @@ pub(crate) fn spawn(
 
     commands
         .spawn((
+            HitboxParentModel,
             Model {
                 follow_target: cameras.single(),
                 animation_target: player_entity,
             },
-            PlayerModel,
             SpatialBundle::default(),
             Name::new("Player Model Parent"),
         ))

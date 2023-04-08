@@ -25,7 +25,6 @@ pub mod combat;
 pub fn player_embodiment_plugin(app: &mut App) {
     app.register_type::<Timer>()
         .register_type::<Player>()
-        .register_type::<PlayerModel>()
         .register_type::<PlayerCombatState>()
         .register_type::<AttackCommitment>()
         .register_type::<PlayerCombatAnimations>()
@@ -62,10 +61,6 @@ pub fn player_embodiment_plugin(app: &mut App) {
 #[derive(Debug, Clone, Eq, PartialEq, Component, Reflect, Serialize, Deserialize, Default)]
 #[reflect(Component, Serialize, Deserialize)]
 pub struct Player;
-
-#[derive(Debug, Clone, Eq, PartialEq, Component, Reflect, Serialize, Deserialize, Default)]
-#[reflect(Component, Serialize, Deserialize)]
-pub struct PlayerModel;
 
 fn handle_jump(mut player_query: Query<(&ActionState<PlayerAction>, &mut Jumping), With<Player>>) {
     #[cfg(feature = "tracing")]

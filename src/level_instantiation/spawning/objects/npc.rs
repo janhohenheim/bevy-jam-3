@@ -285,6 +285,7 @@ pub(crate) fn spawn(
         }).id();
     commands
         .spawn((
+            HitboxParentModel,
             Model::with_same_follow_and_animation_targets(entity),
             SpatialBundle::default(),
             Name::new("Player Model Parent"),

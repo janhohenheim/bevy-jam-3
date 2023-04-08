@@ -33,6 +33,7 @@ pub fn combat_plugin(app: &mut App) {
         .register_type::<Constitution>()
         .register_type::<HitCache>()
         .register_type::<HitboxHits>()
+        .register_type::<HitboxParentModel>()
         .add_event::<PlayerHitEvent>()
         .add_event::<EnemyHitEvent>()
         .add_event::<InitMoveEvent>()
