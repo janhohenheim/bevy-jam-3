@@ -13,7 +13,7 @@ use std::hash::Hash;
 #[reflect(Serialize, Deserialize)]
 pub struct PlayerHitEvent {
     pub(crate) attack: Attack,
-    pub(crate) normal: Vec3,
+    pub(crate) target_to_contact: Vec3,
 }
 
 #[derive(Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect)]
@@ -21,7 +21,7 @@ pub struct PlayerHitEvent {
 pub struct EnemyHitEvent {
     pub(crate) target: Entity,
     pub(crate) attack: Attack,
-    pub(crate) normal: Vec3,
+    pub(crate) target_to_contact: Vec3,
 }
 
 #[derive(
@@ -138,14 +138,14 @@ pub fn detect_hits(
                         attack: hitbox.attack.clone(),
                     };
                     if hitbox.active && !hit_cache.contains(&hit) {
-                        if let Some(normal) = get_contact_normal(
+                        if let Some(direction) = get_target_to_contact(
                             target_entity,
                             hitbox_entity,
                             &rapier_context,
                             &transforms,
                         )? {
                             hit_cache.insert(hit);
-                            send_fn(target_entity, hitbox, normal);
+                            send_fn(target_entity, hitbox, direction);
                         }
                     }
                 }
@@ -155,24 +155,26 @@ pub fn detect_hits(
         if let Some((player_entity, hitbox_entity)) =
             determine_player_and_hitbox(&players, &attacks, entity_a, entity_b)
         {
-            let send_player_hit = |_target_entity: Entity, hitbox: &AttackHitbox, normal: Vec3| {
-                player_hit_events.send(PlayerHitEvent {
-                    attack: hitbox.attack.clone(),
-                    normal,
-                });
-            };
+            let send_player_hit =
+                |_target_entity: Entity, hitbox: &AttackHitbox, target_to_contact: Vec3| {
+                    player_hit_events.send(PlayerHitEvent {
+                        attack: hitbox.attack.clone(),
+                        target_to_contact,
+                    });
+                };
 
             handle_potential_hit(player_entity, hitbox_entity, Box::new(send_player_hit))?;
         } else if let Some((enemy_entity, hitbox_entity)) =
             determine_enemy_and_hitbox(&combatants, &attacks, entity_a, entity_b)
         {
-            let send_enemy_hit = |target_entity: Entity, hitbox: &AttackHitbox, normal: Vec3| {
-                enemy_hit_events.send(EnemyHitEvent {
-                    target: target_entity,
-                    attack: hitbox.attack.clone(),
-                    normal,
-                });
-            };
+            let send_enemy_hit =
+                |target_entity: Entity, hitbox: &AttackHitbox, target_to_contact: Vec3| {
+                    enemy_hit_events.send(EnemyHitEvent {
+                        target: target_entity,
+                        attack: hitbox.attack.clone(),
+                        target_to_contact,
+                    });
+                };
 
             handle_potential_hit(enemy_entity, hitbox_entity, Box::new(send_enemy_hit))?;
         }
@@ -193,7 +195,7 @@ pub fn clear_cache(mut hit_cache: ResMut<HitCache>, attacks: Query<&AttackHitbox
     hit_cache.remove_expired(&attacks);
 }
 
-fn get_contact_normal(
+fn get_target_to_contact(
     target: Entity,
     hitbox: Entity,
     rapier_context: &RapierContext,
@@ -205,21 +207,22 @@ fn get_contact_normal(
     if !contact_pair.has_any_active_contacts() {
         return Ok(None);
     }
-    get_target_to_hitbox(target, hitbox, transforms).map(Some)
-}
+    // Only one manifold because we are dealing with convex primitive shapes only
+    assert_eq!(
+        contact_pair.manifolds_len(),
+        1,
+        "Expected one manifold since we are dealing with convex shapes only."
+    );
+    let manifold = contact_pair.manifold(0).unwrap();
 
-fn get_target_to_hitbox(
-    target: Entity,
-    hitbox: Entity,
-    transforms: &Query<&Transform>,
-) -> Result<Vec3> {
-    let target_origin = transforms.get(target)?;
-    let hitbox_origin = transforms.get(hitbox)?;
-    let target_to_hitbox = hitbox_origin.translation - target_origin.translation;
-    let direction = target_to_hitbox
-        .try_normalize()
-        .context("Failed to normalize direction")?;
-    Ok(direction)
+    let contact_point = manifold
+        .solver_contacts()
+        .next()
+        .context("No contact points")?
+        .point();
+    let target_transform = transforms.get(target)?;
+    let target_to_contact = contact_point - target_transform.translation;
+    Ok(Some(target_to_contact))
 }
 
 fn determine_player_and_hitbox(

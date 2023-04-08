@@ -12,12 +12,14 @@ pub fn handle_player_being_hit(
 ) -> Result<()> {
     for event in hit_events.iter() {
         for (transform,) in players.iter() {
-            let angle = transform.forward().xz().angle_between(event.normal.xz());
+            let angle = transform
+                .forward()
+                .xz()
+                .angle_between(event.target_to_contact.xz());
             info!(
-                "Player hit by {} at angle: {}, i.e. normal {}",
+                "Player hit by {} at angle: {}",
                 event.attack.name,
                 angle.to_degrees(),
-                event.normal
             );
         }
     }

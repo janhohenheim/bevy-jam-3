@@ -15,12 +15,14 @@ pub fn handle_enemy_being_hit(
             .get_mut(event.target)
             .expect("Failed to get combatant from hit event");
 
-        let angle = transform.forward().xz().angle_between(event.normal.xz());
+        let angle = transform
+            .forward()
+            .xz()
+            .angle_between(event.target_to_contact.xz());
         info!(
-            "Enemy hit by {} at angle: {}, i.e. normal {}",
+            "Enemy hit by {} at angle: {}",
             event.attack.name,
             angle.to_degrees(),
-            event.normal
         );
         match combatant.current_move() {
             Some(move_) => match move_.init.state {
