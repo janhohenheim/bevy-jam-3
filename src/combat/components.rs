@@ -4,6 +4,7 @@ use bevy::utils::HashMap;
 pub use condition::*;
 pub use move_::*;
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 
 mod condition;
 mod move_;
@@ -89,12 +90,21 @@ impl Constitution {
         self
     }
 
-    pub fn take_health_damage(&mut self, damage: f32) {
-        self.health -= damage;
+    pub fn take_full_damage(&mut self, attack: &Attack) {
+        self.take_health_damage(attack);
+        self.take_posture_damage(attack);
     }
 
-    pub fn take_posture_damage(&mut self, damage: f32) {
-        self.posture += damage;
+    pub fn take_health_damage(&mut self, attack: &Attack) {
+        self.health -= attack.health_damage;
+    }
+
+    pub fn take_posture_damage(&mut self, attack: &Attack) {
+        self.posture += attack.health_damage;
+    }
+
+    pub fn die(&mut self) {
+        self.health = 0.0;
     }
 
     pub fn is_alive(&self) -> bool {
@@ -197,8 +207,39 @@ impl Default for AttackHitbox {
 #[reflect(Component, Serialize, Deserialize)]
 pub struct Attack {
     pub(crate) name: String,
-    pub(crate) damage: f32,
+    pub(crate) health_damage: f32,
+    pub(crate) posture_damage: f32,
     pub(crate) knockback: f32,
+}
+
+impl Attack {
+    pub fn new(name: impl Into<Cow<'static, str>>) -> Self {
+        Self {
+            name: name.into().to_string(),
+            ..default()
+        }
+    }
+
+    pub fn with_health_damage_scaling_rest(mut self, health_damage: f32) -> Self {
+        self.with_health_damage(health_damage)
+            .with_posture_damage(health_damage / 2.)
+            .with_knockback(health_damage / 3.)
+    }
+
+    pub fn with_health_damage(mut self, health_damage: f32) -> Self {
+        self.health_damage = health_damage;
+        self
+    }
+
+    pub fn with_posture_damage(mut self, posture_damage: f32) -> Self {
+        self.posture_damage = posture_damage;
+        self
+    }
+
+    pub fn with_knockback(mut self, knockback: f32) -> Self {
+        self.knockback = knockback;
+        self
+    }
 }
 
 #[derive(

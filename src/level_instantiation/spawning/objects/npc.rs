@@ -101,11 +101,7 @@ pub(crate) fn spawn(
                                     },
                                     execute: ExecuteMove {
                                         melee_attack_fn: Some(ai::generic::melee::whole_animation(
-                                            Attack {
-                                                name: "Default NPC Attack".to_string(),
-                                                damage: 10.0,
-                                                knockback: 5.0,
-                                            },
+                                            Attack::new("Default NPC Attack").with_health_damage_scaling_rest(10.),
                                         )),
                                         ..default()
                                     },
@@ -173,11 +169,7 @@ pub(crate) fn spawn(
                                             ai::generic::projectile::spawn_simple_projectile(
                                                 ProjectileSpawnInput {
                                                     model: scene_handles.kunai.clone(),
-                                                    attack: AttackHitbox::from_attack(Attack {
-                                                        name: "Kunai Throw".to_string(),
-                                                        damage: 5.0,
-                                                        knockback: 10.0,
-                                                    }),
+                                                    attack: AttackHitbox::from_attack(Attack::new("Kunai Throw").with_health_damage_scaling_rest(5.0)),
                                                     speed: 10.0,
                                                     tracking: 0.1,
                                                     max_lifetime: 3.0,

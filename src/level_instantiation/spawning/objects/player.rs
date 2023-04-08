@@ -91,21 +91,9 @@ pub(crate) fn spawn(
                 },
                 player_attacks: PlayerAttacks {
                     attacks: [
-                        Attack {
-                            name: "Attack 1".to_string(),
-                            damage: 10.0,
-                            knockback: 1.0,
-                        },
-                        Attack {
-                            name: "Attack 2".to_string(),
-                            damage: 8.0,
-                            knockback: 1.0,
-                        },
-                        Attack {
-                            name: "Attack 3".to_string(),
-                            damage: 15.0,
-                            knockback: 3.0,
-                        },
+                        Attack::new("Attack 1").with_health_damage_scaling_rest(10.0),
+                        Attack::new("Attack 2").with_health_damage_scaling_rest(8.0),
+                        Attack::new("Attack 3").with_health_damage_scaling_rest(15.0),
                     ],
                 },
                 constitution: Constitution::default()

@@ -4,6 +4,7 @@ use crate::file_system_interaction::config::GameConfig;
 use crate::movement::general_movement::{GeneralMovementSystemSet, Grounded, Jumping, Walking};
 use crate::player_control::actions::{DualAxisDataExt, PlayerAction};
 use crate::player_control::camera::{CameraUpdateSystemSet, IngameCamera, IngameCameraKind};
+use crate::player_control::player_embodiment::combat::collision::PlayerHurtEvent;
 use crate::player_control::player_embodiment::combat::*;
 use crate::util::smoothness_to_lerp_factor;
 use crate::util::trait_extension::{F32Ext, TransformExt, Vec3Ext};
@@ -33,6 +34,9 @@ pub fn player_embodiment_plugin(app: &mut App) {
         .register_type::<CancellationTimes>()
         .register_type::<PeriodicCancellationTimes>()
         .register_type::<PlayerAttacks>()
+        .register_type::<PlayerHurtEvent>()
+        .register_type::<PlayerHurtExtent>()
+        .add_event::<PlayerHurtEvent>()
         .add_systems(
             (
                 handle_jump,

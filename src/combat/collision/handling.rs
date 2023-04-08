@@ -27,16 +27,16 @@ pub fn handle_enemy_being_hit(
         match combatant.current_move() {
             Some(move_) => match move_.init.state {
                 CombatantState::Deathblow => {
-                    constitution.health = 0.0;
+                    constitution.die();
                 }
                 CombatantState::Vulnerable => {
-                    constitution.health -= event.attack.damage;
+                    constitution.take_full_damage(&event.attack);
                 }
                 CombatantState::OnGuard => {
-                    constitution.posture += event.attack.damage;
+                    constitution.take_posture_damage(&event.attack);
                 }
                 CombatantState::HyperArmor => {
-                    constitution.health -= event.attack.damage;
+                    constitution.take_health_damage(&event.attack);
                 }
             },
             None => {}

@@ -1,4 +1,4 @@
-use crate::combat::{Attack, AttackHitbox, Combatant};
+use crate::combat::{Attack, AttackHitbox, Combatant, HitboxToParentLink};
 use crate::player_control::player_embodiment::Player;
 use crate::world_interaction::interactions_ui::unpack_event;
 use anyhow::{Context, Error, Result};
@@ -12,6 +12,7 @@ use std::hash::Hash;
 #[derive(Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect)]
 #[reflect(Serialize, Deserialize)]
 pub struct PlayerHitEvent {
+    pub(crate) source: Entity,
     pub(crate) attack: Attack,
     pub(crate) target_to_contact: Vec3,
 }
@@ -113,7 +114,7 @@ pub fn detect_hits(
     mut collision_events: EventReader<CollisionEvent>,
     players: Query<(), With<Player>>,
     combatants: Query<(), With<Combatant>>,
-    attacks: Query<(&AttackHitbox,)>,
+    attacks: Query<(&AttackHitbox, &HitboxToParentLink)>,
     mut player_hit_events: EventWriter<PlayerHitEvent>,
     mut enemy_hit_events: EventWriter<EnemyHitEvent>,
     rapier_context: Res<RapierContext>,
@@ -129,9 +130,11 @@ pub fn detect_hits(
         let mut handle_potential_hit =
             |target_entity: Entity,
              hitbox_entity: Entity,
-             mut send_fn: Box<dyn FnMut(Entity, &AttackHitbox, Vec3)>|
+             mut send_fn: Box<dyn FnMut(Entity, Entity, AttackHitbox, Vec3)>|
              -> Result<()> {
-                if let Some(hitbox) = get_active_hitbox(&attacks, hitbox_entity)? {
+                if let Some((hitbox, source_entity)) =
+                    get_active_hitbox_and_source(&attacks, hitbox_entity)?
+                {
                     let hit = Hit {
                         target: target_entity,
                         hitbox: hitbox_entity,
@@ -145,7 +148,7 @@ pub fn detect_hits(
                             &transforms,
                         )? {
                             hit_cache.insert(hit);
-                            send_fn(target_entity, hitbox, direction);
+                            send_fn(target_entity, source_entity, hitbox, direction);
                         }
                     }
                 }
@@ -155,26 +158,31 @@ pub fn detect_hits(
         if let Some((player_entity, hitbox_entity)) =
             determine_player_and_hitbox(&players, &attacks, entity_a, entity_b)
         {
-            let send_player_hit =
-                |_target_entity: Entity, hitbox: &AttackHitbox, target_to_contact: Vec3| {
-                    player_hit_events.send(PlayerHitEvent {
-                        attack: hitbox.attack.clone(),
-                        target_to_contact,
-                    });
-                };
+            let send_player_hit = |_target_entity: Entity,
+                                   source_entity: Entity,
+                                   hitbox: AttackHitbox,
+                                   target_to_contact: Vec3| {
+                player_hit_events.send(PlayerHitEvent {
+                    source: source_entity,
+                    attack: hitbox.attack,
+                    target_to_contact,
+                });
+            };
 
             handle_potential_hit(player_entity, hitbox_entity, Box::new(send_player_hit))?;
         } else if let Some((enemy_entity, hitbox_entity)) =
             determine_enemy_and_hitbox(&combatants, &attacks, entity_a, entity_b)
         {
-            let send_enemy_hit =
-                |target_entity: Entity, hitbox: &AttackHitbox, target_to_contact: Vec3| {
-                    enemy_hit_events.send(EnemyHitEvent {
-                        target: target_entity,
-                        attack: hitbox.attack.clone(),
-                        target_to_contact,
-                    });
-                };
+            let send_enemy_hit = |target_entity: Entity,
+                                  _source_entity: Entity,
+                                  hitbox: AttackHitbox,
+                                  target_to_contact: Vec3| {
+                enemy_hit_events.send(EnemyHitEvent {
+                    target: target_entity,
+                    attack: hitbox.attack,
+                    target_to_contact,
+                });
+            };
 
             handle_potential_hit(enemy_entity, hitbox_entity, Box::new(send_enemy_hit))?;
         }
@@ -182,12 +190,16 @@ pub fn detect_hits(
     Ok(())
 }
 
-fn get_active_hitbox<'a>(
-    attacks: &'a Query<(&AttackHitbox,)>,
+fn get_active_hitbox_and_source(
+    attacks: &Query<(&AttackHitbox, &HitboxToParentLink)>,
     entity: Entity,
-) -> Result<Option<&'a AttackHitbox>, Error> {
-    let (hitbox,) = attacks.get(entity)?;
-    let result = hitbox.active.then_some(hitbox);
+) -> Result<Option<(AttackHitbox, Entity)>, Error> {
+    let (hitbox, link) = attacks.get(entity)?;
+    let parent = link.0;
+    let result = hitbox
+        .active
+        .then_some(hitbox)
+        .map(|hitbox| (hitbox.clone(), parent));
     Ok(result)
 }
 
@@ -227,7 +239,7 @@ fn get_target_to_contact(
 
 fn determine_player_and_hitbox(
     players: &Query<(), With<Player>>,
-    attacks: &Query<(&AttackHitbox,)>,
+    attacks: &Query<(&AttackHitbox, &HitboxToParentLink)>,
     entity_a: Entity,
     entity_b: Entity,
 ) -> Option<(Entity, Entity)> {
@@ -242,7 +254,7 @@ fn determine_player_and_hitbox(
 
 fn determine_enemy_and_hitbox(
     combatants: &Query<(), With<Combatant>>,
-    attacks: &Query<(&AttackHitbox,)>,
+    attacks: &Query<(&AttackHitbox, &HitboxToParentLink)>,
     entity_a: Entity,
     entity_b: Entity,
 ) -> Option<(Entity, Entity)> {
