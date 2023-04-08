@@ -9,6 +9,7 @@ use bevy::render::mesh::PrimitiveTopology;
 use bevy_mod_sysfail::macros::*;
 use bevy_rapier3d::prelude::*;
 use bevy_rapier3d::rapier::prelude::Isometry;
+use std::iter;
 
 #[sysfail(log(level = "error"))]
 pub fn link_hitbox(
@@ -130,13 +131,16 @@ pub fn sync_colliders(
     colliders: Query<(), (With<Collider>, Without<HitboxToParentLink>)>,
 ) -> Result<()> {
     for (entity, hitbox_transform) in hitboxes.iter() {
-        let parent_collider_transform = parents
+        let transform_hierarchy: Vec<_> = parents
             .iter_ancestors(entity)
             .take_while(|entity| !colliders.contains(*entity))
             .map(|entity| *transforms.get(entity).unwrap())
-            .fold(Transform::default(), |acc, transform| acc * transform);
+            .collect();
+        let parent_collider_transform = transform_hierarchy
+            .iter()
+            .chain(iter::once(transform_hierarchy.last().unwrap()))
+            .fold(Transform::default(), |acc, transform| acc * *transform);
         let relative_transform = *hitbox_transform * parent_collider_transform;
-        info!("relative_transform: {:?}", relative_transform);
 
         let handle = rapier.entity2collider().get(&entity).unwrap().clone();
         let collider = rapier.colliders.get_mut(handle).unwrap();
