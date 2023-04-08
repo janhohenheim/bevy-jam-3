@@ -118,6 +118,7 @@ pub fn detect_hits(
     mut enemy_hit_events: EventWriter<EnemyHitEvent>,
     rapier_context: Res<RapierContext>,
     mut hit_cache: ResMut<HitCache>,
+    transforms: Query<&Transform>,
 ) -> Result<()> {
     for event in collision_events.iter() {
         let (entity_a, entity_b, ongoing) = unpack_event(event);
@@ -137,9 +138,12 @@ pub fn detect_hits(
                         attack: hitbox.attack.clone(),
                     };
                     if hitbox.active && !hit_cache.contains(&hit) {
-                        if let Some(normal) =
-                            get_contact_normal(target_entity, hitbox_entity, &rapier_context)
-                        {
+                        if let Some(normal) = get_contact_normal(
+                            target_entity,
+                            hitbox_entity,
+                            &rapier_context,
+                            &transforms,
+                        )? {
                             hit_cache.insert(hit);
                             send_fn(target_entity, hitbox, normal);
                         }
@@ -180,11 +184,8 @@ fn get_active_hitbox<'a>(
     attacks: &'a Query<(&AttackHitbox,)>,
     entity: Entity,
 ) -> Result<Option<&'a AttackHitbox>, Error> {
-    let (hitbox,) = attacks
-        .get(entity)
-        .ok()
-        .context("Failed to get attack data from colliding entity")?;
-    let result = if hitbox.active { Some(hitbox) } else { None };
+    let (hitbox,) = attacks.get(entity)?;
+    let result = hitbox.active.then_some(hitbox);
     Ok(result)
 }
 
@@ -196,27 +197,15 @@ fn get_contact_normal(
     target: Entity,
     hitbox: Entity,
     rapier_context: &RapierContext,
-) -> Option<Vec3> {
-    let contact_pair = rapier_context.contact_pair(target, hitbox)?;
+    transforms: &Query<&Transform>,
+) -> Result<Option<Vec3>> {
+    let contact_pair = rapier_context
+        .contact_pair(target, hitbox)
+        .context("Failed to get contact pair")?;
     if !contact_pair.has_any_active_contacts() {
-        return None;
+        return Ok(None);
     }
-    // Only one manifold because we are dealing with convex primitive shapes only
-    assert_eq!(
-        contact_pair.manifolds_len(),
-        1,
-        "Expected one manifold since we are dealing with convex shapes only."
-    );
-    let manifold = contact_pair.manifold(0).unwrap();
-    info!("Local-space contact normal: {}", manifold.local_n1());
-    info!("Local-space contact normal: {}", manifold.local_n2());
-    info!("World-space contact normal: {}", manifold.normal());
-
-    for contact in manifold.solver_contacts() {
-        info!("Solver contact point: {}", contact.point());
-        info!("Solver contact dist: {}", contact.dist());
-    }
-    Some(manifold.normal())
+    get_target_to_hitbox(target, hitbox, transforms).map(Some)
 }
 
 fn get_target_to_hitbox(
@@ -227,7 +216,10 @@ fn get_target_to_hitbox(
     let target_origin = transforms.get(target)?;
     let hitbox_origin = transforms.get(hitbox)?;
     let target_to_hitbox = hitbox_origin.translation - target_origin.translation;
-    Ok(target_to_hitbox)
+    let direction = target_to_hitbox
+        .try_normalize()
+        .context("Failed to normalize direction")?;
+    Ok(direction)
 }
 
 fn determine_player_and_hitbox(

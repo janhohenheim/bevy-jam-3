@@ -1,6 +1,7 @@
 use crate::combat::collision::detection::EnemyHitEvent;
 use crate::combat::{Combatant, CombatantState, Constitution};
 use anyhow::Result;
+use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_mod_sysfail::macros::*;
 
@@ -14,7 +15,7 @@ pub fn handle_enemy_being_hit(
             .get_mut(event.target)
             .expect("Failed to get combatant from hit event");
 
-        let angle = transform.forward().angle_between(event.normal);
+        let angle = transform.forward().xz().angle_between(event.normal.xz());
         info!(
             "Enemy hit by {} at angle: {}, i.e. normal {}",
             event.attack.name,

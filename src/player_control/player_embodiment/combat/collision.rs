@@ -1,6 +1,7 @@
 use crate::combat::collision::PlayerHitEvent;
 use crate::player_control::player_embodiment::Player;
 use anyhow::Result;
+use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_mod_sysfail::macros::*;
 
@@ -11,7 +12,7 @@ pub fn handle_player_being_hit(
 ) -> Result<()> {
     for event in hit_events.iter() {
         for (transform,) in players.iter() {
-            let angle = transform.forward().angle_between(event.normal);
+            let angle = transform.forward().xz().angle_between(event.normal.xz());
             info!(
                 "Player hit by {} at angle: {}, i.e. normal {}",
                 event.attack.name,
