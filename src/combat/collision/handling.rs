@@ -16,9 +16,10 @@ pub fn handle_enemy_being_hit(
 
         let angle = transform.forward().angle_between(event.normal);
         info!(
-            "Enemy hit by {} at angle: {}",
+            "Enemy hit by {} at angle: {}, i.e. normal {}",
             event.attack.name,
-            angle.to_degrees()
+            angle.to_degrees(),
+            event.normal
         );
         match combatant.current_move() {
             Some(move_) => match move_.init.state {

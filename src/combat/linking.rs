@@ -5,6 +5,7 @@ use crate::player_control::player_embodiment::PlayerModel;
 use crate::util::trait_extension::MeshExt;
 use anyhow::{Context, Result};
 use bevy::prelude::*;
+use bevy::render::mesh::PrimitiveTopology;
 use bevy_mod_sysfail::macros::*;
 use bevy_rapier3d::prelude::*;
 
@@ -20,7 +21,8 @@ pub fn link_hitbox(
     >,
     children: Query<&Children>,
     mesh_handles: Query<&Handle<Mesh>>,
-    meshes: Res<Assets<Mesh>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
     names: Query<&Name>,
 ) -> Result<()> {
     for (parent, model) in parents.iter() {
@@ -47,8 +49,10 @@ pub fn link_hitbox(
         let mesh = Mesh::search_in_children(mesh_child, &children, &meshes, &mesh_handles)
             .first()
             .context("Hitbox entity has no mesh")?
-            .1;
-        let collider = Collider::from_bevy_mesh(mesh, &ComputedColliderShape::TriMesh)
+            .1
+            .clone();
+        let mesh = clean_mesh(&mesh);
+        let collider = Collider::from_bevy_mesh(&mesh, &ComputedColliderShape::TriMesh)
             .context("Failed to create collider from mesh")?;
         commands.entity(bone_child).insert((
             collider,
@@ -56,14 +60,17 @@ pub fn link_hitbox(
                 GameCollisionGroup::ATTACK.into(),
                 GameCollisionGroup::NONE.into(),
             ),
-            SolverGroups {
-                memberships: GameCollisionGroup::ATTACK.into(),
-                filters: GameCollisionGroup::NONE.into(),
-            },
             ActiveEvents::COLLISION_EVENTS,
             ActiveCollisionTypes::all(),
             HitboxToParentLink(parent),
+            Sensor,
             AttackHitbox::default(),
+            #[cfg(feature = "dev")]
+            PbrBundle {
+                mesh: meshes.add(mesh),
+                material: materials.add(Color::rgb(1.0, 0.0, 0.0).into()),
+                ..default()
+            },
         ));
         commands
             .entity(parent)
@@ -75,6 +82,20 @@ pub fn link_hitbox(
         }
     }
     Ok(())
+}
+
+fn clean_mesh(mesh: &Mesh) -> Mesh {
+    let mut clean_mesh = Mesh::new(PrimitiveTopology::TriangleList);
+    clean_mesh.set_indices(mesh.indices().cloned());
+    clean_mesh.insert_attribute(
+        Mesh::ATTRIBUTE_POSITION,
+        mesh.attribute(Mesh::ATTRIBUTE_POSITION).cloned().unwrap(),
+    );
+    clean_mesh.insert_attribute(
+        Mesh::ATTRIBUTE_NORMAL,
+        mesh.attribute(Mesh::ATTRIBUTE_NORMAL).cloned().unwrap(),
+    );
+    clean_mesh
 }
 
 #[sysfail(log(level = "error"))]
