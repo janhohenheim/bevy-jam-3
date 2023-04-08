@@ -138,11 +138,13 @@ pub fn detect_hits(
             determine_player_and_hitbox(&players, &attacks, entity_a, entity_b)
         {
             if let Some(hitbox) = get_active_hitbox(hitbox_entity)? {
-                if !hit_cache.update_and_check_contained(Hit {
-                    target: player_entity,
-                    hitbox: hitbox_entity,
-                    attack: hitbox.attack.clone(),
-                }) {
+                if hitbox.active
+                    && !hit_cache.update_and_check_contained(Hit {
+                        target: player_entity,
+                        hitbox: hitbox_entity,
+                        attack: hitbox.attack.clone(),
+                    })
+                {
                     let normal = get_contact_normal(player_entity, hitbox_entity, &rapier_context)?;
                     player_hit_events.send(PlayerHitEvent {
                         attack: hitbox.attack.clone(),
@@ -154,11 +156,13 @@ pub fn detect_hits(
             determine_enemy_and_hitbox(&combatants, &attacks, entity_a, entity_b)
         {
             if let Some(hitbox) = get_active_hitbox(hitbox_entity)? {
-                if !hit_cache.update_and_check_contained(Hit {
-                    target: enemy_entity,
-                    hitbox: hitbox_entity,
-                    attack: hitbox.attack.clone(),
-                }) {
+                if hitbox.active
+                    && !hit_cache.update_and_check_contained(Hit {
+                        target: enemy_entity,
+                        hitbox: hitbox_entity,
+                        attack: hitbox.attack.clone(),
+                    })
+                {
                     let normal = get_contact_normal(enemy_entity, hitbox_entity, &rapier_context)?;
                     enemy_hit_events.send(EnemyHitEvent {
                         target: enemy_entity,
@@ -184,13 +188,21 @@ fn get_contact_normal(
     let contact_pair = rapier_context
         .contact_pair(target, hitbox)
         .context("Failed to get contact pair")?;
-    let manifold = contact_pair
+    let (manifold, _contact) = contact_pair
         .find_deepest_contact()
-        .map(|(manifold, _contact)| manifold)
-        .or_else(|| contact_pair.manifold(0))
-        .context("Failed to get manifold")?;
-    let normal = manifold.local_n1();
-    Ok(normal)
+        .context("Failed to find deepest contact")?;
+    Ok(manifold.normal())
+}
+
+fn get_target_to_hitbox(
+    target: Entity,
+    hitbox: Entity,
+    transforms: &Query<&Transform>,
+) -> Result<Vec3> {
+    let target_origin = transforms.get(target)?;
+    let hitbox_origin = transforms.get(hitbox)?;
+    let target_to_hitbox = hitbox_origin.translation - target_origin.translation;
+    Ok(target_to_hitbox)
 }
 
 fn determine_player_and_hitbox(

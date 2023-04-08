@@ -58,10 +58,10 @@ impl PlayerCombatState {
 )]
 #[reflect(Serialize, Deserialize)]
 pub enum AttackCommitment {
+    #[default]
     EarlyCancellable,
     LateCancellable,
     InBufferPeriod,
-    #[default]
     Committed,
 }
 

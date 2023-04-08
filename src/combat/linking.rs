@@ -17,7 +17,7 @@ pub fn link_hitbox(
     parents: Query<
         (Entity, Option<&Model>),
         (
-            Or<(With<Combatant>, With<Projectile>, With<PlayerModel>)>,
+            Or<(With<Model>, With<Projectile>)>,
             Without<ParentToHitboxLink>,
         ),
     >,
@@ -120,47 +120,4 @@ pub fn sync_projectile_attack_hitbox(
         }
     }
     Ok(())
-}
-
-#[sysfail(log(level = "error"))]
-pub fn sync_colliders(
-    mut rapier: ResMut<RapierContext>,
-    hitboxes: Query<(Entity, &Transform), With<HitboxToParentLink>>,
-    parents: Query<&Parent>,
-    transforms: Query<&Transform>,
-    colliders: Query<(), (With<Collider>, Without<HitboxToParentLink>)>,
-) -> Result<()> {
-    for (entity, hitbox_transform) in hitboxes.iter() {
-        let transform_hierarchy: Vec<_> = parents
-            .iter_ancestors(entity)
-            .take_while(|entity| !colliders.contains(*entity))
-            .map(|entity| *transforms.get(entity).unwrap())
-            .collect();
-        let parent_collider_transform = transform_hierarchy
-            .iter()
-            .chain(iter::once(transform_hierarchy.last().unwrap()))
-            .fold(Transform::default(), |acc, transform| acc * *transform);
-        let relative_transform = *hitbox_transform * parent_collider_transform;
-
-        let handle = rapier.entity2collider().get(&entity).unwrap().clone();
-        let collider = rapier.colliders.get_mut(handle).unwrap();
-
-        let translation = relative_transform.translation * relative_transform.scale;
-        let rotation = relative_transform.rotation;
-        collider.set_position_wrt_parent(Isometry::from_parts(translation.into(), rotation.into()));
-    }
-    Ok(())
-}
-
-trait TransformExt: Copy {
-    fn inverse(self) -> Self;
-}
-impl TransformExt for Transform {
-    fn inverse(self) -> Self {
-        Self {
-            translation: -self.translation,
-            rotation: self.rotation.inverse(),
-            scale: 1.0 / self.scale,
-        }
-    }
 }
