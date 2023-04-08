@@ -8,6 +8,7 @@ pub struct PlayerCombatBundle {
     pub player_combat_animations: PlayerCombatAnimations,
     pub player_attacks: PlayerAttacks,
     pub constitution: Constitution,
+    pub block_history: BlockHistory,
 }
 
 #[derive(Debug, Clone, Copy, Component, Reflect, FromReflect, Serialize, Deserialize, Default)]
@@ -18,6 +19,55 @@ pub struct PlayerCombatState {
     pub commitment: AttackCommitment,
     pub time_in_state: f32,
     pub started_animation: bool,
+}
+
+#[derive(Debug, Clone, Component, Reflect, FromReflect, Serialize, Deserialize, Default)]
+#[reflect(Component, Serialize, Deserialize)]
+pub struct BlockHistory(Vec<BlockHistoryEntry>);
+
+impl BlockHistory {
+    pub fn push(&mut self) {
+        self.0.push(default())
+    }
+
+    pub fn count_younger_than(&self, time: f32) -> usize {
+        self.0
+            .iter()
+            .rev()
+            .take_while(|entry| entry.time < time)
+            .count()
+    }
+
+    pub fn age(&mut self, dt: f32) {
+        for entry in self.0.iter_mut() {
+            entry.time += dt;
+        }
+    }
+
+    pub fn remove_older_than(&mut self, time: f32) {
+        self.0.retain(|entry| entry.time < time);
+    }
+
+    pub fn mark_last_as_deflect(&mut self) {
+        if let Some(entry) = self.0.last_mut() {
+            entry.deflect = true;
+        }
+    }
+
+    pub fn current_deflect_streak(&self) -> usize {
+        self.0
+            .iter()
+            .rev()
+            .take_while(|entry| entry.deflect)
+            .count()
+    }
+}
+
+#[derive(Debug, Clone, Copy, Component, Reflect, FromReflect, Serialize, Deserialize, Default)]
+#[reflect(Component, Serialize, Deserialize)]
+pub struct BlockHistoryEntry {
+    pub time: f32,
+    pub deflect: bool,
 }
 
 impl PlayerCombatState {

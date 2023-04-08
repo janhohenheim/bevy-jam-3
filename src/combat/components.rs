@@ -93,13 +93,22 @@ impl Constitution {
         self
     }
 
+    pub fn health(&self) -> f32 {
+        self.health
+    }
+
+    pub fn posture(&self) -> f32 {
+        self.posture
+    }
+
     pub fn take_full_damage(&mut self, attack: &Attack) {
         self.take_health_damage(attack);
         self.take_posture_damage(attack);
     }
 
     fn take_health_damage(&mut self, attack: &Attack) {
-        self.health -= attack.health_damage;
+        let factor = if self.is_posture_broken { 3.0 } else { 1.0 };
+        self.health -= attack.health_damage * factor;
         if self.health < 0.0 {
             self.health = 0.0;
             self.is_dead = true;
@@ -107,10 +116,18 @@ impl Constitution {
     }
 
     pub fn take_posture_damage(&mut self, attack: &Attack) {
-        self.posture += attack.health_damage;
+        self.posture += attack.posture_damage;
         if self.posture > self.max_posture {
             self.is_posture_broken = true;
             self.posture = 0.0;
+        }
+    }
+
+    pub fn take_posture_damage_deflecting(&mut self, attack: &Attack) {
+        let factor = 0.5;
+        self.posture += attack.posture_damage * factor;
+        if self.posture > self.max_posture {
+            self.posture = self.max_posture;
         }
     }
 
@@ -274,7 +291,7 @@ impl Attack {
     pub fn with_health_damage_scaling_rest(self, health_damage: f32) -> Self {
         self.with_health_damage(health_damage)
             .with_posture_damage(health_damage * 0.375)
-            .with_knockback(health_damage * 0.1)
+            .with_knockback(health_damage * 0.9)
     }
 
     pub fn with_health_damage(mut self, health_damage: f32) -> Self {

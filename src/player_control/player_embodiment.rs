@@ -39,6 +39,8 @@ pub fn player_embodiment_plugin(app: &mut App) {
         .register_type::<PlayerHurtEvent>()
         .register_type::<BlockedByPlayerEvent>()
         .register_type::<DeflectedByPlayerEvent>()
+        .register_type::<BlockHistory>()
+        .register_type::<BlockHistoryEntry>()
         .add_event::<PlayerHurtEvent>()
         .add_event::<BlockedByPlayerEvent>()
         .add_event::<DeflectedByPlayerEvent>()
@@ -46,18 +48,31 @@ pub fn player_embodiment_plugin(app: &mut App) {
             (
                 handle_jump,
                 handle_horizontal_movement,
-                combat::update_states,
-                combat::attack,
-                combat::block,
-                combat::collision::handle_player_being_hit,
-                #[cfg(feature = "dev")]
-                combat::debug::display_combat_state,
-                combat::update_hitbox,
-                combat::play_animations,
                 handle_speed_effects,
                 rotate_to_speaker.run_if(resource_exists::<CurrentDialog>()),
                 control_walking_sound,
                 handle_camera_kind,
+            )
+                .chain()
+                .after(CameraUpdateSystemSet)
+                .after(CombatSystemSet)
+                .before(GeneralMovementSystemSet)
+                .in_set(OnUpdate(GameState::Playing)),
+        )
+        .add_systems(
+            (
+                combat::update_block_history,
+                combat::update_states,
+                combat::attack,
+                combat::block,
+                combat::collision::handle_player_being_hit,
+                combat::after_hit::handle_hurt_events,
+                combat::after_hit::handle_block_events,
+                combat::after_hit::handle_deflect_events,
+                #[cfg(feature = "dev")]
+                combat::debug::display_combat_state,
+                combat::update_hitbox,
+                combat::play_animations,
             )
                 .chain()
                 .after(CameraUpdateSystemSet)

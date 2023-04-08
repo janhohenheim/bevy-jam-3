@@ -8,8 +8,8 @@ use crate::player_control::actions::{
 };
 use crate::player_control::camera::IngameCamera;
 use crate::player_control::player_embodiment::combat::{
-    CancellationTimes, PeriodicCancellationTimes, PlayerAttacks, PlayerCombatAnimation,
-    PlayerCombatAnimations, PlayerCombatBundle,
+    BlockHistory, CancellationTimes, PeriodicCancellationTimes, PlayerAttacks,
+    PlayerCombatAnimation, PlayerCombatAnimations, PlayerCombatBundle,
 };
 use crate::player_control::player_embodiment::Player;
 use bevy::prelude::*;
@@ -98,6 +98,7 @@ pub(crate) fn spawn(
                     .with_max_health(100.0)
                     .with_max_posture(100.0)
                     .with_base_posture_recovery(20.0),
+                block_history: BlockHistory::default(),
             },
             GameObject::Player,
         ))

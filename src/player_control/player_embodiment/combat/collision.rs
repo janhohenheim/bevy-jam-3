@@ -1,6 +1,8 @@
 use crate::combat::collision::PlayerHitEvent;
 use crate::combat::Attack;
-use crate::player_control::player_embodiment::combat::{PlayerCombatKind, PlayerCombatState};
+use crate::player_control::player_embodiment::combat::{
+    BlockHistory, PlayerCombatKind, PlayerCombatState,
+};
 use crate::player_control::player_embodiment::Player;
 use anyhow::Result;
 use bevy::math::Vec3Swizzles;
@@ -11,13 +13,13 @@ use serde::{Deserialize, Serialize};
 #[sysfail(log(level = "error"))]
 pub fn handle_player_being_hit(
     mut hit_events: EventReader<PlayerHitEvent>,
-    mut players: Query<(&Transform, &PlayerCombatState), With<Player>>,
+    mut players: Query<(&Transform, &PlayerCombatState, &mut BlockHistory), With<Player>>,
     mut hurt_events: EventWriter<PlayerHurtEvent>,
     mut block_events: EventWriter<BlockedByPlayerEvent>,
     mut deflect_events: EventWriter<DeflectedByPlayerEvent>,
 ) -> Result<()> {
     for event in hit_events.iter() {
-        for (transform, combat_state) in players.iter_mut() {
+        for (transform, combat_state, mut block_history) in players.iter_mut() {
             if combat_state.kind != PlayerCombatKind::Block {
                 hurt_events.send(event.into());
             } else {
@@ -26,11 +28,11 @@ pub fn handle_player_being_hit(
                     .xz()
                     .angle_between(event.target_to_contact.xz())
                     .to_degrees();
-                if angle.abs() > 100.0 {
+                if angle.abs() > get_max_deflect_angle() {
                     hurt_events.send(event.into());
-                } else if combat_state.time_in_state < 0.2 {
-                    // TODO: scale with repeated deflects
-                    deflect_events.send(event.into())
+                } else if combat_state.time_in_state < get_max_deflect_time(&block_history) {
+                    deflect_events.send(event.into());
+                    block_history.mark_last_as_deflect();
                 } else {
                     block_events.send(event.into());
                 }
@@ -38,6 +40,18 @@ pub fn handle_player_being_hit(
         }
     }
     Ok(())
+}
+
+fn get_max_deflect_angle() -> f32 {
+    100.0
+}
+
+fn get_max_deflect_time(block_history: &BlockHistory) -> f32 {
+    // Source: <https://www.youtube.com/watch?v=GRdHVXfVbfI>
+    let base_max_deflect_time = 0.2;
+    let blocks = block_history.count_younger_than(0.5);
+    let factor = (1.0 - 0.25 * blocks as f32).max(0.0);
+    base_max_deflect_time * factor
 }
 
 #[derive(

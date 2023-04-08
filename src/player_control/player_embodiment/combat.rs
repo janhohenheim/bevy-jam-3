@@ -25,27 +25,33 @@ pub fn attack(
 ) {
     for (actions, mut combat_state, animations) in players.iter_mut() {
         if actions.pressed(PlayerAction::Attack) {
-            let desired_state = if let PlayerCombatKind::Attack(attack) = combat_state.kind {
-                let next_attack = if attack + 1 < animations.attacks.len() as u16 {
-                    attack + 1
-                } else {
-                    0
-                };
+            let attack_kind = if let PlayerCombatKind::Attack(attack) = combat_state.kind {
+                let next_attack = (attack + 1) % animations.attacks.len() as u16;
                 PlayerCombatKind::Attack(next_attack)
             } else {
                 PlayerCombatKind::Attack(0)
             };
-            combat_state.try_use_next_kind(desired_state, |current| !current.is_attack());
+            combat_state.try_use_next_kind(attack_kind, |current| !current.is_attack());
         }
     }
 }
 
-pub fn block(mut players: Query<(&ActionState<PlayerAction>, &mut PlayerCombatState)>) {
-    for (actions, mut combat_state) in players.iter_mut() {
-        if actions.pressed(PlayerAction::Block) {
-            combat_state.try_use_next_kind(PlayerCombatKind::Block, |current: PlayerCombatKind| {
-                current != PlayerCombatKind::Block
-            });
+pub fn block(
+    mut players: Query<(
+        &ActionState<PlayerAction>,
+        &mut PlayerCombatState,
+        &mut BlockHistory,
+    )>,
+) {
+    for (actions, mut combat_state, mut block_history) in players.iter_mut() {
+        if actions.pressed(PlayerAction::Block) && combat_state.kind != PlayerCombatKind::Block {
+            combat_state.try_use_next_kind(
+                PlayerCombatKind::Block,
+                PlayerCombatState::do_not_block_early_cancel,
+            );
+            if combat_state.kind == PlayerCombatKind::Block {
+                block_history.push();
+            }
         } else if actions.just_released(PlayerAction::Block) {
             combat_state.try_use_next_kind(
                 PlayerCombatKind::Idle,
@@ -57,12 +63,17 @@ pub fn block(mut players: Query<(&ActionState<PlayerAction>, &mut PlayerCombatSt
 
 pub fn update_states(
     time: Res<Time>,
-    mut players: Query<(&mut PlayerCombatState, &PlayerCombatAnimations)>,
+    mut players: Query<(
+        &mut PlayerCombatState,
+        &PlayerCombatAnimations,
+        &mut BlockHistory,
+    )>,
     animation_clips: Res<Assets<AnimationClip>>,
 ) {
-    for (mut combat_state, combat_animations) in players.iter_mut() {
+    for (mut combat_state, combat_animations, mut block_history) in players.iter_mut() {
         combat_state.time_in_state += time.delta_seconds();
         let animation = combat_state.kind.get_animation(combat_animations);
+        let last_kind = combat_state.kind;
         match animation.cancellation_times {
             CancellationTimes::Always => {
                 combat_state.commitment = AttackCommitment::EarlyCancellable;
@@ -92,6 +103,16 @@ pub fn update_states(
                 }
             }
         }
+        if last_kind != PlayerCombatKind::Block && combat_state.kind == PlayerCombatKind::Block {
+            block_history.push();
+        }
+    }
+}
+
+pub fn update_block_history(time: Res<Time>, mut players: Query<(&mut BlockHistory,)>) {
+    for (mut block_history,) in players.iter_mut() {
+        block_history.age(time.delta_seconds());
+        block_history.remove_older_than(2.);
     }
 }
 
