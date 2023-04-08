@@ -82,9 +82,7 @@ pub(crate) fn spawn(
                     block: PlayerCombatAnimation::always_cancellable(animations.block.clone()),
                     hurt: PlayerCombatAnimation::without_early_cancel(animations.idle.clone()),
                     parried: PlayerCombatAnimation::without_early_cancel(animations.idle.clone()),
-                    perfect_parried: PlayerCombatAnimation::without_early_cancel(
-                        animations.idle.clone(),
-                    ),
+                    deflected: PlayerCombatAnimation::without_early_cancel(animations.idle.clone()),
                     posture_broken: PlayerCombatAnimation::without_early_cancel(
                         animations.idle.clone(),
                     ),

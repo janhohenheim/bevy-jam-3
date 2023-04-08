@@ -10,6 +10,7 @@ pub use components::*;
 use leafwing_input_manager::prelude::*;
 use std::time::Duration;
 
+pub mod after_hit;
 pub(crate) mod collision;
 mod components;
 #[cfg(feature = "dev")]

@@ -67,16 +67,19 @@ impl Combatant {
 #[derive(Debug, Clone, Copy, Component, Reflect, FromReflect)]
 #[reflect(Component)]
 pub struct Constitution {
-    pub health: f32,
-    pub max_health: f32,
-    pub posture: f32,
-    pub max_posture: f32,
-    pub base_posture_recovery: f32,
+    health: f32,
+    max_health: f32,
+    posture: f32,
+    max_posture: f32,
+    base_posture_recovery: f32,
+    is_posture_broken: bool,
+    is_dead: bool,
 }
 
 impl Constitution {
     pub fn with_max_health(mut self, max_health: f32) -> Self {
         self.max_health = max_health;
+        self.health = max_health;
         self
     }
 
@@ -95,24 +98,68 @@ impl Constitution {
         self.take_posture_damage(attack);
     }
 
-    pub fn take_health_damage(&mut self, attack: &Attack) {
+    fn take_health_damage(&mut self, attack: &Attack) {
         self.health -= attack.health_damage;
+        if self.health < 0.0 {
+            self.health = 0.0;
+            self.is_dead = true;
+        }
     }
 
     pub fn take_posture_damage(&mut self, attack: &Attack) {
         self.posture += attack.health_damage;
+        if self.posture > self.max_posture {
+            self.is_posture_broken = true;
+            self.posture = 0.0;
+        }
+    }
+
+    pub fn recover_health(&mut self, amount: f32) {
+        if self.is_dead {
+            return;
+        }
+        self.health += amount;
+        if self.health > self.max_health {
+            self.health = self.max_health;
+        }
+    }
+
+    pub fn recover_posture(&mut self, dt: f32) {
+        let amount = self.base_posture_recovery * dt * self.get_posture_recovery_factor();
+        self.posture -= amount;
+        if self.posture < 0.0 {
+            self.posture = 0.0;
+        }
+    }
+
+    /// Source: <https://sekiroshadowsdietwice.wiki.fextralife.com/Posture>
+    fn get_posture_recovery_factor(&self) -> f32 {
+        let health_fraction = self.health / self.max_health;
+        if health_fraction > 0.75 {
+            1.
+        } else if health_fraction > 0.5 {
+            2. / 3.
+        } else if health_fraction > 0.25 {
+            1. / 3.
+        } else {
+            0.
+        }
     }
 
     pub fn die(&mut self) {
         self.health = 0.0;
     }
 
-    pub fn is_alive(&self) -> bool {
-        self.health > 0.0
+    pub fn is_dead(&self) -> bool {
+        self.is_dead
+    }
+
+    pub fn recover_after_posture_broken(&mut self) {
+        self.is_posture_broken = false;
     }
 
     pub fn is_posture_broken(&self) -> bool {
-        self.posture > self.max_posture
+        self.is_posture_broken
     }
 }
 
@@ -124,6 +171,8 @@ impl Default for Constitution {
             posture: 0.0,
             max_posture: 100.0,
             base_posture_recovery: 20.0,
+            is_posture_broken: false,
+            is_dead: false,
         }
     }
 }
@@ -220,10 +269,12 @@ impl Attack {
         }
     }
 
-    pub fn with_health_damage_scaling_rest(mut self, health_damage: f32) -> Self {
+    /// Source: <https://docs.google.com/spreadsheets/d/1mDiylVeazEJM3_M90zfJG-50nTfQgF6bRxlest9qg-g/edit#gid=0>  
+    /// Could also use <https://www.reddit.com/r/Sekiro/comments/bk5c4d/damage_values_estimated_for_every_combat_art_and/> in the future
+    pub fn with_health_damage_scaling_rest(self, health_damage: f32) -> Self {
         self.with_health_damage(health_damage)
-            .with_posture_damage(health_damage / 2.)
-            .with_knockback(health_damage / 3.)
+            .with_posture_damage(health_damage * 0.375)
+            .with_knockback(health_damage * 0.1)
     }
 
     pub fn with_health_damage(mut self, health_damage: f32) -> Self {

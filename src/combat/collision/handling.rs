@@ -8,10 +8,10 @@ use bevy_mod_sysfail::macros::*;
 #[sysfail(log(level = "error"))]
 pub fn handle_enemy_being_hit(
     mut hit_events: EventReader<EnemyHitEvent>,
-    mut combatants: Query<(&mut Combatant, &mut Constitution, &Transform)>,
+    mut combatants: Query<(&Combatant, &mut Constitution, &Transform)>,
 ) -> Result<()> {
     for event in hit_events.iter() {
-        let (mut combatant, mut constitution, transform) = combatants
+        let (combatant, mut constitution, transform) = combatants
             .get_mut(event.target)
             .expect("Failed to get combatant from hit event");
 
@@ -36,7 +36,7 @@ pub fn handle_enemy_being_hit(
                     constitution.take_posture_damage(&event.attack);
                 }
                 CombatantState::HyperArmor => {
-                    constitution.take_health_damage(&event.attack);
+                    constitution.take_full_damage(&event.attack);
                 }
             },
             None => {}

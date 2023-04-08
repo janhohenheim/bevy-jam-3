@@ -82,7 +82,7 @@ pub struct PlayerCombatAnimations {
     pub block: PlayerCombatAnimation,
     pub hurt: PlayerCombatAnimation,
     pub parried: PlayerCombatAnimation,
-    pub perfect_parried: PlayerCombatAnimation,
+    pub deflected: PlayerCombatAnimation,
     pub posture_broken: PlayerCombatAnimation,
 }
 
@@ -157,8 +157,7 @@ pub enum PlayerCombatKind {
     Idle,
     Attack(u16),
     Block,
-    Parried,
-    PerfectParried,
+    Deflected,
     PostureBroken,
     Hurt,
 }
@@ -170,8 +169,7 @@ impl PlayerCombatKind {
             PlayerCombatKind::Attack(attack) => &animations.attacks[attack as usize],
             PlayerCombatKind::Block => &animations.block,
             PlayerCombatKind::Hurt => &animations.hurt,
-            PlayerCombatKind::Parried => &animations.parried,
-            PlayerCombatKind::PerfectParried => &animations.perfect_parried,
+            PlayerCombatKind::Deflected => &animations.deflected,
             PlayerCombatKind::PostureBroken => &animations.posture_broken,
         }
     }

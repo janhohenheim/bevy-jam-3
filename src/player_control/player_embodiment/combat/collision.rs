@@ -1,5 +1,5 @@
 use crate::combat::collision::PlayerHitEvent;
-use crate::combat::{Attack, Combatant, Constitution};
+use crate::combat::Attack;
 use crate::player_control::player_embodiment::combat::{PlayerCombatKind, PlayerCombatState};
 use crate::player_control::player_embodiment::Player;
 use anyhow::Result;
@@ -8,52 +8,74 @@ use bevy::prelude::*;
 use bevy_mod_sysfail::macros::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflec, Default)]
-#[reflect(Serialize, Deserialize)]
-pub struct PlayerHurtEvent {
-    pub(crate) attack: Attack,
-    pub(crate) extent: PlayerHurtExtent,
-}
-
-#[derive(Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect, Default)]
-#[reflect(Serialize, Deserialize)]
-pub enum PlayerHurtExtent {
-    #[default]
-    Full,
-    Health,
-    Posture,
-}
-
 #[sysfail(log(level = "error"))]
 pub fn handle_player_being_hit(
     mut hit_events: EventReader<PlayerHitEvent>,
-    mut players: Query<
-        (&Transform, &PlayerCombatState, &mut Constitution),
-        (With<Player>, Without<Combatant>),
-    >,
-    mut enemies: Query<(&mut Constitution,), (With<Combatant>, Without<Player>)>,
+    mut players: Query<(&Transform, &PlayerCombatState), With<Player>>,
     mut hurt_events: EventWriter<PlayerHurtEvent>,
+    mut block_events: EventWriter<BlockedByPlayerEvent>,
+    mut deflect_events: EventWriter<DeflectedByPlayerEvent>,
 ) -> Result<()> {
     for event in hit_events.iter() {
-        for (transform, combat_state, mut constitution) in players.iter_mut() {
-            if combat_state.kind == PlayerCombatKind::Block {
+        for (transform, combat_state) in players.iter_mut() {
+            if combat_state.kind != PlayerCombatKind::Block {
+                hurt_events.send(event.into());
+            } else {
                 let angle = transform
                     .forward()
                     .xz()
                     .angle_between(event.target_to_contact.xz())
                     .to_degrees();
                 if angle.abs() > 100.0 {
-                    constitution.take_full_damage(&event.attack);
+                    hurt_events.send(event.into());
                 } else if combat_state.time_in_state < 0.2 {
-                    let (mut enemy_constitution,) = enemies.get_mut(event.source)?;
-                    enemy_constitution.take_posture_damage(&event.attack);
+                    // TODO: scale with repeated deflects
+                    deflect_events.send(event.into())
                 } else {
-                    constitution.take_posture_damage(&event.attack);
+                    block_events.send(event.into());
                 }
-            } else {
-                constitution.take_full_damage(&event.attack);
             }
         }
     }
     Ok(())
+}
+
+#[derive(
+    Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect, Default, Deref, DerefMut,
+)]
+#[reflect(Serialize, Deserialize)]
+pub struct PlayerHurtEvent(pub Attack);
+
+impl From<&PlayerHitEvent> for PlayerHurtEvent {
+    fn from(event: &PlayerHitEvent) -> Self {
+        Self(event.attack.clone())
+    }
+}
+
+#[derive(
+    Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect, Default, Deref, DerefMut,
+)]
+#[reflect(Serialize, Deserialize)]
+pub struct BlockedByPlayerEvent(pub Attack);
+
+impl From<&PlayerHitEvent> for BlockedByPlayerEvent {
+    fn from(event: &PlayerHitEvent) -> Self {
+        Self(event.attack.clone())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect)]
+#[reflect(Serialize, Deserialize)]
+pub struct DeflectedByPlayerEvent {
+    pub attack: Attack,
+    pub attacker: Entity,
+}
+
+impl From<&PlayerHitEvent> for DeflectedByPlayerEvent {
+    fn from(event: &PlayerHitEvent) -> Self {
+        Self {
+            attack: event.attack.clone(),
+            attacker: event.source,
+        }
+    }
 }
