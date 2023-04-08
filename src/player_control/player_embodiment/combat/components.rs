@@ -18,6 +18,8 @@ pub struct PlayerCombatState {
     pub buffer: Option<PlayerCombatKind>,
     pub commitment: AttackCommitment,
     pub time_in_state: f32,
+    pub time_since_hit: f32,
+    pub time_since_sprint: f32,
     pub started_animation: bool,
 }
 
@@ -73,7 +75,12 @@ pub struct BlockHistoryEntry {
 impl PlayerCombatState {
     pub fn force_use_next_kind(&mut self, kind: PlayerCombatKind) {
         if self.kind != kind {
-            *self = Self { kind, ..default() };
+            *self = Self {
+                kind,
+                time_since_sprint: self.time_since_sprint,
+                time_since_hit: self.time_since_hit,
+                ..default()
+            };
         }
     }
 
@@ -100,6 +107,12 @@ impl PlayerCombatState {
 
     pub fn do_not_block_early_cancel(_kind: PlayerCombatKind) -> bool {
         true
+    }
+
+    pub fn update_timers(&mut self, dt: f32) {
+        self.time_in_state += dt;
+        self.time_since_hit += dt;
+        self.time_since_sprint += dt;
     }
 }
 

@@ -25,9 +25,9 @@ pub fn handle_hurt_events(
     for attack in hurt_events.iter() {
         for (mut combat_state, mut constitution, mut impulse, mass, transform) in players.iter_mut()
         {
+            constitution.take_full_damage(attack);
             combat_state.force_use_next_kind(PlayerCombatKind::Hurt);
             combat_state.commitment = AttackCommitment::Committed;
-            constitution.take_full_damage(attack);
             impulse.impulse += attack.knockback * transform.back() * mass.0.mass;
         }
     }

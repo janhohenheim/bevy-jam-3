@@ -102,8 +102,8 @@ impl Constitution {
     }
 
     pub fn take_full_damage(&mut self, attack: &Attack) {
-        self.take_health_damage(attack);
         self.take_posture_damage(attack);
+        self.take_health_damage(attack);
     }
 
     fn take_health_damage(&mut self, attack: &Attack) {
@@ -172,6 +172,7 @@ impl Constitution {
     }
 
     pub fn recover_after_posture_broken(&mut self) {
+        self.posture = 0.0;
         self.is_posture_broken = false;
     }
 

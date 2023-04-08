@@ -1,5 +1,6 @@
 use crate::file_system_interaction::config::GameConfig;
 use crate::level_instantiation::spawning::AnimationEntityLink;
+use crate::player_control::player_embodiment::combat::{PlayerCombatKind, PlayerCombatState};
 use crate::util::smoothness_to_lerp_factor;
 use crate::util::trait_extension::{TransformExt, Vec3Ext};
 use crate::GameState;
@@ -209,14 +210,29 @@ pub fn apply_walking(
         &Grounded,
         &ReadMassProperties,
         &Transform,
+        Option<&PlayerCombatState>,
     )>,
 ) {
     #[cfg(feature = "tracing")]
     let _span = info_span!("apply_walking").entered();
-    for (mut force, walking, mut velocity, grounded, mass, transform) in &mut character_query {
+    for (mut force, walking, mut velocity, grounded, mass, transform, combat_state) in
+        &mut character_query
+    {
         let mass = mass.0.mass;
         if let Some(acceleration) = walking.get_acceleration(grounded.0) {
-            let walking_force = acceleration * mass;
+            let factor = if let Some(combat_state) = combat_state {
+                match combat_state.kind {
+                    PlayerCombatKind::Idle => 1.0,
+                    PlayerCombatKind::Attack(_) => 0.9,
+                    PlayerCombatKind::Block => 0.8,
+                    PlayerCombatKind::Deflected => 1.0,
+                    PlayerCombatKind::PostureBroken => 0.2,
+                    PlayerCombatKind::Hurt => 0.7,
+                }
+            } else {
+                1.0
+            };
+            let walking_force = acceleration * mass * factor;
             force.force += walking_force;
         } else if grounded.0 {
             let velocity_components = velocity.linvel.split(transform.up());

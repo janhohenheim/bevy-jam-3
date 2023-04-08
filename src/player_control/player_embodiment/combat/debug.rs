@@ -15,13 +15,21 @@ pub fn display_combat_state(
             ui.label(format!("Commitment: {:?}", combat_state.commitment));
             ui.label(format!("Time in state: {:.3}", combat_state.time_in_state));
             ui.label(format!(
+                "Time since hit: {:.3}",
+                combat_state.time_since_hit
+            ));
+            ui.label(format!(
+                "Time since sprint: {:.3}",
+                combat_state.time_since_sprint
+            ));
+            ui.label(format!(
                 "Started animation: {}",
                 combat_state.started_animation
             ));
 
             ui.heading("Constitution");
-            ui.label(format!("Health: {}", constitution.health()));
-            ui.label(format!("Posture: {}", constitution.posture()));
+            ui.label(format!("Health: {:.3}", constitution.health()));
+            ui.label(format!("Posture: {:.3}", constitution.posture()));
             ui.label(format!("Is dead: {}", constitution.is_dead()));
             ui.label(format!(
                 "Is posture broken: {}",

@@ -69,6 +69,7 @@ pub fn player_embodiment_plugin(app: &mut App) {
                 combat::after_hit::handle_hurt_events,
                 combat::after_hit::handle_block_events,
                 combat::after_hit::handle_deflect_events,
+                combat::posture::update_posture,
                 #[cfg(feature = "dev")]
                 combat::debug::display_combat_state,
                 combat::update_hitbox,
@@ -96,7 +97,15 @@ fn handle_jump(mut player_query: Query<(&ActionState<PlayerAction>, &mut Jumping
 
 #[sysfail(log(level = "error"))]
 fn handle_horizontal_movement(
-    mut player_query: Query<(&ActionState<PlayerAction>, &mut Walking, &Transform), With<Player>>,
+    mut player_query: Query<
+        (
+            &ActionState<PlayerAction>,
+            &mut Walking,
+            &Transform,
+            &mut PlayerCombatState,
+        ),
+        With<Player>,
+    >,
     camera_query: Query<(&IngameCamera, &Transform), Without<Player>>,
 ) -> Result<()> {
     #[cfg(feature = "tracing")]
@@ -105,7 +114,7 @@ fn handle_horizontal_movement(
         return Ok(());
     };
 
-    for (actions, mut walk, player_transform) in &mut player_query {
+    for (actions, mut walk, player_transform, mut combat_state) in &mut player_query {
         if let Some(movement) = actions
             .axis_pair(PlayerAction::Move)
             .context("Player movement is not an axis pair")?
@@ -135,7 +144,18 @@ fn handle_horizontal_movement(
             let direction = forward_action * modifier + sideways_action;
 
             walk.direction = Some(direction);
-            walk.sprinting = actions.pressed(PlayerAction::Sprint);
+            let is_allowed_to_sprint = match combat_state.kind {
+                PlayerCombatKind::Idle => true,
+                PlayerCombatKind::Attack(_) => true,
+                PlayerCombatKind::Block => false,
+                PlayerCombatKind::Deflected => true,
+                PlayerCombatKind::PostureBroken => false,
+                PlayerCombatKind::Hurt => false,
+            };
+            walk.sprinting = is_allowed_to_sprint && actions.pressed(PlayerAction::Sprint);
+            if walk.sprinting {
+                combat_state.time_since_sprint = 0.0;
+            }
         }
     }
     Ok(())

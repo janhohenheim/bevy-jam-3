@@ -15,6 +15,7 @@ pub(crate) mod collision;
 mod components;
 #[cfg(feature = "dev")]
 pub mod debug;
+pub mod posture;
 
 pub fn attack(
     mut players: Query<(
@@ -71,7 +72,7 @@ pub fn update_states(
     animation_clips: Res<Assets<AnimationClip>>,
 ) {
     for (mut combat_state, combat_animations, mut block_history) in players.iter_mut() {
-        combat_state.time_in_state += time.delta_seconds();
+        combat_state.update_timers(time.delta_seconds());
         let animation = combat_state.kind.get_animation(combat_animations);
         let last_kind = combat_state.kind;
         match animation.cancellation_times {

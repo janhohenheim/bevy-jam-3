@@ -13,13 +13,13 @@ use serde::{Deserialize, Serialize};
 #[sysfail(log(level = "error"))]
 pub fn handle_player_being_hit(
     mut hit_events: EventReader<PlayerHitEvent>,
-    mut players: Query<(&Transform, &PlayerCombatState, &mut BlockHistory), With<Player>>,
+    mut players: Query<(&Transform, &mut PlayerCombatState, &mut BlockHistory), With<Player>>,
     mut hurt_events: EventWriter<PlayerHurtEvent>,
     mut block_events: EventWriter<BlockedByPlayerEvent>,
     mut deflect_events: EventWriter<DeflectedByPlayerEvent>,
 ) -> Result<()> {
     for event in hit_events.iter() {
-        for (transform, combat_state, mut block_history) in players.iter_mut() {
+        for (transform, mut combat_state, mut block_history) in players.iter_mut() {
             if combat_state.kind != PlayerCombatKind::Block {
                 hurt_events.send(event.into());
             } else {
@@ -37,6 +37,7 @@ pub fn handle_player_being_hit(
                     block_events.send(event.into());
                 }
             }
+            combat_state.time_since_hit = 0.0;
         }
     }
     Ok(())
