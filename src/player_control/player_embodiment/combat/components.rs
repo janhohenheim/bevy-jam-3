@@ -131,7 +131,6 @@ pub struct PlayerCombatAnimations {
     pub attacks: [PlayerCombatAnimation; 3],
     pub block: PlayerCombatAnimation,
     pub hurt: PlayerCombatAnimation,
-    pub parried: PlayerCombatAnimation,
     pub deflected: PlayerCombatAnimation,
     pub posture_broken: PlayerCombatAnimation,
 }

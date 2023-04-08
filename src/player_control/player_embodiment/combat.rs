@@ -84,7 +84,9 @@ pub fn update_states(
                 if time_fraction > 1.0 {
                     let next_kind = combat_state.buffer.take().unwrap_or(PlayerCombatKind::Idle);
                     combat_state.force_use_next_kind(next_kind);
-                } else if time_fraction < cancellation_times.early_cancel_end {
+                } else if time_fraction < cancellation_times.early_cancel_end
+                    && cancellation_times.early_cancel_end > 1e-5
+                {
                     combat_state.commitment = AttackCommitment::EarlyCancellable;
                 } else if time_fraction > cancellation_times.early_cancel_end
                     && time_fraction < cancellation_times.buffer_start

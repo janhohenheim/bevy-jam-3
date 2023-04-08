@@ -80,12 +80,36 @@ pub(crate) fn spawn(
                         },
                     ],
                     block: PlayerCombatAnimation::always_cancellable(animations.block.clone()),
-                    hurt: PlayerCombatAnimation::without_early_cancel(animations.idle.clone()),
-                    parried: PlayerCombatAnimation::without_early_cancel(animations.idle.clone()),
-                    deflected: PlayerCombatAnimation::without_early_cancel(animations.idle.clone()),
-                    posture_broken: PlayerCombatAnimation::without_early_cancel(
-                        animations.idle.clone(),
-                    ),
+                    hurt: PlayerCombatAnimation {
+                        handle: animations.hurt.clone(),
+                        cancellation_times: CancellationTimes::Periodic(
+                            PeriodicCancellationTimes {
+                                early_cancel_end: 0.0,
+                                late_cancel_start: 0.3,
+                                buffer_start: 0.2,
+                            },
+                        ),
+                    },
+                    deflected: PlayerCombatAnimation {
+                        handle: animations.blocked.clone(),
+                        cancellation_times: CancellationTimes::Periodic(
+                            PeriodicCancellationTimes {
+                                early_cancel_end: 0.0,
+                                late_cancel_start: 0.8,
+                                buffer_start: 0.6,
+                            },
+                        ),
+                    },
+                    posture_broken: PlayerCombatAnimation {
+                        handle: animations.hurt.clone(),
+                        cancellation_times: CancellationTimes::Periodic(
+                            PeriodicCancellationTimes {
+                                early_cancel_end: 0.0,
+                                late_cancel_start: 0.8,
+                                buffer_start: 0.6,
+                            },
+                        ),
+                    },
                 },
                 player_attacks: PlayerAttacks {
                     attacks: [

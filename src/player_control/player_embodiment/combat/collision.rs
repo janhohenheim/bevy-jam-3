@@ -49,8 +49,9 @@ fn get_max_deflect_angle() -> f32 {
 fn get_max_deflect_time(block_history: &BlockHistory) -> f32 {
     // Source: <https://www.youtube.com/watch?v=GRdHVXfVbfI>
     let base_max_deflect_time = 0.2;
-    let blocks = block_history.count_younger_than(0.5);
-    let factor = (1.0 - 0.25 * blocks as f32).max(0.0);
+    // Using saturating_sub because there might be 0 blocks younger than the specified time if we've been holding block for a while.
+    let blocks_before_current = block_history.count_younger_than(0.5).saturating_sub(1);
+    let factor = (1.0 - 0.25 * blocks_before_current as f32).max(0.0);
     base_max_deflect_time * factor
 }
 

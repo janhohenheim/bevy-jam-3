@@ -291,7 +291,7 @@ impl Attack {
     pub fn with_health_damage_scaling_rest(self, health_damage: f32) -> Self {
         self.with_health_damage(health_damage)
             .with_posture_damage(health_damage * 0.375)
-            .with_knockback(health_damage * 0.9)
+            .with_knockback(health_damage * 0.7)
     }
 
     pub fn with_health_damage(mut self, health_damage: f32) -> Self {
