@@ -1,7 +1,7 @@
 use crate::combat::{Attack, AttackHitbox, Combatant};
 use crate::player_control::player_embodiment::Player;
 use crate::world_interaction::interactions_ui::unpack_event;
-use anyhow::{Context, Result};
+use anyhow::{Context, Error, Result};
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use bevy_mod_sysfail::sysfail;
@@ -25,17 +25,7 @@ pub struct EnemyHitEvent {
 }
 
 #[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Resource,
-    Reflect,
-    Serialize,
-    Deserialize,
-    FromReflect,
-    Default,
-    Deref,
-    DerefMut,
+    Debug, Clone, PartialEq, Resource, Reflect, Serialize, Deserialize, FromReflect, Default,
 )]
 #[reflect(Serialize, Resource, Deserialize)]
 /// Necessary because our collision events are not using sensors because we need the manifold normal.
@@ -60,47 +50,56 @@ pub struct Hit {
 }
 
 impl HitCache {
-    pub fn update_and_check_contained(
+    pub fn contains(
+        &self,
+        Hit {
+            hitbox,
+            target,
+            attack,
+        }: &Hit,
+    ) -> bool {
+        self.0
+            .get(hitbox)
+            .map(|hits| hits.attack_name == attack.name && hits.targets.contains(target))
+            .unwrap_or_default()
+    }
+
+    pub fn insert(
         &mut self,
         Hit {
             hitbox,
             target,
             attack,
         }: Hit,
-    ) -> bool {
-        if let Some(hits) = self.get_mut(&hitbox) {
+    ) {
+        if let Some(hits) = self.0.get_mut(&hitbox) {
             if hits.attack_name == attack.name {
-                if hits.targets.contains(&target) {
-                    true
-                } else {
+                if !hits.targets.contains(&target) {
                     hits.targets.push(target);
-                    false
                 }
             } else {
                 // Hitbox has changed attack
-                self.insert(
+                self.0.insert(
                     hitbox,
                     HitboxHits {
                         attack_name: attack.name.clone(),
                         targets: vec![target],
                     },
                 );
-                false
             }
         } else {
-            self.insert(
+            self.0.insert(
                 hitbox,
                 HitboxHits {
                     attack_name: attack.name.clone(),
                     targets: vec![target],
                 },
             );
-            false
         }
     }
 
     pub fn remove_expired(&mut self, hitboxes: &Query<&AttackHitbox>) {
-        self.retain(|hitbox, hit| {
+        self.0.retain(|hitbox, hit| {
             hitboxes
                 .get(*hitbox)
                 .map(|hitbox| hitbox.active && hitbox.attack.name == hit.attack_name)
@@ -120,60 +119,73 @@ pub fn detect_hits(
     rapier_context: Res<RapierContext>,
     mut hit_cache: ResMut<HitCache>,
 ) -> Result<()> {
-    let get_active_hitbox = |entity: Entity| -> Result<Option<&AttackHitbox>> {
-        let (hitbox,) = attacks
-            .get(entity)
-            .ok()
-            .context("Failed to get attack data from colliding entity")?;
-        let result = if hitbox.active { Some(hitbox) } else { None };
-        Ok(result)
-    };
     for event in collision_events.iter() {
         let (entity_a, entity_b, ongoing) = unpack_event(event);
         if !ongoing {
             continue;
         }
 
+        let mut handle_potential_hit =
+            |target_entity: Entity,
+             hitbox_entity: Entity,
+             mut send_fn: Box<dyn FnMut(Entity, &AttackHitbox, Vec3)>|
+             -> Result<()> {
+                if let Some(hitbox) = get_active_hitbox(&attacks, hitbox_entity)? {
+                    let hit = Hit {
+                        target: target_entity,
+                        hitbox: hitbox_entity,
+                        attack: hitbox.attack.clone(),
+                    };
+                    if hitbox.active && !hit_cache.contains(&hit) {
+                        if let Some(normal) =
+                            get_contact_normal(target_entity, hitbox_entity, &rapier_context)
+                        {
+                            hit_cache.insert(hit);
+                            send_fn(target_entity, hitbox, normal);
+                        }
+                    }
+                }
+                Ok(())
+            };
+
         if let Some((player_entity, hitbox_entity)) =
             determine_player_and_hitbox(&players, &attacks, entity_a, entity_b)
         {
-            if let Some(hitbox) = get_active_hitbox(hitbox_entity)? {
-                if hitbox.active
-                    && !hit_cache.update_and_check_contained(Hit {
-                        target: player_entity,
-                        hitbox: hitbox_entity,
-                        attack: hitbox.attack.clone(),
-                    })
-                {
-                    let normal = get_contact_normal(player_entity, hitbox_entity, &rapier_context)?;
-                    player_hit_events.send(PlayerHitEvent {
-                        attack: hitbox.attack.clone(),
-                        normal,
-                    });
-                }
-            }
+            let send_player_hit = |_target_entity: Entity, hitbox: &AttackHitbox, normal: Vec3| {
+                player_hit_events.send(PlayerHitEvent {
+                    attack: hitbox.attack.clone(),
+                    normal,
+                });
+            };
+
+            handle_potential_hit(player_entity, hitbox_entity, Box::new(send_player_hit))?;
         } else if let Some((enemy_entity, hitbox_entity)) =
             determine_enemy_and_hitbox(&combatants, &attacks, entity_a, entity_b)
         {
-            if let Some(hitbox) = get_active_hitbox(hitbox_entity)? {
-                if hitbox.active
-                    && !hit_cache.update_and_check_contained(Hit {
-                        target: enemy_entity,
-                        hitbox: hitbox_entity,
-                        attack: hitbox.attack.clone(),
-                    })
-                {
-                    let normal = get_contact_normal(enemy_entity, hitbox_entity, &rapier_context)?;
-                    enemy_hit_events.send(EnemyHitEvent {
-                        target: enemy_entity,
-                        attack: hitbox.attack.clone(),
-                        normal,
-                    });
-                }
-            }
+            let send_enemy_hit = |target_entity: Entity, hitbox: &AttackHitbox, normal: Vec3| {
+                enemy_hit_events.send(EnemyHitEvent {
+                    target: target_entity,
+                    attack: hitbox.attack.clone(),
+                    normal,
+                });
+            };
+
+            handle_potential_hit(enemy_entity, hitbox_entity, Box::new(send_enemy_hit))?;
         }
     }
     Ok(())
+}
+
+fn get_active_hitbox<'a>(
+    attacks: &'a Query<(&AttackHitbox,)>,
+    entity: Entity,
+) -> Result<Option<&'a AttackHitbox>, Error> {
+    let (hitbox,) = attacks
+        .get(entity)
+        .ok()
+        .context("Failed to get attack data from colliding entity")?;
+    let result = if hitbox.active { Some(hitbox) } else { None };
+    Ok(result)
 }
 
 pub fn clear_cache(mut hit_cache: ResMut<HitCache>, attacks: Query<&AttackHitbox>) {
@@ -184,14 +196,27 @@ fn get_contact_normal(
     target: Entity,
     hitbox: Entity,
     rapier_context: &RapierContext,
-) -> Result<Vec3> {
-    let contact_pair = rapier_context
-        .contact_pair(target, hitbox)
-        .context("Failed to get contact pair")?;
-    let (manifold, _contact) = contact_pair
-        .find_deepest_contact()
-        .context("Failed to find deepest contact")?;
-    Ok(manifold.normal())
+) -> Option<Vec3> {
+    let contact_pair = rapier_context.contact_pair(target, hitbox)?;
+    if !contact_pair.has_any_active_contacts() {
+        return None;
+    }
+    // Only one manifold because we are dealing with convex primitive shapes only
+    assert_eq!(
+        contact_pair.manifolds_len(),
+        1,
+        "Expected one manifold since we are dealing with convex shapes only."
+    );
+    let manifold = contact_pair.manifold(0).unwrap();
+    info!("Local-space contact normal: {}", manifold.local_n1());
+    info!("Local-space contact normal: {}", manifold.local_n2());
+    info!("World-space contact normal: {}", manifold.normal());
+
+    for contact in manifold.solver_contacts() {
+        info!("Solver contact point: {}", contact.point());
+        info!("Solver contact dist: {}", contact.dist());
+    }
+    Some(manifold.normal())
 }
 
 fn get_target_to_hitbox(
