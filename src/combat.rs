@@ -5,6 +5,7 @@ use crate::movement::general_movement::reset_forces_and_impulses;
 use crate::GameState;
 use bevy::prelude::*;
 pub use components::*;
+use seldom_fn_plugin::FnPluginExt;
 use spew::prelude::*;
 
 pub(crate) mod collision;
@@ -14,6 +15,7 @@ pub mod debug;
 mod decision;
 mod execution;
 mod linking;
+mod ui;
 mod update_states;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
@@ -41,6 +43,7 @@ pub fn combat_plugin(app: &mut App) {
         .add_plugin(SpewPlugin::<ProjectileKind, (Entity, ProjectileSpawnInput)>::default())
         .add_spawners(((ProjectileKind::Simple, spawn_actual_simple_projectile),))
         .init_resource::<HitCache>()
+        .fn_plugin(ui::enemy_combat_ui_plugin)
         .add_systems(
             (
                 linking::link_hitbox,

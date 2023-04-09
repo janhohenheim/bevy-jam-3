@@ -8,7 +8,7 @@ use bevy_mod_sysfail::macros::*;
 
 pub fn player_combat_ui_plugin(app: &mut App) {
     app.add_system(spawn_constitution_bars.in_schedule(OnEnter(GameState::Playing)))
-        .add_systems((update_health_bar,).in_set(OnUpdate(GameState::Playing)));
+        .add_systems((update_constitution_bars,).in_set(OnUpdate(GameState::Playing)));
 }
 
 fn spawn_constitution_bars(mut commands: Commands, textures: Res<TextureAssets>) {
@@ -167,7 +167,7 @@ pub struct PostureBarFill;
 pub struct PostureBarParent;
 
 #[sysfail(log(level = "error"))]
-fn update_health_bar(
+fn update_constitution_bars(
     players: Query<(&Constitution,), With<Player>>,
     mut health_bar_fills: Query<&mut Style, (With<HealthBarFill>, Without<PostureBarFill>)>,
     mut posture_bar_fills: Query<&mut Style, (With<PostureBarFill>, Without<HealthBarFill>)>,
