@@ -65,6 +65,8 @@ spew = "0.2.2"
 bevy_mod_sysfail = "2"
 seldom_fn_plugin = "0.3"
 getrandom = { version = "0.2", features = ["js"], optional = true }
+noise = { git = "https://github.com/razaekel/noise-rs", rev = "957d941c8b4016d1909afa3a048b5fa7a4ce4b36" }
+bytemuck = "1.13.1"
 
 [build-dependencies]
 embed-resource = "1.4"

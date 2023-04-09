@@ -65,8 +65,8 @@ pub fn combat_plugin(app: &mut App) {
                 update_states::update_condition_tracker,
                 decision::decide_choreography,
                 execution::execute_choreography,
-                execution::init_move,
-                execution::execute_move,
+                execution::read_move_metadata,
+                execution::execute_move_functions,
                 linking::sync_projectile_attack_hitbox,
                 #[cfg(feature = "dev")]
                 debug::display_combatants,

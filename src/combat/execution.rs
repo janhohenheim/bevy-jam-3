@@ -10,10 +10,10 @@ use spew::prelude::SpawnEvent;
 use std::time::Duration;
 
 #[sysfail(log(level = "error"))]
-pub fn init_move(
+pub fn read_move_metadata(
     mut move_events: EventReader<ReadMoveMetadataEvent>,
     mut animation_player: Query<&mut AnimationPlayer>,
-    mut combatant: Query<(
+    mut enemies: Query<(
         &AnimationEntityLink,
         &mut Enemy,
         &mut EnemyCombatState,
@@ -32,7 +32,7 @@ pub fn init_move(
             mut move_metadata,
             condition_tracker,
             transform,
-        ) = combatant.get_mut(event.source)?;
+        ) = enemies.get_mut(event.source)?;
         let mut animation_player = animation_player
             .get_mut(**animation_entity_link)
             .context("animation_entity_link held entity without animation player")?;
@@ -63,9 +63,9 @@ pub fn init_move(
 }
 
 #[sysfail(log(level = "error"))]
-pub fn execute_move(
+pub fn execute_move_functions(
     time: Res<Time>,
-    mut combatants: Query<(
+    mut enemies: Query<(
         &Enemy,
         &ConditionTracker,
         &mut Transform,
@@ -93,7 +93,7 @@ pub fn execute_move(
             move_metadata,
             velocity,
             hitbox_link,
-        ) = combatants.get_mut(entity)?;
+        ) = enemies.get_mut(entity)?;
         if let Some(motion_fn) = &event.move_.motion_fn {
             let duration = match event.duration {
                 MoveDuration::Animation => move_metadata.animation_duration,
@@ -101,7 +101,8 @@ pub fn execute_move(
                 _ => None,
             };
             let input = MotionFnInput {
-                time: combatant.time_since_last_move,
+                time_in_move: combatant.time_since_last_move,
+                global_time: time.elapsed_seconds_wrapped(),
                 duration,
                 transform: *transform,
                 start_transform: move_metadata.start_transform,

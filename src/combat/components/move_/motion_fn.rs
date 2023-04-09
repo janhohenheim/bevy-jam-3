@@ -39,7 +39,8 @@ impl<'a> Clone for Box<dyn MotionFn + 'a> {
 
 #[derive(Debug, Clone, Default)]
 pub struct MotionFnInput {
-    pub time: f32,
+    pub time_in_move: f32,
+    pub global_time: f32,
     pub dt: f32,
     pub duration: Option<f32>,
     pub transform: Transform,

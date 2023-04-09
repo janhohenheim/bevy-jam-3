@@ -231,7 +231,7 @@ pub(crate) fn spawn(
                                     functions: MoveFunctions {
                                         motion_fn: Some(
                                             ai::generic::motion::continuous::accelerate_around_player(
-                                                8.,
+                                                12.,
                                             ),
                                         ),
                                         ..default()
