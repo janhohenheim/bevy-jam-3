@@ -1,5 +1,5 @@
 use crate::combat::collision::{BlockedByEnemyEvent, DeflectedByEnemyEvent, EnemyHurtEvent};
-use crate::combat::{Constitution, Enemy};
+use crate::combat::{Constitution, Enemy, EnemyCombatState};
 use crate::level_instantiation::spawning::AnimationEntityLink;
 use anyhow::{Context, Result};
 use bevy::prelude::*;
@@ -7,12 +7,24 @@ use bevy_mod_sysfail::macros::*;
 
 pub(crate) fn handle_hurt_events(
     mut hurt_events: EventReader<EnemyHurtEvent>,
-    mut enemies: Query<(&mut Enemy, &mut Constitution)>,
+    mut enemies: Query<(&mut Enemy, &EnemyCombatState, &mut Constitution)>,
 ) {
     for attack in hurt_events.iter() {
-        for (mut enemy, mut constitution) in enemies.iter_mut() {
+        for (mut enemy, combat_state, mut constitution) in enemies.iter_mut() {
             constitution.take_full_damage(attack);
-            enemy.hurt();
+            if constitution.is_dead() {
+                enemy.die();
+            } else {
+                match combat_state {
+                    EnemyCombatState::Deathblow => {
+                        enemy.die();
+                        constitution.die()
+                    }
+                    EnemyCombatState::HyperArmor => {}
+                    _ => enemy.hurt(),
+                }
+            }
+            enemy.time_since_hurt_or_block = 0.0;
         }
     }
 }
@@ -32,6 +44,7 @@ pub(crate) fn handle_block_events(
                 .context("Animation player link held invalid reference")?;
             // Force the animation to restart in case we are already blocking the previous attack
             animation_player.pause();
+            enemy.time_since_hurt_or_block = 0.0;
         }
     }
     Ok(())

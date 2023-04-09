@@ -9,14 +9,14 @@ use serde::{Deserialize, Serialize};
 #[sysfail(log(level = "error"))]
 pub(crate) fn handle_enemy_being_hit(
     mut hit_events: EventReader<EnemyHitEvent>,
-    mut combatants: Query<(&Enemy, &Transform)>,
+    enemies: Query<(&Enemy, &Transform)>,
     mut hurt_events: EventWriter<EnemyHurtEvent>,
     mut block_events: EventWriter<BlockedByEnemyEvent>,
     mut deflect_events: EventWriter<DeflectedByEnemyEvent>,
 ) -> Result<()> {
     for event in hit_events.iter() {
-        let (combatant, transform) = combatants
-            .get_mut(event.target)
+        let (enemy, transform) = enemies
+            .get(event.target)
             .expect("Failed to get combatant from hit event");
 
         let angle = transform
@@ -24,7 +24,7 @@ pub(crate) fn handle_enemy_being_hit(
             .xz()
             .angle_between(event.target_to_contact.xz())
             .to_degrees();
-        match combatant.current_move() {
+        match enemy.current_move() {
             Some(move_) => match move_.metadata.state {
                 EnemyCombatState::Deathblow => {
                     hurt_events.send(event.into());
@@ -46,6 +46,7 @@ pub(crate) fn handle_enemy_being_hit(
                 EnemyCombatState::HyperArmor => {
                     hurt_events.send(event.into());
                 }
+                EnemyCombatState::Dying => {}
             },
             None => {}
         }

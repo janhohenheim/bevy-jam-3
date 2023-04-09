@@ -58,6 +58,12 @@ pub(crate) fn link_hitbox(
             aabb.half_extents.y,
             aabb.half_extents.z,
         );
+
+        let true_parent = if let Some(model) = model {
+            model.animation_target
+        } else {
+            parent
+        };
         let collider_entity = commands
             .spawn((
                 Name::new("Hitbox collider"),
@@ -72,20 +78,18 @@ pub(crate) fn link_hitbox(
                 },
                 ActiveEvents::COLLISION_EVENTS,
                 ActiveCollisionTypes::all(),
-                HitboxToParentLink(parent),
+                HitboxToParentLink(true_parent),
                 AttackHitbox::default(),
                 TransformBundle::from_transform(Transform::from_xyz(0., aabb.half_extents.y, 0.0)),
             ))
             .id();
         commands.entity(bone_child).add_child(collider_entity);
         commands
-            .entity(parent)
+            .entity(parent) // only done to stop query from spinning
             .insert(ParentToHitboxLink(collider_entity));
-        if let Some(model) = model {
-            commands
-                .entity(model.animation_target)
-                .insert(ParentToHitboxLink(collider_entity));
-        }
+        commands
+            .entity(true_parent)
+            .insert(ParentToHitboxLink(collider_entity));
     }
     Ok(())
 }

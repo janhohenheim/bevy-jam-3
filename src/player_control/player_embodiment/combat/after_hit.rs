@@ -78,10 +78,12 @@ pub(crate) fn handle_deflect_events(
                 "Deflecting something, but the block history reports no deflect streak"
             );
             // If this fails, we are deflecting a projectile
+            info!("Deflection!");
             if let Ok((mut enemy_constitution,)) = enemies.get_mut(event.attacker) {
-                let streak = block_history.current_deflect_streak() as f32;
-                let factor = 1.0 + (streak - 1.0) * 0.75;
-                let base_posture_damage = 30.;
+                let streak = block_history.current_deflect_streak();
+                info!("Deflecting with streak {}", streak);
+                let factor = 1.0 + (streak - 1) as f32 * 0.5;
+                let base_posture_damage = 8.;
                 let attack = Attack::new(format!(
                     "Player deflecting attack: \"{}\"",
                     event.attack.name

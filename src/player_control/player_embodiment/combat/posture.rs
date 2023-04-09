@@ -10,7 +10,7 @@ pub(crate) fn update_posture(
     for (mut combat_state, mut constitution, walking) in player.iter_mut() {
         if constitution.is_posture_broken() {
             combat_state.force_use_next_kind(PlayerCombatKind::PostureBroken);
-            constitution.recover_after_posture_broken();
+            constitution.mark_broken_posture_as_handled();
         }
         let posture_recovery_time = if walking.sprinting {
             None
@@ -24,20 +24,21 @@ pub(crate) fn update_posture(
                 PlayerCombatKind::Hurt => None,
             }
         };
+        let Some(posture_recovery_time) = posture_recovery_time else {
+            continue;
+        };
 
-        if let Some(posture_recovery_time) = posture_recovery_time {
-            let time_since_hurt_or_block = 1.8;
-            if combat_state.time_in_state > posture_recovery_time
-                && combat_state.time_since_sprint > posture_recovery_time
-                && combat_state.time_since_hurt_or_block > time_since_hurt_or_block
-            {
-                let factor = if combat_state.kind == PlayerCombatKind::Block {
-                    2.0
-                } else {
-                    1.0
-                };
-                constitution.recover_posture(time.delta_seconds() * factor);
-            }
+        let time_since_hurt_or_block = 1.8;
+        if combat_state.time_in_state > posture_recovery_time
+            && combat_state.time_since_sprint > posture_recovery_time
+            && combat_state.time_since_hurt_or_block > time_since_hurt_or_block
+        {
+            let factor = if combat_state.kind == PlayerCombatKind::Block {
+                2.0
+            } else {
+                1.0
+            };
+            constitution.recover_posture(time.delta_seconds() * factor);
         }
     }
 }

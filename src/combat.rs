@@ -13,6 +13,7 @@ use spew::prelude::*;
 
 pub(crate) mod collision;
 pub(crate) mod components;
+mod constitution;
 #[cfg(feature = "dev")]
 pub(crate) mod debug;
 mod decision;
@@ -71,6 +72,14 @@ pub(crate) fn combat_plugin(app: &mut App) {
                 #[cfg(feature = "dev")]
                 debug::display_combatants,
             )
+                .chain()
+                .after(link_animations)
+                .after(reset_forces_and_impulses)
+                .in_set(OnUpdate(GameState::Playing))
+                .in_set(CombatSystemSet),
+        )
+        .add_systems(
+            (constitution::update_posture, constitution::handle_death)
                 .chain()
                 .after(link_animations)
                 .after(reset_forces_and_impulses)

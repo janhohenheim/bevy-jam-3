@@ -169,7 +169,7 @@ pub(crate) fn execute_move_functions(
 #[sysfail(log(level = "error"))]
 pub(crate) fn execute_choreography(
     time: Res<Time>,
-    mut combatants: Query<(
+    mut enemies: Query<(
         Entity,
         &mut Enemy,
         &ConditionTracker,
@@ -179,42 +179,40 @@ pub(crate) fn execute_choreography(
     mut init_move_event_writer: EventWriter<ReadMoveMetadataEvent>,
     mut execute_move_event_writer: EventWriter<ExecuteMoveFunctionsEvent>,
 ) -> Result<()> {
-    for (entity, mut combatant, condition_tracker, transform, move_metadata) in
-        &mut combatants.iter_mut()
+    for (entity, mut enemy, condition_tracker, transform, move_metadata) in &mut enemies.iter_mut()
     {
-        combatant.time_since_last_move += time.delta_seconds();
-        combatant.time_since_last_animation += time.delta_seconds();
-        let Some(current) = combatant.current else { continue; };
+        enemy.update_timers(time.delta_seconds());
+        let Some(current) = enemy.current else { continue; };
 
         let (move_duration, choreography_length) = {
-            let moves = &combatant.current_choreography().unwrap().moves;
+            let moves = &enemy.current_choreography().unwrap().moves;
             let move_ = &moves[current.move_];
             (move_.metadata.duration.clone(), moves.len())
         };
 
         let time_for_next_move = match move_duration {
-            MoveDuration::Fixed(time) => combatant.time_since_last_move >= time,
+            MoveDuration::Fixed(time) => enemy.time_since_last_move >= time,
             MoveDuration::Animation => {
-                combatant.time_since_last_animation >= move_metadata.animation_duration.context("MoveDuration::Animation was specified, but no animation duration was found. Did you forget to set an animation?")?
+                enemy.time_since_last_animation >= move_metadata.animation_duration.context("MoveDuration::Animation was specified, but no animation duration was found. Did you forget to set an animation?")?
             }
             MoveDuration::Instant => true,
             MoveDuration::While(condition) => !condition_tracker.fulfilled(&condition),
             MoveDuration::Until(condition) => condition_tracker.fulfilled(&condition),
         };
         if time_for_next_move {
-            combatant.time_since_last_move = 0.0;
+            enemy.time_since_last_move = 0.0;
             let was_last_move = current.move_ + 1 >= choreography_length;
             if was_last_move {
-                combatant.last_choreography = Some(current.choreography);
-                combatant.current = None;
+                enemy.last_choreography = Some(current.choreography);
+                enemy.current = None;
             } else {
-                combatant.current = Some(CurrentMove {
+                enemy.current = Some(CurrentMove {
                     choreography: current.choreography,
                     move_: current.move_ + 1,
                     start_transform: *transform,
                 });
 
-                let next_move = &combatant.current_choreography().unwrap().moves[current.move_ + 1];
+                let next_move = &enemy.current_choreography().unwrap().moves[current.move_ + 1];
                 init_move_event_writer.send(ReadMoveMetadataEvent {
                     source: entity,
                     move_: next_move.metadata.clone(),
@@ -226,7 +224,7 @@ pub(crate) fn execute_choreography(
                 });
             }
         } else {
-            let current_move = &combatant.current_move().unwrap();
+            let current_move = &enemy.current_move().unwrap();
             execute_move_event_writer.send(ExecuteMoveFunctionsEvent {
                 source: entity,
                 move_: current_move.functions.clone(),

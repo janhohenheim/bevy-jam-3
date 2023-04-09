@@ -30,9 +30,17 @@ pub(crate) struct Enemy {
     pub(crate) chained_choreographies: HashMap<usize, usize>,
     pub(crate) time_since_last_move: f32,
     pub(crate) time_since_last_animation: f32,
-    pub(crate) block_choreography: usize,
-    pub(crate) hurt_choreography: usize,
+    pub(crate) time_since_hurt_or_block: f32,
     pub(crate) forced_choreography: Option<usize>,
+    pub(crate) special_choreographies: SpecialChoreographies,
+}
+
+#[derive(Debug, Clone, Default)]
+pub(crate) struct SpecialChoreographies {
+    pub(crate) hurt: usize,
+    pub(crate) block: usize,
+    pub(crate) posture_broken: usize,
+    pub(crate) death: usize,
 }
 
 impl Enemy {
@@ -40,25 +48,22 @@ impl Enemy {
         choreographies: Vec<Choreography>,
         tendencies: Vec<Tendency>,
         chained_choreographies: HashMap<usize, usize>,
+        special_choreographies: SpecialChoreographies,
     ) -> Self {
         Self {
             choreographies,
             tendencies,
             chained_choreographies,
+            special_choreographies,
             ..default()
         }
     }
 
-    pub(crate) fn with_hurt_choreography_index(mut self, hurt_choreography: usize) -> Self {
-        self.hurt_choreography = hurt_choreography;
-        self
+    pub(crate) fn update_timers(&mut self, dt: f32) {
+        self.time_since_last_move += dt;
+        self.time_since_last_animation += dt;
+        self.time_since_hurt_or_block += dt;
     }
-
-    pub(crate) fn with_block_choreography_index(mut self, block_choreography: usize) -> Self {
-        self.block_choreography = block_choreography;
-        self
-    }
-
     pub(crate) fn is_ready_for_next_choreography(&self) -> bool {
         self.current.is_none() || self.forced_choreography.is_some()
     }
@@ -78,11 +83,19 @@ impl Enemy {
     }
 
     pub(crate) fn block(&mut self) {
-        self.forced_choreography = Some(self.block_choreography);
+        self.forced_choreography = Some(self.special_choreographies.block);
     }
 
     pub(crate) fn hurt(&mut self) {
-        self.forced_choreography = Some(self.hurt_choreography);
+        self.forced_choreography = Some(self.special_choreographies.hurt);
+    }
+
+    pub(crate) fn break_posture(&mut self) {
+        self.forced_choreography = Some(self.special_choreographies.posture_broken);
+    }
+
+    pub(crate) fn die(&mut self) {
+        self.forced_choreography = Some(self.special_choreographies.death);
     }
 }
 
@@ -193,7 +206,7 @@ impl Constitution {
         }
     }
 
-    pub(crate) fn _die(&mut self) {
+    pub(crate) fn die(&mut self) {
         self.health = 0.0;
     }
 
@@ -201,7 +214,7 @@ impl Constitution {
         self.is_dead
     }
 
-    pub(crate) fn recover_after_posture_broken(&mut self) {
+    pub(crate) fn mark_broken_posture_as_handled(&mut self) {
         self.posture = 0.0;
         self.is_posture_broken = false;
     }
@@ -271,6 +284,7 @@ pub(crate) enum EnemyCombatState {
     #[default]
     OnGuard,
     HyperArmor,
+    Dying,
 }
 
 #[derive(Debug, Component, Clone, PartialEq, Reflect, FromReflect, Serialize, Deserialize)]
