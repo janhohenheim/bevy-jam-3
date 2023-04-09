@@ -18,7 +18,7 @@ pub struct PlayerCombatState {
     pub buffer: Option<PlayerCombatKind>,
     pub commitment: AttackCommitment,
     pub time_in_state: f32,
-    pub time_since_hit: f32,
+    pub time_since_hurt_or_block: f32,
     pub time_since_sprint: f32,
     pub started_animation: bool,
 }
@@ -78,7 +78,7 @@ impl PlayerCombatState {
             *self = Self {
                 kind,
                 time_since_sprint: self.time_since_sprint,
-                time_since_hit: self.time_since_hit,
+                time_since_hurt_or_block: self.time_since_hurt_or_block,
                 ..default()
             };
         }
@@ -111,7 +111,7 @@ impl PlayerCombatState {
 
     pub fn update_timers(&mut self, dt: f32) {
         self.time_in_state += dt;
-        self.time_since_hit += dt;
+        self.time_since_hurt_or_block += dt;
         self.time_since_sprint += dt;
     }
 }

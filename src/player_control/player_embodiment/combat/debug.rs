@@ -16,7 +16,7 @@ pub fn display_combat_state(
             ui.label(format!("Time in state: {:.3}", combat_state.time_in_state));
             ui.label(format!(
                 "Time since hit: {:.3}",
-                combat_state.time_since_hit
+                combat_state.time_since_hurt_or_block
             ));
             ui.label(format!(
                 "Time since sprint: {:.3}",

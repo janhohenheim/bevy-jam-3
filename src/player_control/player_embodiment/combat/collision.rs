@@ -30,14 +30,15 @@ pub fn handle_player_being_hit(
                     .to_degrees();
                 if angle.abs() > get_max_deflect_angle() {
                     hurt_events.send(event.into());
+                    combat_state.time_since_hurt_or_block = 0.0;
                 } else if combat_state.time_in_state < get_max_deflect_time(&block_history) {
                     deflect_events.send(event.into());
                     block_history.mark_last_as_deflect();
                 } else {
                     block_events.send(event.into());
+                    combat_state.time_since_hurt_or_block = 0.0;
                 }
             }
-            combat_state.time_since_hit = 0.0;
         }
     }
     Ok(())

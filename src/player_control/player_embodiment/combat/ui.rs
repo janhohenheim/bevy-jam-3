@@ -32,7 +32,7 @@ fn spawn_constitution_bars(mut commands: Commands, textures: Res<TextureAssets>)
                     NodeBundle {
                         style: Style {
                             position: UiRect {
-                                bottom: Val::Px(50.0),
+                                bottom: Val::Px(12.0),
                                 ..Default::default()
                             },
                             size: Size::new(Val::Px(100.0), Val::Px(75.0)),
@@ -93,6 +93,10 @@ fn spawn_constitution_bars(mut commands: Commands, textures: Res<TextureAssets>)
                             NodeBundle {
                                 style: Style {
                                     justify_content: JustifyContent::Center,
+                                    position: UiRect {
+                                        bottom: Val::Px(42.),
+                                        ..Default::default()
+                                    },
                                     ..default()
                                 },
                                 ..default()
@@ -109,10 +113,6 @@ fn spawn_constitution_bars(mut commands: Commands, textures: Res<TextureAssets>)
                                             Val::Px(BAR_WIDTH),
                                             Val::Px(POSTURE_HEIGHT),
                                         ),
-                                        position: UiRect {
-                                            bottom: Val::Px(HEALTH_HEIGHT),
-                                            ..Default::default()
-                                        },
                                         ..default()
                                     },
                                     ..default()
@@ -130,10 +130,6 @@ fn spawn_constitution_bars(mut commands: Commands, textures: Res<TextureAssets>)
                                             Val::Px(BAR_WIDTH),
                                             Val::Px(POSTURE_HEIGHT),
                                         ),
-                                        position: UiRect {
-                                            bottom: Val::Px(HEALTH_HEIGHT),
-                                            ..Default::default()
-                                        },
                                         ..default()
                                     },
                                     ..default()
@@ -146,10 +142,6 @@ fn spawn_constitution_bars(mut commands: Commands, textures: Res<TextureAssets>)
                                     z_index: ZIndex::Global(2),
                                     style: Style {
                                         position_type: PositionType::Absolute,
-                                        position: UiRect {
-                                            bottom: Val::Px(HEALTH_HEIGHT),
-                                            ..Default::default()
-                                        },
                                         size: Size::new(Val::Px(337.0), Val::Px(POSTURE_HEIGHT)),
                                         ..default()
                                     },
@@ -162,8 +154,8 @@ fn spawn_constitution_bars(mut commands: Commands, textures: Res<TextureAssets>)
 }
 
 const BAR_WIDTH: f32 = 742.0;
-const HEALTH_HEIGHT: f32 = 80.0;
-const POSTURE_HEIGHT: f32 = 50.0;
+const HEALTH_HEIGHT: f32 = 50.0;
+const POSTURE_HEIGHT: f32 = 30.0;
 
 #[derive(Debug, Component, Clone, PartialEq)]
 pub struct HealthBarFill;
