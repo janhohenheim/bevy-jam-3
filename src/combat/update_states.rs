@@ -33,24 +33,24 @@ pub fn update_condition_tracker(
         combatant_grounded,
     ) in combatants.iter_mut()
     {
+        condition_tracker.grounded = combatant_grounded.0;
         for (player_entity, player_transform, player_height) in player.iter() {
             let from = combatant_transform.translation;
             let to = player_transform.translation
                 + Vec3::Y * (combatant_height.half() - player_height.half());
             let line_of_sight =
                 get_line_of_sight(&rapier_context, from, combatant_entity, to, player_entity);
-            condition_tracker.active = true;
             condition_tracker.player_direction = to - from;
-            condition_tracker.grounded = combatant_grounded.0;
 
-            if let Some(_line_of_sight) = line_of_sight {
-                condition_tracker.has_line_of_sight = true;
-                condition_tracker.line_of_sight_direction = condition_tracker.player_direction;
-            } else {
-                condition_tracker.has_line_of_sight = false;
+            // if the navmesh is not loaded, we might as well pretend we have line of sight.
+            // Otherwise, this gets overwritten below.
+            condition_tracker.has_line_of_sight = true;
+            condition_tracker.line_of_sight_direction = condition_tracker.player_direction;
+            if line_of_sight.is_none() {
                 if let Ok(nav_mesh) = nav_mesh.get().read() {
                     if let Ok(path) = find_path(&nav_mesh, &nav_mesh_settings, from, to, None, None)
                     {
+                        condition_tracker.has_line_of_sight = false;
                         let to_origin = Vec3::Y * combatant_height.half();
                         let path: Vec<_> =
                             perform_string_pulling_on_path(&nav_mesh, from, to, &path)
@@ -63,18 +63,12 @@ pub fn update_condition_tracker(
                                 .collect();
 
                         // Expect 2: next node and from ground to player
-                        condition_tracker.line_of_sight_direction = if path.len() < 2 {
-                            condition_tracker.player_direction
-                        } else {
-                            path[0]
-                        };
-                    } else {
-                        condition_tracker.active = false;
+                        if path.len() >= 2 {
+                            condition_tracker.line_of_sight_direction = path[0];
+                        }
                     }
-                } else {
-                    condition_tracker.active = false;
                 }
-            };
+            }
         }
     }
     Ok(())

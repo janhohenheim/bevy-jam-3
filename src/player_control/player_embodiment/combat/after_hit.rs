@@ -1,3 +1,4 @@
+use crate::combat::collision::DeflectedByEnemyEvent;
 use crate::combat::{Attack, Constitution, Enemy};
 use crate::player_control::player_embodiment::combat::collision::{
     BlockedByPlayerEvent, DeflectedByPlayerEvent, PlayerHurtEvent,
@@ -48,7 +49,7 @@ pub fn handle_block_events(
     for attack in block_events.iter() {
         for (mut constitution, mut impulse, mass, transform) in players.iter_mut() {
             constitution.take_posture_damage(attack);
-            let factor = 0.75;
+            let factor = 0.5;
             impulse.impulse += attack.knockback * factor * transform.back() * mass.0.mass;
         }
     }
@@ -88,8 +89,20 @@ pub fn handle_deflect_events(
                 .with_posture_damage(base_posture_damage * factor);
                 enemy_constitution.take_posture_damage(&attack);
             }
-            let factor = 0.6;
+            let factor = 0.3;
             impulse.impulse += event.attack.knockback * factor * transform.back() * mass.0.mass;
+        }
+    }
+}
+
+pub fn handle_enemy_deflect_events(
+    mut attacks: EventReader<DeflectedByEnemyEvent>,
+    mut players: Query<(&mut PlayerCombatState,)>,
+) {
+    for _attack in attacks.iter() {
+        for (mut combat_state,) in players.iter_mut() {
+            combat_state.force_use_next_kind(PlayerCombatKind::Deflected);
+            combat_state.commitment = AttackCommitment::Committed;
         }
     }
 }

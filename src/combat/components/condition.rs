@@ -26,7 +26,6 @@ pub struct ConditionTracker {
     pub line_of_sight_direction: Vec3,
     pub has_line_of_sight: bool,
     pub grounded: bool,
-    pub active: bool,
 }
 
 impl ConditionTracker {
@@ -39,20 +38,19 @@ impl ConditionTracker {
     }
 
     pub fn fulfilled(&self, condition: &CombatCondition) -> bool {
-        self.active
-            && match condition {
-                CombatCondition::PlayerDistanceUnder(distance) => {
-                    self.player_direction.length_squared() < distance.squared() + 1e-5
-                }
-                CombatCondition::PlayerDistanceOver(distance) => {
-                    self.player_direction.length_squared() > distance.squared() - 1e-5
-                }
-                CombatCondition::HasLineOfSight => self.has_line_of_sight,
-                CombatCondition::Grounded => self.grounded,
-                CombatCondition::Not(condition) => !self.fulfilled(condition),
-                CombatCondition::And(conditions) => self.all(conditions),
-                CombatCondition::Or(conditions) => self.any(conditions),
-                CombatCondition::None => true,
+        match condition {
+            CombatCondition::PlayerDistanceUnder(distance) => {
+                self.player_direction.length_squared() < distance.squared() + 1e-5
             }
+            CombatCondition::PlayerDistanceOver(distance) => {
+                self.player_direction.length_squared() > distance.squared() - 1e-5
+            }
+            CombatCondition::HasLineOfSight => self.has_line_of_sight,
+            CombatCondition::Grounded => self.grounded,
+            CombatCondition::Not(condition) => !self.fulfilled(condition),
+            CombatCondition::And(conditions) => self.all(conditions),
+            CombatCondition::Or(conditions) => self.any(conditions),
+            CombatCondition::None => true,
+        }
     }
 }

@@ -266,7 +266,7 @@ pub(crate) fn spawn(
                                     },
                                     functions: MoveFunctions {
                                         motion_fn: Some(
-                                            ai::generic::motion::continuous::face_player_with_smoothness(0.7),
+                                            ai::generic::motion::continuous::face_player_with_smoothness(0.4),
                                         ),
                                         ..default()
                                     },

@@ -1,7 +1,7 @@
 use crate::combat::collision::{BlockedByEnemyEvent, DeflectedByEnemyEvent, EnemyHurtEvent};
 use crate::combat::{Constitution, Enemy};
 use crate::level_instantiation::spawning::AnimationEntityLink;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use bevy::prelude::*;
 use bevy_mod_sysfail::macros::*;
 
@@ -27,7 +27,9 @@ pub fn handle_block_events(
         for (mut enemy, mut constitution, animation_entity_link) in enemies.iter_mut() {
             constitution.take_posture_damage(attack);
             enemy.block();
-            let mut animation_player = animation_players.get_mut(**animation_entity_link)?;
+            let mut animation_player = animation_players
+                .get_mut(**animation_entity_link)
+                .context("Animation player link held invalid reference")?;
             // Force the animation to restart in case we are already blocking the previous attack
             animation_player.pause();
         }
@@ -45,7 +47,9 @@ pub fn handle_deflect_events(
         for (mut enemy, mut constitution, animation_entity_link) in enemies.iter_mut() {
             constitution.take_posture_damage(attack); // Enemies don't get any bonus on deflections
             enemy.block();
-            let mut animation_player = animation_players.get_mut(**animation_entity_link)?;
+            let mut animation_player = animation_players
+                .get_mut(**animation_entity_link)
+                .context("Animation player link held invalid entity")?;
             // Force the animation to restart in case we are already blocking the previous attack
             animation_player.pause();
         }

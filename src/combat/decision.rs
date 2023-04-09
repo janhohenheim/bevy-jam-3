@@ -14,11 +14,7 @@ pub fn decide_choreography(
         .iter_mut()
         .filter(|(_, combatant, _, _)| combatant.is_ready_for_next_choreography())
     {
-        let next_choreography_index = combatant
-            .forced_choreography
-            .or(get_chained_choreography(&combatant))
-            .map(Ok)
-            .unwrap_or_else(|| choose_next_choreography(&combatant, condition_tracker))?;
+        let next_choreography_index = choose_next_choreography(&combatant, condition_tracker)?;
         combatant.forced_choreography = None;
         if let Some(current) = combatant.current {
             combatant.last_choreography = Some(current.choreography);
@@ -42,19 +38,27 @@ pub fn decide_choreography(
     Ok(())
 }
 
-fn get_chained_choreography(combatant: &Enemy) -> Option<usize> {
-    combatant
-        .last_choreography
-        .and_then(|index| combatant.chained_choreographies.get(&index))
-        .copied()
-}
-
 fn choose_next_choreography(
     combatant: &Enemy,
     condition_tracker: &ConditionTracker,
 ) -> Result<usize> {
+    combatant
+        .forced_choreography
+        .or(get_chained_choreography(&combatant))
+        .map(Ok)
+        .unwrap_or_else(|| roll_next_choreography(&combatant, condition_tracker))
+}
+
+fn get_chained_choreography(enemy: &Enemy) -> Option<usize> {
+    enemy
+        .last_choreography
+        .and_then(|index| enemy.chained_choreographies.get(&index))
+        .copied()
+}
+
+fn roll_next_choreography(enemy: &Enemy, condition_tracker: &ConditionTracker) -> Result<usize> {
     let mut rng = thread_rng();
-    let choices: Vec<_> = combatant
+    let choices: Vec<_> = enemy
         .tendencies
         .iter()
         .filter(|tendency| condition_tracker.fulfilled(&tendency.condition))

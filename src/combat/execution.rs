@@ -14,7 +14,7 @@ pub fn read_move_metadata(
     mut move_events: EventReader<ReadMoveMetadataEvent>,
     mut animation_player: Query<&mut AnimationPlayer>,
     mut enemies: Query<(
-        &AnimationEntityLink,
+        Option<&AnimationEntityLink>,
         &mut Enemy,
         &mut EnemyCombatState,
         &mut CurrentMoveMetadata,
@@ -32,17 +32,23 @@ pub fn read_move_metadata(
             mut move_metadata,
             condition_tracker,
             transform,
-        ) = enemies.get_mut(event.source)?;
-        let mut animation_player = animation_player
-            .get_mut(**animation_entity_link)
-            .context("animation_entity_link held entity without animation player")?;
+        ) = enemies
+            .get_mut(event.source)
+            .context("Enemies did not have all required components during move metadata read")?;
 
-        if let Some(animation) = &move_.animation {
-            combatant.time_since_last_animation = 0.0;
-            animation_player.play_with_transition(animation.clone(), Duration::from_secs_f32(0.2));
-            animation_player.resume();
-            if move_.duration != MoveDuration::Animation {
-                animation_player.repeat();
+        if let Some(animation_entity_link) = animation_entity_link {
+            let mut animation_player = animation_player
+                .get_mut(**animation_entity_link)
+                .context("animation_entity_link held entity without animation player")?;
+
+            if let Some(animation) = &move_.animation {
+                combatant.time_since_last_animation = 0.0;
+                animation_player
+                    .play_with_transition(animation.clone(), Duration::from_secs_f32(0.2));
+                animation_player.resume();
+                if move_.duration != MoveDuration::Animation {
+                    animation_player.repeat();
+                }
             }
         }
 

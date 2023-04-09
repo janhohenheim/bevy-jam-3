@@ -46,9 +46,10 @@ pub fn accelerate_around_player(acceleration: f32) -> Box<dyn MotionFn> {
                   ..
               }: MotionFnInput| {
             let noise = generate_noise(start_player_direction, global_time);
+            let factor = noise.signum();
             let force = (!player_direction.is_approx_zero())
                 .then_some(
-                    player_direction.normalize().cross(Vec3::Y) * acceleration * mass * noise,
+                    player_direction.normalize().cross(Vec3::Y) * acceleration * mass * factor,
                 )
                 .unwrap_or_default();
             let smoothness = config.characters.rotation_smoothing;

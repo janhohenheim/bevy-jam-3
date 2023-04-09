@@ -36,7 +36,6 @@ pub fn display_combatants(
                 "Has line of sight: {}",
                 condition_tracker.has_line_of_sight
             ));
-            ui.label(format!("Is active: {}", condition_tracker.active));
 
             ui.heading("Misc");
             ui.label(format!("State: {combatant_state:?}"));
