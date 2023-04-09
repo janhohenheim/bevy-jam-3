@@ -128,6 +128,10 @@ pub struct TextureAssets {
     pub glowy_interior: Handle<Image>,
     #[asset(path = "textures/sky.jpg")]
     pub sky: Handle<Image>,
+    #[asset(path = "textures/bar_border.png")]
+    pub bar_border: Handle<Image>,
+    #[asset(path = "textures/health_bar.png")]
+    pub health_bar: Handle<Image>,
 }
 
 #[derive(AssetCollection, Resource, Clone)]

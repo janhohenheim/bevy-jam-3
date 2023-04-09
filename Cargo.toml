@@ -65,6 +65,7 @@ spew = "0.2.2"
 bevy_mod_sysfail = "2"
 seldom_fn_plugin = "0.3"
 getrandom = { version = "0.2", features = ["js"], optional = true }
+bevy_mod_billboard = "0.3.0"
 
 [build-dependencies]
 embed-resource = "1.4"

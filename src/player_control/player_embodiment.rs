@@ -18,6 +18,7 @@ use bevy_kira_audio::AudioInstance;
 use bevy_mod_sysfail::macros::*;
 use bevy_rapier3d::prelude::*;
 use leafwing_input_manager::prelude::ActionState;
+use seldom_fn_plugin::FnPluginExt;
 use serde::{Deserialize, Serialize};
 use std::ops::DerefMut;
 
@@ -44,6 +45,7 @@ pub fn player_embodiment_plugin(app: &mut App) {
         .add_event::<PlayerHurtEvent>()
         .add_event::<BlockedByPlayerEvent>()
         .add_event::<DeflectedByPlayerEvent>()
+        .fn_plugin(combat::ui::player_combat_ui_plugin)
         .add_systems(
             (
                 handle_jump,

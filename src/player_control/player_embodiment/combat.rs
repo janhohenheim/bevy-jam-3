@@ -16,6 +16,7 @@ mod components;
 #[cfg(feature = "dev")]
 pub mod debug;
 pub mod posture;
+pub mod ui;
 
 pub fn attack(
     mut players: Query<(
