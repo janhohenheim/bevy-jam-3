@@ -1,5 +1,5 @@
-pub mod continuous;
-pub mod instant;
+pub(crate) mod continuous;
+pub(crate) mod instant;
 use crate::util::smoothness_to_lerp_factor;
 use crate::util::trait_extension::Vec3Ext;
 use bevy::prelude::*;

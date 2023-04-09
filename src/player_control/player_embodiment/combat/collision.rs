@@ -11,7 +11,7 @@ use bevy_mod_sysfail::macros::*;
 use serde::{Deserialize, Serialize};
 
 #[sysfail(log(level = "error"))]
-pub fn handle_player_being_hit(
+pub(crate) fn handle_player_being_hit(
     mut hit_events: EventReader<PlayerHitEvent>,
     mut players: Query<(&Transform, &mut PlayerCombatState, &mut BlockHistory), With<Player>>,
     mut hurt_events: EventWriter<PlayerHurtEvent>,
@@ -61,7 +61,7 @@ fn get_max_deflect_time(block_history: &BlockHistory) -> f32 {
     Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect, Default, Deref, DerefMut,
 )]
 #[reflect(Serialize, Deserialize)]
-pub struct PlayerHurtEvent(pub Attack);
+pub(crate) struct PlayerHurtEvent(pub(crate) Attack);
 
 impl From<&PlayerHitEvent> for PlayerHurtEvent {
     fn from(event: &PlayerHitEvent) -> Self {
@@ -73,7 +73,7 @@ impl From<&PlayerHitEvent> for PlayerHurtEvent {
     Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect, Default, Deref, DerefMut,
 )]
 #[reflect(Serialize, Deserialize)]
-pub struct BlockedByPlayerEvent(pub Attack);
+pub(crate) struct BlockedByPlayerEvent(pub(crate) Attack);
 
 impl From<&PlayerHitEvent> for BlockedByPlayerEvent {
     fn from(event: &PlayerHitEvent) -> Self {
@@ -83,9 +83,9 @@ impl From<&PlayerHitEvent> for BlockedByPlayerEvent {
 
 #[derive(Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect)]
 #[reflect(Serialize, Deserialize)]
-pub struct DeflectedByPlayerEvent {
-    pub attack: Attack,
-    pub attacker: Entity,
+pub(crate) struct DeflectedByPlayerEvent {
+    pub(crate) attack: Attack,
+    pub(crate) attacker: Entity,
 }
 
 impl From<&PlayerHitEvent> for DeflectedByPlayerEvent {

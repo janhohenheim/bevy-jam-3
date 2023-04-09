@@ -5,7 +5,7 @@ use anyhow::{Context, Result};
 use bevy::prelude::*;
 use bevy_mod_sysfail::macros::*;
 
-pub fn handle_hurt_events(
+pub(crate) fn handle_hurt_events(
     mut hurt_events: EventReader<EnemyHurtEvent>,
     mut enemies: Query<(&mut Enemy, &mut Constitution)>,
 ) {
@@ -18,7 +18,7 @@ pub fn handle_hurt_events(
 }
 
 #[sysfail(log(level = "error"))]
-pub fn handle_block_events(
+pub(crate) fn handle_block_events(
     mut block_events: EventReader<BlockedByEnemyEvent>,
     mut enemies: Query<(&mut Enemy, &mut Constitution, &AnimationEntityLink)>,
     mut animation_players: Query<&mut AnimationPlayer>,
@@ -38,7 +38,7 @@ pub fn handle_block_events(
 }
 
 #[sysfail(log(level = "error"))]
-pub fn handle_deflect_events(
+pub(crate) fn handle_deflect_events(
     mut deflect_events: EventReader<DeflectedByEnemyEvent>,
     mut enemies: Query<(&mut Enemy, &mut Constitution, &AnimationEntityLink)>,
     mut animation_players: Query<&mut AnimationPlayer>,

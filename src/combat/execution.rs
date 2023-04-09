@@ -10,7 +10,7 @@ use spew::prelude::SpawnEvent;
 use std::time::Duration;
 
 #[sysfail(log(level = "error"))]
-pub fn read_move_metadata(
+pub(crate) fn read_move_metadata(
     mut move_events: EventReader<ReadMoveMetadataEvent>,
     mut animation_player: Query<&mut AnimationPlayer>,
     mut enemies: Query<(
@@ -70,7 +70,7 @@ pub fn read_move_metadata(
 }
 
 #[sysfail(log(level = "error"))]
-pub fn execute_move_functions(
+pub(crate) fn execute_move_functions(
     time: Res<Time>,
     mut enemies: Query<(
         &Enemy,
@@ -108,14 +108,14 @@ pub fn execute_move_functions(
                 _ => None,
             };
             let input = MotionFnInput {
-                time_in_move: combatant.time_since_last_move,
+                _time_in_move: combatant.time_since_last_move,
                 global_time: time.elapsed_seconds_wrapped(),
-                duration,
+                _duration: duration,
                 transform: *transform,
-                start_transform: move_metadata.start_transform,
+                _start_transform: move_metadata.start_transform,
                 player_direction: condition_tracker.player_direction,
                 start_player_direction: move_metadata.start_player_direction,
-                has_line_of_sight: condition_tracker.has_line_of_sight,
+                _has_line_of_sight: condition_tracker.has_line_of_sight,
                 line_of_sight_direction: condition_tracker.line_of_sight_direction,
                 mass: mass.0.mass,
                 velocity: velocity.linvel,
@@ -156,7 +156,7 @@ pub fn execute_move_functions(
 
         if let Some(attack_fn) = &event.move_.projectile_attack_fn {
             let input = ProjectileAttackFnInput {
-                time: combatant.time_since_last_move,
+                _time: combatant.time_since_last_move,
                 spawner: entity,
             };
             let ProjectileAttackFnOutput { spawn_events } = attack_fn.call(input);
@@ -167,7 +167,7 @@ pub fn execute_move_functions(
 }
 
 #[sysfail(log(level = "error"))]
-pub fn execute_choreography(
+pub(crate) fn execute_choreography(
     time: Res<Time>,
     mut combatants: Query<(
         Entity,
@@ -187,7 +187,7 @@ pub fn execute_choreography(
         let Some(current) = combatant.current else { continue; };
 
         let (move_duration, choreography_length) = {
-            let moves = &combatant.choreographies[current.choreography].moves;
+            let moves = &combatant.current_choreography().unwrap().moves;
             let move_ = &moves[current.move_];
             (move_.metadata.duration.clone(), moves.len())
         };
@@ -214,8 +214,7 @@ pub fn execute_choreography(
                     start_transform: *transform,
                 });
 
-                let next_move =
-                    &combatant.choreographies[current.choreography].moves[current.move_ + 1];
+                let next_move = &combatant.current_choreography().unwrap().moves[current.move_ + 1];
                 init_move_event_writer.send(ReadMoveMetadataEvent {
                     source: entity,
                     move_: next_move.metadata.clone(),
@@ -227,7 +226,7 @@ pub fn execute_choreography(
                 });
             }
         } else {
-            let current_move = &combatant.choreographies[current.choreography].moves[current.move_];
+            let current_move = &combatant.current_move().unwrap();
             execute_move_event_writer.send(ExecuteMoveFunctionsEvent {
                 source: entity,
                 move_: current_move.functions.clone(),

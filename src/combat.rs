@@ -7,14 +7,14 @@ use crate::level_instantiation::spawning::animation_link::link_animations;
 use crate::movement::general_movement::reset_forces_and_impulses;
 use crate::GameState;
 use bevy::prelude::*;
-pub use components::*;
+pub(crate) use components::*;
 use seldom_fn_plugin::FnPluginExt;
 use spew::prelude::*;
 
 pub(crate) mod collision;
-pub mod components;
+pub(crate) mod components;
 #[cfg(feature = "dev")]
-pub mod debug;
+pub(crate) mod debug;
 mod decision;
 mod execution;
 mod linking;
@@ -22,9 +22,9 @@ mod ui;
 mod update_states;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
-pub struct CombatSystemSet;
+pub(crate) struct CombatSystemSet;
 
-pub fn combat_plugin(app: &mut App) {
+pub(crate) fn combat_plugin(app: &mut App) {
     app.register_type::<CurrentMove>()
         .register_type::<EnemyCombatState>()
         .register_type::<ConditionTracker>()

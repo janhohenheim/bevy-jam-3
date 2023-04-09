@@ -8,7 +8,7 @@ use std::hash::Hasher;
 
 use noise::{core::perlin::perlin_1d, permutationtable::PermutationTable};
 
-pub fn accelerate_towards_player(acceleration: f32) -> Box<dyn MotionFn> {
+pub(crate) fn accelerate_towards_player(acceleration: f32) -> Box<dyn MotionFn> {
     Box::new(
         move |MotionFnInput {
                   transform,
@@ -33,7 +33,7 @@ pub fn accelerate_towards_player(acceleration: f32) -> Box<dyn MotionFn> {
     )
 }
 
-pub fn accelerate_around_player(acceleration: f32) -> Box<dyn MotionFn> {
+pub(crate) fn accelerate_around_player(acceleration: f32) -> Box<dyn MotionFn> {
     Box::new(
         move |MotionFnInput {
                   transform,
@@ -72,7 +72,7 @@ fn generate_noise(seed_source: Vec3, global_time: f32) -> f32 {
     perlin_1d(global_time as f64 / 3., &permutation_table) as f32
 }
 
-pub fn face_player() -> Box<dyn MotionFn> {
+pub(crate) fn face_player() -> Box<dyn MotionFn> {
     Box::new(
         move |MotionFnInput {
                   transform,
@@ -92,7 +92,7 @@ pub fn face_player() -> Box<dyn MotionFn> {
     )
 }
 
-pub fn face_player_with_smoothness(smoothness: f32) -> Box<dyn MotionFn> {
+pub(crate) fn face_player_with_smoothness(smoothness: f32) -> Box<dyn MotionFn> {
     Box::new(
         move |MotionFnInput {
                   transform,

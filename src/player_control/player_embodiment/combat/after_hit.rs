@@ -10,7 +10,7 @@ use crate::player_control::player_embodiment::Player;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::{ExternalImpulse, ReadMassProperties};
 
-pub fn handle_hurt_events(
+pub(crate) fn handle_hurt_events(
     mut hurt_events: EventReader<PlayerHurtEvent>,
     mut players: Query<
         (
@@ -34,7 +34,7 @@ pub fn handle_hurt_events(
     }
 }
 
-pub fn handle_block_events(
+pub(crate) fn handle_block_events(
     mut block_events: EventReader<BlockedByPlayerEvent>,
     mut players: Query<
         (
@@ -55,7 +55,7 @@ pub fn handle_block_events(
     }
 }
 
-pub fn handle_deflect_events(
+pub(crate) fn handle_deflect_events(
     mut deflect_events: EventReader<DeflectedByPlayerEvent>,
     mut players: Query<
         (
@@ -95,7 +95,7 @@ pub fn handle_deflect_events(
     }
 }
 
-pub fn handle_enemy_deflect_events(
+pub(crate) fn handle_enemy_deflect_events(
     mut attacks: EventReader<DeflectedByEnemyEvent>,
     mut players: Query<(&mut PlayerCombatState,)>,
 ) {

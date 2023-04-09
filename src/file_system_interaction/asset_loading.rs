@@ -14,7 +14,7 @@ use bevy_kira_audio::AudioSource;
 use bevy_mod_sysfail::macros::*;
 use iyes_progress::{ProgressCounter, ProgressPlugin};
 
-pub fn loading_plugin(app: &mut App) {
+pub(crate) fn loading_plugin(app: &mut App) {
     app.add_plugin(RonAssetPlugin::<SerializedLevel>::new(&["lvl.ron"]))
         .add_plugin(RonAssetPlugin::<Dialog>::new(&["dlg.ron"]))
         .add_plugin(TomlAssetPlugin::<GameConfig>::new(&["game.toml"]))
@@ -22,7 +22,6 @@ pub fn loading_plugin(app: &mut App) {
         .add_loading_state(LoadingState::new(GameState::Loading).continue_to_state(GameState::Menu))
         .add_collection_to_loading_state::<_, AudioAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, SceneAssets>(GameState::Loading)
-        .add_collection_to_loading_state::<_, CharacterAnimationAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, DummyAnimationAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, FpsDummyAnimationAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, LevelAssets>(GameState::Loading)
@@ -37,111 +36,99 @@ pub fn loading_plugin(app: &mut App) {
 // when done loading, they will be inserted as resources (see <https://github.com/NiklasEi/bevy_asset_loader>)
 
 #[derive(AssetCollection, Resource, Clone)]
-pub struct AudioAssets {
+pub(crate) struct AudioAssets {
     #[asset(path = "audio/walking.ogg")]
-    pub walking: Handle<AudioSource>,
+    pub(crate) walking: Handle<AudioSource>,
 }
 
 #[derive(AssetCollection, Resource, Clone)]
-pub struct SceneAssets {
-    #[asset(path = "scenes/Fox.glb#Scene0")]
-    pub character: Handle<Scene>,
+pub(crate) struct SceneAssets {
     #[asset(path = "scenes/fps_dummy.glb#Scene0")]
-    pub fps_dummy: Handle<Scene>,
+    pub(crate) fps_dummy: Handle<Scene>,
     #[asset(path = "scenes/dummy.glb#Scene0")]
-    pub dummy: Handle<Scene>,
+    pub(crate) dummy: Handle<Scene>,
     #[asset(path = "scenes/old_town.glb#Scene0")]
-    pub level: Handle<Scene>,
+    pub(crate) level: Handle<Scene>,
     #[asset(path = "scenes/kunai.glb#Scene0")]
-    pub kunai: Handle<Scene>,
+    pub(crate) kunai: Handle<Scene>,
 }
 
 #[derive(AssetCollection, Resource, Clone)]
-pub struct CharacterAnimationAssets {
-    #[asset(path = "scenes/Fox.glb#Animation0")]
-    pub idle: Handle<AnimationClip>,
-    #[asset(path = "scenes/Fox.glb#Animation1")]
-    pub walk: Handle<AnimationClip>,
-    #[asset(path = "scenes/Fox.glb#Animation2")]
-    pub run: Handle<AnimationClip>,
-}
-
-#[derive(AssetCollection, Resource, Clone)]
-pub struct DummyAnimationAssets {
+pub(crate) struct DummyAnimationAssets {
     #[asset(path = "scenes/dummy.glb#Animation0")]
-    pub hurt: Handle<AnimationClip>,
+    pub(crate) hurt: Handle<AnimationClip>,
     #[asset(path = "scenes/dummy.glb#Animation1")]
-    pub block: Handle<AnimationClip>,
+    pub(crate) block: Handle<AnimationClip>,
     #[asset(path = "scenes/dummy.glb#Animation2")]
-    pub aerial_toss: Handle<AnimationClip>,
+    pub(crate) aerial_toss: Handle<AnimationClip>,
     #[asset(path = "scenes/dummy.glb#Animation3")]
-    pub aerial: Handle<AnimationClip>,
+    pub(crate) aerial: Handle<AnimationClip>,
     #[asset(path = "scenes/dummy.glb#Animation4")]
-    pub attack: Handle<AnimationClip>,
+    pub(crate) attack: Handle<AnimationClip>,
     #[asset(path = "scenes/dummy.glb#Animation5")]
-    pub walk: Handle<AnimationClip>,
+    pub(crate) walk: Handle<AnimationClip>,
     #[asset(path = "scenes/dummy.glb#Animation6")]
-    pub idle: Handle<AnimationClip>,
+    pub(crate) idle: Handle<AnimationClip>,
 }
 
 #[derive(AssetCollection, Resource, Clone)]
-pub struct FpsDummyAnimationAssets {
+pub(crate) struct FpsDummyAnimationAssets {
     #[asset(path = "scenes/fps_dummy.glb#Animation0")]
-    pub idle: Handle<AnimationClip>,
+    pub(crate) idle: Handle<AnimationClip>,
     #[asset(path = "scenes/fps_dummy.glb#Animation1")]
-    pub attack_one: Handle<AnimationClip>,
+    pub(crate) attack_one: Handle<AnimationClip>,
     #[asset(path = "scenes/fps_dummy.glb#Animation2")]
-    pub attack_two: Handle<AnimationClip>,
+    pub(crate) attack_two: Handle<AnimationClip>,
     #[asset(path = "scenes/fps_dummy.glb#Animation3")]
-    pub attack_three: Handle<AnimationClip>,
+    pub(crate) attack_three: Handle<AnimationClip>,
     #[asset(path = "scenes/fps_dummy.glb#Animation4")]
-    pub block: Handle<AnimationClip>,
+    pub(crate) block: Handle<AnimationClip>,
     #[asset(path = "scenes/fps_dummy.glb#Animation5")]
-    pub hurt: Handle<AnimationClip>,
+    pub(crate) hurt: Handle<AnimationClip>,
     #[asset(path = "scenes/fps_dummy.glb#Animation6")]
-    pub blocked: Handle<AnimationClip>,
+    pub(crate) blocked: Handle<AnimationClip>,
 }
 
 #[derive(AssetCollection, Resource, Clone)]
-pub struct LevelAssets {
+pub(crate) struct LevelAssets {
     #[cfg_attr(feature = "native", asset(path = "levels", collection(typed, mapped)))]
     #[cfg_attr(
         feature = "wasm",
         asset(paths("levels/old_town.lvl.ron"), collection(typed, mapped))
     )]
-    pub levels: HashMap<String, Handle<SerializedLevel>>,
+    pub(crate) levels: HashMap<String, Handle<SerializedLevel>>,
 }
 
 #[derive(AssetCollection, Resource, Clone)]
-pub struct DialogAssets {
+pub(crate) struct DialogAssets {
     #[cfg_attr(feature = "native", asset(path = "dialogs", collection(typed, mapped)))]
     #[cfg_attr(
         feature = "wasm",
         asset(paths("dialogs/follower.dlg.ron"), collection(typed, mapped))
     )]
-    pub dialogs: HashMap<String, Handle<Dialog>>,
+    pub(crate) dialogs: HashMap<String, Handle<Dialog>>,
 }
 
 #[derive(AssetCollection, Resource, Clone)]
-pub struct TextureAssets {
+pub(crate) struct TextureAssets {
     #[asset(path = "textures/stone_alley_2.jpg")]
-    pub glowy_interior: Handle<Image>,
+    pub(crate) glowy_interior: Handle<Image>,
     #[asset(path = "textures/sky.jpg")]
-    pub sky: Handle<Image>,
+    pub(crate) sky: Handle<Image>,
     #[asset(path = "textures/bar_border.png")]
-    pub bar_border: Handle<Image>,
+    pub(crate) bar_border: Handle<Image>,
     #[asset(path = "textures/health_bar_fill.png")]
-    pub health_bar_fill: Handle<Image>,
+    pub(crate) health_bar_fill: Handle<Image>,
     #[asset(path = "textures/posture_bar_fill.png")]
-    pub posture_bar_fill: Handle<Image>,
+    pub(crate) posture_bar_fill: Handle<Image>,
     #[asset(path = "textures/posture_bar_top.png")]
-    pub posture_bar_top: Handle<Image>,
+    pub(crate) posture_bar_top: Handle<Image>,
 }
 
 #[derive(AssetCollection, Resource, Clone)]
-pub struct ConfigAssets {
+pub(crate) struct ConfigAssets {
     #[asset(path = "config/config.game.toml")]
-    pub game: Handle<GameConfig>,
+    pub(crate) _game: Handle<GameConfig>,
 }
 
 fn show_progress(
@@ -150,11 +137,12 @@ fn show_progress(
     mut last_done: Local<u32>,
     audio_assets: Option<Res<AudioAssets>>,
     scene_assets: Option<Res<SceneAssets>>,
-    animation_assets: Option<Res<CharacterAnimationAssets>>,
     level_assets: Option<Res<LevelAssets>>,
     dialog_assets: Option<Res<DialogAssets>>,
     texture_assets: Option<Res<TextureAssets>>,
     config_assets: Option<Res<ConfigAssets>>,
+    dummy_animation_assets: Option<Res<DummyAnimationAssets>>,
+    fps_dummy_animation_assets: Option<Res<FpsDummyAnimationAssets>>,
 ) {
     if let Some(progress) = progress.map(|counter| counter.progress()) {
         if progress.done > *last_done {
@@ -173,11 +161,15 @@ fn show_progress(
                 ui.add_enabled_ui(false, |ui| {
                     ui.checkbox(&mut audio_assets.is_some(), "Audio");
                     ui.checkbox(&mut scene_assets.is_some(), "Scenes");
-                    ui.checkbox(&mut animation_assets.is_some(), "Animations");
                     ui.checkbox(&mut level_assets.is_some(), "Levels");
                     ui.checkbox(&mut dialog_assets.is_some(), "Dialogs");
                     ui.checkbox(&mut texture_assets.is_some(), "Textures");
                     ui.checkbox(&mut config_assets.is_some(), "Config");
+                    ui.checkbox(&mut dummy_animation_assets.is_some(), "Dummy Animations");
+                    ui.checkbox(
+                        &mut fps_dummy_animation_assets.is_some(),
+                        "FPS Dummy Animations",
+                    );
                 });
             });
         });

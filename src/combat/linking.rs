@@ -10,7 +10,7 @@ use bevy_mod_sysfail::macros::*;
 use bevy_rapier3d::prelude::*;
 
 #[sysfail(log(level = "error"))]
-pub fn link_hitbox(
+pub(crate) fn link_hitbox(
     mut commands: Commands,
     parents: Query<
         (Entity, Option<&Model>),
@@ -91,7 +91,7 @@ pub fn link_hitbox(
 }
 
 #[sysfail(log(level = "error"))]
-pub fn sync_projectile_attack_hitbox(
+pub(crate) fn sync_projectile_attack_hitbox(
     projectiles: Query<(&AttackHitbox, &ParentToHitboxLink), With<Projectile>>,
     mut hitboxes: Query<(&mut AttackHitbox, &mut CollisionGroups), Without<ParentToHitboxLink>>,
 ) -> Result<()> {

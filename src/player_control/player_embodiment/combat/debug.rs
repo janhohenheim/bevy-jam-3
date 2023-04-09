@@ -3,7 +3,7 @@ use crate::player_control::player_embodiment::combat::{BlockHistory, PlayerComba
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 
-pub fn display_combat_state(
+pub(crate) fn display_combat_state(
     player: Query<(&PlayerCombatState, &Constitution, &BlockHistory)>,
     mut egui_contexts: EguiContexts,
 ) {

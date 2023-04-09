@@ -22,11 +22,11 @@ use seldom_fn_plugin::FnPluginExt;
 use serde::{Deserialize, Serialize};
 use std::ops::DerefMut;
 
-pub mod combat;
+pub(crate) mod combat;
 
 /// This plugin handles everything that has to do with the player's physical representation in the world.
 /// This includes movement and rotation that differ from the way the [`MovementPlugin`] already handles characters in general.
-pub fn player_embodiment_plugin(app: &mut App) {
+pub(crate) fn player_embodiment_plugin(app: &mut App) {
     app.register_type::<Timer>()
         .register_type::<Player>()
         .register_type::<PlayerCombatState>()
@@ -71,6 +71,7 @@ pub fn player_embodiment_plugin(app: &mut App) {
                 combat::after_hit::handle_hurt_events,
                 combat::after_hit::handle_block_events,
                 combat::after_hit::handle_deflect_events,
+                combat::after_hit::handle_enemy_deflect_events,
                 combat::posture::update_posture,
                 #[cfg(feature = "dev")]
                 combat::debug::display_combat_state,
@@ -87,7 +88,7 @@ pub fn player_embodiment_plugin(app: &mut App) {
 
 #[derive(Debug, Clone, Eq, PartialEq, Component, Reflect, Serialize, Deserialize, Default)]
 #[reflect(Component, Serialize, Deserialize)]
-pub struct Player;
+pub(crate) struct Player;
 
 fn handle_jump(mut player_query: Query<(&ActionState<PlayerAction>, &mut Jumping), With<Player>>) {
     #[cfg(feature = "tracing")]

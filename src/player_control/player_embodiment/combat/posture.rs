@@ -3,7 +3,7 @@ use crate::movement::general_movement::Walking;
 use crate::player_control::player_embodiment::combat::{PlayerCombatKind, PlayerCombatState};
 use bevy::prelude::*;
 
-pub fn update_posture(
+pub(crate) fn update_posture(
     time: Res<Time>,
     mut player: Query<(&mut PlayerCombatState, &mut Constitution, &Walking)>,
 ) {

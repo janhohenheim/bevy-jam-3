@@ -2,14 +2,17 @@ use crate::util::trait_extension::F32Ext;
 use bevy::prelude::*;
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum CombatCondition {
+pub(crate) enum CombatCondition {
     PlayerDistanceUnder(f32),
     PlayerDistanceOver(f32),
     Grounded,
+    #[allow(dead_code)]
     HasLineOfSight,
     None,
+    #[allow(dead_code)]
     Not(Box<CombatCondition>),
     And(Vec<CombatCondition>),
+    #[allow(dead_code)]
     Or(Vec<CombatCondition>),
 }
 
@@ -21,23 +24,23 @@ impl Default for CombatCondition {
 
 #[derive(Debug, Component, Clone, PartialEq, Default, Reflect, FromReflect)]
 #[reflect(Component)]
-pub struct ConditionTracker {
-    pub player_direction: Vec3,
-    pub line_of_sight_direction: Vec3,
-    pub has_line_of_sight: bool,
-    pub grounded: bool,
+pub(crate) struct ConditionTracker {
+    pub(crate) player_direction: Vec3,
+    pub(crate) line_of_sight_direction: Vec3,
+    pub(crate) has_line_of_sight: bool,
+    pub(crate) grounded: bool,
 }
 
 impl ConditionTracker {
-    pub fn all(&self, conditions: &[CombatCondition]) -> bool {
+    pub(crate) fn all(&self, conditions: &[CombatCondition]) -> bool {
         conditions.iter().all(|condition| self.fulfilled(condition))
     }
 
-    pub fn any(&self, conditions: &[CombatCondition]) -> bool {
+    pub(crate) fn any(&self, conditions: &[CombatCondition]) -> bool {
         conditions.iter().any(|condition| self.fulfilled(condition))
     }
 
-    pub fn fulfilled(&self, condition: &CombatCondition) -> bool {
+    pub(crate) fn fulfilled(&self, condition: &CombatCondition) -> bool {
         match condition {
             CombatCondition::PlayerDistanceUnder(distance) => {
                 self.player_direction.length_squared() < distance.squared() + 1e-5

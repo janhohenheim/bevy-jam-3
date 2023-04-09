@@ -7,7 +7,7 @@ impl Debug for dyn MeleeAttackFn {
     }
 }
 
-pub trait MeleeAttackFn: Send + Sync {
+pub(crate) trait MeleeAttackFn: Send + Sync {
     fn call(&self, input: MeleeAttackFnInput) -> MeleeAttackFnOutput;
     fn clone_box<'a>(&self) -> Box<dyn MeleeAttackFn + 'a>
     where
@@ -36,11 +36,11 @@ impl<'a> Clone for Box<dyn MeleeAttackFn + 'a> {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct MeleeAttackFnInput {
-    pub time: f32,
+pub(crate) struct MeleeAttackFnInput {
+    pub(crate) time: f32,
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct MeleeAttackFnOutput {
-    pub melee_attack: AttackHitbox,
+pub(crate) struct MeleeAttackFnOutput {
+    pub(crate) melee_attack: AttackHitbox,
 }

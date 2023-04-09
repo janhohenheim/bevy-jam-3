@@ -6,19 +6,19 @@ use anyhow::{Context, Result};
 use bevy::prelude::*;
 use bevy_mod_sysfail::sysfail;
 use bevy_rapier3d::prelude::*;
-pub use components::*;
+pub(crate) use components::*;
 use leafwing_input_manager::prelude::*;
 use std::time::Duration;
 
-pub mod after_hit;
+pub(crate) mod after_hit;
 pub(crate) mod collision;
 mod components;
 #[cfg(feature = "dev")]
-pub mod debug;
-pub mod posture;
-pub mod ui;
+pub(crate) mod debug;
+pub(crate) mod posture;
+pub(crate) mod ui;
 
-pub fn attack(
+pub(crate) fn attack(
     mut players: Query<(
         &ActionState<PlayerAction>,
         &mut PlayerCombatState,
@@ -38,7 +38,7 @@ pub fn attack(
     }
 }
 
-pub fn block(
+pub(crate) fn block(
     mut players: Query<(
         &ActionState<PlayerAction>,
         &mut PlayerCombatState,
@@ -63,7 +63,7 @@ pub fn block(
     }
 }
 
-pub fn update_states(
+pub(crate) fn update_states(
     time: Res<Time>,
     mut players: Query<(
         &mut PlayerCombatState,
@@ -113,7 +113,7 @@ pub fn update_states(
     }
 }
 
-pub fn update_block_history(time: Res<Time>, mut players: Query<(&mut BlockHistory,)>) {
+pub(crate) fn update_block_history(time: Res<Time>, mut players: Query<(&mut BlockHistory,)>) {
     for (mut block_history,) in players.iter_mut() {
         block_history.age(time.delta_seconds());
         block_history.remove_older_than(2.);
@@ -121,7 +121,7 @@ pub fn update_block_history(time: Res<Time>, mut players: Query<(&mut BlockHisto
 }
 
 #[sysfail(log(level = "error"))]
-pub fn update_hitbox(
+pub(crate) fn update_hitbox(
     players: Query<(&PlayerCombatState, &ParentToHitboxLink, &PlayerAttacks)>,
     mut hitboxes: Query<(&mut AttackHitbox, &mut CollisionGroups)>,
 ) -> Result<()> {
@@ -141,7 +141,7 @@ pub fn update_hitbox(
 }
 
 #[sysfail(log(level = "error"))]
-pub fn play_animations(
+pub(crate) fn play_animations(
     mut players: Query<(
         &mut PlayerCombatState,
         &PlayerCombatAnimations,

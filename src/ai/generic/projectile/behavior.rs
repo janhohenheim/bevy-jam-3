@@ -3,7 +3,7 @@ use crate::player_control::player_embodiment::Player;
 use crate::util::smoothness_to_lerp_factor;
 use bevy::prelude::*;
 
-pub fn fly_toward_player(
+pub(crate) fn fly_toward_player(
     time: Res<Time>,
     mut projectiles: Query<(&mut Transform, &SimpleProjectile)>,
     players: Query<(&Transform,), (With<Player>, Without<SimpleProjectile>)>,
@@ -25,7 +25,7 @@ pub fn fly_toward_player(
     }
 }
 
-pub fn handle_projectile_lifetimes(
+pub(crate) fn handle_projectile_lifetimes(
     time: Res<Time>,
     mut commands: Commands,
     mut projectiles: Query<(Entity, &mut SimpleProjectile)>,

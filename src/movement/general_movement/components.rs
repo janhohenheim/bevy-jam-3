@@ -3,22 +3,22 @@ use bevy_rapier3d::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Bundle)]
-pub struct CharacterControllerBundle {
-    pub gravity_scale: GravityScale,
-    pub mass: ColliderMassProperties,
-    pub read_mass: ReadMassProperties,
-    pub walking: Walking,
-    pub jumping: Jumping,
-    pub grounded: Grounded,
-    pub damping: Damping,
-    pub rigid_body: RigidBody,
-    pub locked_axes: LockedAxes,
-    pub collider: Collider,
-    pub force: ExternalForce,
-    pub impulse: ExternalImpulse,
-    pub velocity: Velocity,
-    pub dominance: Dominance,
-    pub height: Height,
+pub(crate) struct CharacterControllerBundle {
+    pub(crate) gravity_scale: GravityScale,
+    pub(crate) mass: ColliderMassProperties,
+    pub(crate) read_mass: ReadMassProperties,
+    pub(crate) walking: Walking,
+    pub(crate) jumping: Jumping,
+    pub(crate) grounded: Grounded,
+    pub(crate) damping: Damping,
+    pub(crate) rigid_body: RigidBody,
+    pub(crate) locked_axes: LockedAxes,
+    pub(crate) collider: Collider,
+    pub(crate) force: ExternalForce,
+    pub(crate) impulse: ExternalImpulse,
+    pub(crate) velocity: Velocity,
+    pub(crate) dominance: Dominance,
+    pub(crate) height: Height,
 }
 
 impl Default for CharacterControllerBundle {
@@ -47,7 +47,7 @@ impl Default for CharacterControllerBundle {
 }
 
 impl CharacterControllerBundle {
-    pub fn capsule(height: f32, radius: f32) -> Self {
+    pub(crate) fn capsule(height: f32, radius: f32) -> Self {
         Self {
             collider: Collider::capsule_y(height / 2., radius),
             height: Height(height + radius * 2.),
@@ -60,10 +60,10 @@ impl CharacterControllerBundle {
     Debug, Clone, Copy, PartialEq, Component, Reflect, Serialize, Deserialize, Deref, DerefMut,
 )]
 #[reflect(Component, Serialize, Deserialize)]
-pub struct Height(pub f32);
+pub(crate) struct Height(pub(crate) f32);
 
 impl Height {
-    pub fn half(self) -> f32 {
+    pub(crate) fn half(self) -> f32 {
         self.0 / 2.
     }
 }
@@ -75,13 +75,13 @@ impl Default for Height {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Component, Serialize, Deserialize)]
-pub struct Model {
+pub(crate) struct Model {
     pub(crate) follow_target: Entity,
     pub(crate) animation_target: Entity,
 }
 
 impl Model {
-    pub fn with_same_follow_and_animation_targets(both_targets: Entity) -> Self {
+    pub(crate) fn with_same_follow_and_animation_targets(both_targets: Entity) -> Self {
         Self {
             follow_target: both_targets,
             animation_target: both_targets,
@@ -91,25 +91,25 @@ impl Model {
 
 #[derive(Debug, Clone, PartialEq, Component, Reflect, Serialize, Deserialize)]
 #[reflect(Component, Serialize, Deserialize)]
-pub struct Walking {
+pub(crate) struct Walking {
     /// Acceleration on the ground
-    pub ground_acceleration: f32,
+    pub(crate) ground_acceleration: f32,
     /// Acceleration on the ground when[`Walking::sprinting`] is `true`
-    pub sprinting_acceleration: f32,
+    pub(crate) sprinting_acceleration: f32,
     /// Acceleration in the air
-    pub aerial_acceleration: f32,
+    pub(crate) aerial_acceleration: f32,
     /// Acceleration in opposite direction of velocity when not explicitly walking, i.e. [`Walking::direction`] is [`None`]
-    pub braking_acceleration: f32,
+    pub(crate) braking_acceleration: f32,
     /// Speed at which we stop braking and just set the horizontal velocity to 0
-    pub stopping_speed: f32,
+    pub(crate) stopping_speed: f32,
     /// Direction in which we want to walk this tick. When not normalized, the acceleration will be scaled accordingly.
-    pub direction: Option<Vec3>,
+    pub(crate) direction: Option<Vec3>,
     /// Whether we are sprinting this tick
-    pub sprinting: bool,
+    pub(crate) sprinting: bool,
 }
 
 impl Walking {
-    pub fn get_acceleration(&self, grounded: bool) -> Option<Vec3> {
+    pub(crate) fn get_acceleration(&self, grounded: bool) -> Option<Vec3> {
         let acceleration = if grounded {
             if self.sprinting {
                 self.sprinting_acceleration
@@ -141,15 +141,15 @@ impl Default for Walking {
     Debug, Clone, PartialEq, Component, Reflect, Default, Deref, DerefMut, Serialize, Deserialize,
 )]
 #[reflect(Component, Serialize, Deserialize)]
-pub struct Grounded(pub bool);
+pub(crate) struct Grounded(pub(crate) bool);
 
 #[derive(Debug, Clone, PartialEq, Component, Reflect, Serialize, Deserialize)]
 #[reflect(Component, Serialize, Deserialize)]
-pub struct Jumping {
+pub(crate) struct Jumping {
     /// Speed of the jump in m/s
-    pub speed: f32,
+    pub(crate) speed: f32,
     /// Was jump requested?
-    pub requested: bool,
+    pub(crate) requested: bool,
 }
 
 impl Default for Jumping {
@@ -163,12 +163,12 @@ impl Default for Jumping {
 
 #[derive(Debug, Clone, PartialEq, Component, Reflect, Default)]
 #[reflect(Component)]
-pub struct CharacterAnimations {
-    pub idle: Handle<AnimationClip>,
-    pub walk: Handle<AnimationClip>,
-    pub aerial: Handle<AnimationClip>,
+pub(crate) struct CharacterAnimations {
+    pub(crate) idle: Handle<AnimationClip>,
+    pub(crate) walk: Handle<AnimationClip>,
+    pub(crate) aerial: Handle<AnimationClip>,
 }
 
 #[derive(Debug, Clone, PartialEq, Component, Reflect, Default)]
 #[reflect(Component)]
-pub struct ManualRotation;
+pub(crate) struct ManualRotation;

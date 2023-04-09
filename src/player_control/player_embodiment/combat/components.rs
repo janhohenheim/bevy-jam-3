@@ -3,36 +3,36 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Bundle)]
-pub struct PlayerCombatBundle {
-    pub player_combat: PlayerCombatState,
-    pub player_combat_animations: PlayerCombatAnimations,
-    pub player_attacks: PlayerAttacks,
-    pub constitution: Constitution,
-    pub block_history: BlockHistory,
+pub(crate) struct PlayerCombatBundle {
+    pub(crate) player_combat: PlayerCombatState,
+    pub(crate) player_combat_animations: PlayerCombatAnimations,
+    pub(crate) player_attacks: PlayerAttacks,
+    pub(crate) constitution: Constitution,
+    pub(crate) block_history: BlockHistory,
 }
 
 #[derive(Debug, Clone, Copy, Component, Reflect, FromReflect, Serialize, Deserialize, Default)]
 #[reflect(Component, Serialize, Deserialize)]
-pub struct PlayerCombatState {
-    pub kind: PlayerCombatKind,
-    pub buffer: Option<PlayerCombatKind>,
-    pub commitment: AttackCommitment,
-    pub time_in_state: f32,
-    pub time_since_hurt_or_block: f32,
-    pub time_since_sprint: f32,
-    pub started_animation: bool,
+pub(crate) struct PlayerCombatState {
+    pub(crate) kind: PlayerCombatKind,
+    pub(crate) buffer: Option<PlayerCombatKind>,
+    pub(crate) commitment: AttackCommitment,
+    pub(crate) time_in_state: f32,
+    pub(crate) time_since_hurt_or_block: f32,
+    pub(crate) time_since_sprint: f32,
+    pub(crate) started_animation: bool,
 }
 
 #[derive(Debug, Clone, Component, Reflect, FromReflect, Serialize, Deserialize, Default)]
 #[reflect(Component, Serialize, Deserialize)]
-pub struct BlockHistory(Vec<BlockHistoryEntry>);
+pub(crate) struct BlockHistory(Vec<BlockHistoryEntry>);
 
 impl BlockHistory {
-    pub fn push(&mut self) {
+    pub(crate) fn push(&mut self) {
         self.0.push(default())
     }
 
-    pub fn count_younger_than(&self, time: f32) -> usize {
+    pub(crate) fn count_younger_than(&self, time: f32) -> usize {
         self.0
             .iter()
             .rev()
@@ -40,23 +40,23 @@ impl BlockHistory {
             .count()
     }
 
-    pub fn age(&mut self, dt: f32) {
+    pub(crate) fn age(&mut self, dt: f32) {
         for entry in self.0.iter_mut() {
             entry.time += dt;
         }
     }
 
-    pub fn remove_older_than(&mut self, time: f32) {
+    pub(crate) fn remove_older_than(&mut self, time: f32) {
         self.0.retain(|entry| entry.time < time);
     }
 
-    pub fn mark_last_as_deflect(&mut self) {
+    pub(crate) fn mark_last_as_deflect(&mut self) {
         if let Some(entry) = self.0.last_mut() {
             entry.deflect = true;
         }
     }
 
-    pub fn current_deflect_streak(&self) -> usize {
+    pub(crate) fn current_deflect_streak(&self) -> usize {
         self.0
             .iter()
             .rev()
@@ -67,13 +67,13 @@ impl BlockHistory {
 
 #[derive(Debug, Clone, Copy, Component, Reflect, FromReflect, Serialize, Deserialize, Default)]
 #[reflect(Component, Serialize, Deserialize)]
-pub struct BlockHistoryEntry {
-    pub time: f32,
-    pub deflect: bool,
+pub(crate) struct BlockHistoryEntry {
+    pub(crate) time: f32,
+    pub(crate) deflect: bool,
 }
 
 impl PlayerCombatState {
-    pub fn force_use_next_kind(&mut self, kind: PlayerCombatKind) {
+    pub(crate) fn force_use_next_kind(&mut self, kind: PlayerCombatKind) {
         if self.kind != kind {
             *self = Self {
                 kind,
@@ -84,7 +84,7 @@ impl PlayerCombatState {
         }
     }
 
-    pub fn try_use_next_kind(
+    pub(crate) fn try_use_next_kind(
         &mut self,
         kind: PlayerCombatKind,
         early_cancel_guard: impl Fn(PlayerCombatKind) -> bool,
@@ -105,11 +105,11 @@ impl PlayerCombatState {
         }
     }
 
-    pub fn do_not_block_early_cancel(_kind: PlayerCombatKind) -> bool {
+    pub(crate) fn do_not_block_early_cancel(_kind: PlayerCombatKind) -> bool {
         true
     }
 
-    pub fn update_timers(&mut self, dt: f32) {
+    pub(crate) fn update_timers(&mut self, dt: f32) {
         self.time_in_state += dt;
         self.time_since_hurt_or_block += dt;
         self.time_since_sprint += dt;
@@ -120,7 +120,7 @@ impl PlayerCombatState {
     Debug, Clone, Copy, Reflect, FromReflect, Serialize, Deserialize, Default, Eq, PartialEq,
 )]
 #[reflect(Serialize, Deserialize)]
-pub enum AttackCommitment {
+pub(crate) enum AttackCommitment {
     #[default]
     EarlyCancellable,
     LateCancellable,
@@ -129,7 +129,7 @@ pub enum AttackCommitment {
 }
 
 impl AttackCommitment {
-    pub fn is_cancellable(self) -> bool {
+    pub(crate) fn is_cancellable(self) -> bool {
         matches!(
             self,
             AttackCommitment::EarlyCancellable | AttackCommitment::LateCancellable
@@ -139,41 +139,31 @@ impl AttackCommitment {
 
 #[derive(Debug, Clone, Component, Reflect, FromReflect, Default)]
 #[reflect(Component)]
-pub struct PlayerCombatAnimations {
-    pub idle: PlayerCombatAnimation,
-    pub attacks: [PlayerCombatAnimation; 3],
-    pub block: PlayerCombatAnimation,
-    pub hurt: PlayerCombatAnimation,
-    pub deflected: PlayerCombatAnimation,
-    pub posture_broken: PlayerCombatAnimation,
+pub(crate) struct PlayerCombatAnimations {
+    pub(crate) idle: PlayerCombatAnimation,
+    pub(crate) attacks: [PlayerCombatAnimation; 3],
+    pub(crate) block: PlayerCombatAnimation,
+    pub(crate) hurt: PlayerCombatAnimation,
+    pub(crate) deflected: PlayerCombatAnimation,
+    pub(crate) posture_broken: PlayerCombatAnimation,
 }
 
 #[derive(Debug, Clone, Component, Reflect, FromReflect, Default)]
 #[reflect(Component)]
-pub struct PlayerCombatAnimation {
-    pub handle: Handle<AnimationClip>,
-    pub cancellation_times: CancellationTimes,
+pub(crate) struct PlayerCombatAnimation {
+    pub(crate) handle: Handle<AnimationClip>,
+    pub(crate) cancellation_times: CancellationTimes,
 }
 
 impl PlayerCombatAnimation {
-    pub fn with_defaults(handle: Handle<AnimationClip>) -> Self {
+    pub(crate) fn with_defaults(handle: Handle<AnimationClip>) -> Self {
         Self {
             handle,
             ..default()
         }
     }
 
-    pub fn without_early_cancel(handle: Handle<AnimationClip>) -> Self {
-        Self {
-            cancellation_times: CancellationTimes::Periodic(PeriodicCancellationTimes {
-                early_cancel_end: 0.0,
-                ..default()
-            }),
-            ..Self::with_defaults(handle)
-        }
-    }
-
-    pub fn always_cancellable(handle: Handle<AnimationClip>) -> Self {
+    pub(crate) fn always_cancellable(handle: Handle<AnimationClip>) -> Self {
         Self {
             cancellation_times: CancellationTimes::Always,
             ..Self::with_defaults(handle)
@@ -182,7 +172,7 @@ impl PlayerCombatAnimation {
 }
 
 #[derive(Debug, Clone, Copy, Reflect, FromReflect)]
-pub enum CancellationTimes {
+pub(crate) enum CancellationTimes {
     Always,
     Periodic(PeriodicCancellationTimes),
 }
@@ -194,10 +184,10 @@ impl Default for CancellationTimes {
 }
 
 #[derive(Debug, Clone, Copy, Reflect, FromReflect)]
-pub struct PeriodicCancellationTimes {
-    pub early_cancel_end: f32,
-    pub late_cancel_start: f32,
-    pub buffer_start: f32,
+pub(crate) struct PeriodicCancellationTimes {
+    pub(crate) early_cancel_end: f32,
+    pub(crate) late_cancel_start: f32,
+    pub(crate) buffer_start: f32,
 }
 
 impl Default for PeriodicCancellationTimes {
@@ -214,7 +204,7 @@ impl Default for PeriodicCancellationTimes {
     Debug, Clone, Copy, Reflect, FromReflect, Serialize, Deserialize, Default, Eq, PartialEq,
 )]
 #[reflect(Serialize, Deserialize)]
-pub enum PlayerCombatKind {
+pub(crate) enum PlayerCombatKind {
     #[default]
     Idle,
     Attack(u16),
@@ -225,7 +215,10 @@ pub enum PlayerCombatKind {
 }
 
 impl PlayerCombatKind {
-    pub fn get_animation(self, animations: &PlayerCombatAnimations) -> &PlayerCombatAnimation {
+    pub(crate) fn get_animation(
+        self,
+        animations: &PlayerCombatAnimations,
+    ) -> &PlayerCombatAnimation {
         match self {
             PlayerCombatKind::Idle => &animations.idle,
             PlayerCombatKind::Attack(attack) => &animations.attacks[attack as usize],
@@ -236,20 +229,20 @@ impl PlayerCombatKind {
         }
     }
 
-    pub fn get_attack(self, attacks: &PlayerAttacks) -> Option<Attack> {
+    pub(crate) fn get_attack(self, attacks: &PlayerAttacks) -> Option<Attack> {
         match self {
             PlayerCombatKind::Attack(attack) => Some(attacks.attacks[attack as usize].clone()),
             _ => None,
         }
     }
 
-    pub fn is_attack(self) -> bool {
+    pub(crate) fn is_attack(self) -> bool {
         matches!(self, PlayerCombatKind::Attack(_))
     }
 }
 
 #[derive(Debug, Clone, Component, Reflect, FromReflect, Default)]
 #[reflect(Component)]
-pub struct PlayerAttacks {
-    pub attacks: [Attack; 3],
+pub(crate) struct PlayerAttacks {
+    pub(crate) attacks: [Attack; 3],
 }

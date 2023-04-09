@@ -4,7 +4,7 @@ use crate::util::trait_extension::Vec3Ext;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-pub fn step_toward_player(speed: f32) -> Box<dyn MotionFn> {
+pub(crate) fn step_toward_player(speed: f32) -> Box<dyn MotionFn> {
     Box::new(
         move |MotionFnInput {
                   transform,
@@ -29,7 +29,7 @@ pub fn step_toward_player(speed: f32) -> Box<dyn MotionFn> {
 }
 
 /// `angle_degrees`: 0 = upward, positive = away from player, negative = toward player
-pub fn jump_relative_to_player(speed: f32, angle_degrees: f32) -> Box<dyn MotionFn> {
+pub(crate) fn jump_relative_to_player(speed: f32, angle_degrees: f32) -> Box<dyn MotionFn> {
     Box::new(
         move |MotionFnInput {
                   transform,

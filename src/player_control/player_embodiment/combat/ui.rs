@@ -6,7 +6,7 @@ use anyhow::Result;
 use bevy::prelude::*;
 use bevy_mod_sysfail::macros::*;
 
-pub fn player_combat_ui_plugin(app: &mut App) {
+pub(crate) fn player_combat_ui_plugin(app: &mut App) {
     app.add_system(spawn_constitution_bars.in_schedule(OnEnter(GameState::Playing)))
         .add_systems((update_constitution_bars,).in_set(OnUpdate(GameState::Playing)));
 }
@@ -158,13 +158,13 @@ const HEALTH_HEIGHT: f32 = 50.0;
 const POSTURE_HEIGHT: f32 = 30.0;
 
 #[derive(Debug, Component, Clone, PartialEq)]
-pub struct HealthBarFill;
+pub(crate) struct HealthBarFill;
 
 #[derive(Debug, Component, Clone, PartialEq)]
-pub struct PostureBarFill;
+pub(crate) struct PostureBarFill;
 
 #[derive(Debug, Component, Clone, PartialEq)]
-pub struct PostureBarParent;
+pub(crate) struct PostureBarParent;
 
 #[sysfail(log(level = "error"))]
 fn update_constitution_bars(

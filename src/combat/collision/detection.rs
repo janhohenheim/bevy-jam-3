@@ -11,7 +11,7 @@ use std::hash::Hash;
 
 #[derive(Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect)]
 #[reflect(Serialize, Deserialize)]
-pub struct PlayerHitEvent {
+pub(crate) struct PlayerHitEvent {
     pub(crate) source: Entity,
     pub(crate) attack: Attack,
     pub(crate) target_to_contact: Vec3,
@@ -19,7 +19,7 @@ pub struct PlayerHitEvent {
 
 #[derive(Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect)]
 #[reflect(Serialize, Deserialize)]
-pub struct EnemyHitEvent {
+pub(crate) struct EnemyHitEvent {
     pub(crate) target: Entity,
     pub(crate) attack: Attack,
     pub(crate) target_to_contact: Vec3,
@@ -32,26 +32,26 @@ pub struct EnemyHitEvent {
 /// Necessary because our collision events are not using sensors because we need the manifold normal.
 /// Sensors only report intersections, not locations, so we use non-sensors without any solvers, which means no displacement takes place.
 /// This however means that continuous penetrations are reported repeatedly, so we need to track which ones we already handled.
-pub struct HitCache(HashMap<Entity, HitboxHits>);
+pub(crate) struct HitCache(HashMap<Entity, HitboxHits>);
 
 #[derive(
     Debug, Clone, Reflect, Serialize, Deserialize, FromReflect, Default, PartialEq, Eq, Hash,
 )]
 #[reflect(Serialize, Deserialize)]
-pub struct HitboxHits {
-    pub attack_name: String,
-    pub targets: Vec<Entity>,
+pub(crate) struct HitboxHits {
+    pub(crate) attack_name: String,
+    pub(crate) targets: Vec<Entity>,
 }
 
 #[derive(Debug, Clone)]
-pub struct Hit {
+pub(crate) struct Hit {
     hitbox: Entity,
     target: Entity,
     attack: Attack,
 }
 
 impl HitCache {
-    pub fn contains(
+    pub(crate) fn contains(
         &self,
         Hit {
             hitbox,
@@ -65,7 +65,7 @@ impl HitCache {
             .unwrap_or_default()
     }
 
-    pub fn insert(
+    pub(crate) fn insert(
         &mut self,
         Hit {
             hitbox,
@@ -99,7 +99,7 @@ impl HitCache {
         }
     }
 
-    pub fn remove_expired(&mut self, hitboxes: &Query<&AttackHitbox>) {
+    pub(crate) fn remove_expired(&mut self, hitboxes: &Query<&AttackHitbox>) {
         self.0.retain(|hitbox, hit| {
             hitboxes
                 .get(*hitbox)
@@ -110,7 +110,7 @@ impl HitCache {
 }
 
 #[sysfail(log(level = "error"))]
-pub fn detect_hits(
+pub(crate) fn detect_hits(
     mut collision_events: EventReader<CollisionEvent>,
     players: Query<(), With<Player>>,
     combatants: Query<(), With<Enemy>>,
@@ -203,7 +203,7 @@ fn get_active_hitbox_and_source(
     Ok(result)
 }
 
-pub fn clear_cache(mut hit_cache: ResMut<HitCache>, attacks: Query<&AttackHitbox>) {
+pub(crate) fn clear_cache(mut hit_cache: ResMut<HitCache>, attacks: Query<&AttackHitbox>) {
     hit_cache.remove_expired(&attacks);
 }
 

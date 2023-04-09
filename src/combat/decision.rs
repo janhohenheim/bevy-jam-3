@@ -5,7 +5,7 @@ use bevy_mod_sysfail::macros::*;
 use rand::prelude::*;
 
 #[sysfail(log(level = "error"))]
-pub fn decide_choreography(
+pub(crate) fn decide_choreography(
     mut combatant: Query<(Entity, &mut Enemy, &ConditionTracker, &Transform)>,
     mut init_move_event_writer: EventWriter<ReadMoveMetadataEvent>,
     mut execute_move_event_writer: EventWriter<ExecuteMoveFunctionsEvent>,

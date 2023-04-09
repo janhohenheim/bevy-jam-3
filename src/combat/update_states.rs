@@ -9,7 +9,7 @@ use oxidized_navigation::query::{find_path, perform_string_pulling_on_path};
 use oxidized_navigation::{NavMesh, NavMeshSettings};
 
 #[sysfail(log(level = "error"))]
-pub fn update_condition_tracker(
+pub(crate) fn update_condition_tracker(
     mut combatants: Query<
         (
             Entity,

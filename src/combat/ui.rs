@@ -9,7 +9,7 @@ use bevy::prelude::*;
 use bevy_mod_sysfail::macros::*;
 use std::f32::consts::TAU;
 
-pub fn enemy_combat_ui_plugin(app: &mut App) {
+pub(crate) fn enemy_combat_ui_plugin(app: &mut App) {
     app.add_system(create_billboard_assets.in_schedule(OnExit(GameState::Loading)))
         .add_systems(
             (
@@ -24,13 +24,13 @@ pub fn enemy_combat_ui_plugin(app: &mut App) {
 
 #[derive(Debug, Clone, PartialEq, Resource, Reflect, FromReflect, Default)]
 #[reflect(Resource)]
-pub struct BillboardAssets {
-    pub bar_border: Handle<StandardMaterial>,
-    pub health_bar_fill: Handle<StandardMaterial>,
-    pub posture_bar_fill: Handle<StandardMaterial>,
-    pub posture_bar_top: Handle<StandardMaterial>,
-    pub health_bar_mesh: Handle<Mesh>,
-    pub posture_bar_mesh: Handle<Mesh>,
+pub(crate) struct BillboardAssets {
+    pub(crate) bar_border: Handle<StandardMaterial>,
+    pub(crate) health_bar_fill: Handle<StandardMaterial>,
+    pub(crate) posture_bar_fill: Handle<StandardMaterial>,
+    pub(crate) posture_bar_top: Handle<StandardMaterial>,
+    pub(crate) health_bar_mesh: Handle<Mesh>,
+    pub(crate) posture_bar_mesh: Handle<Mesh>,
 }
 
 const BAR_WIDTH: f32 = 0.4;
@@ -164,16 +164,16 @@ fn spawn_constitution_bars(
 }
 
 #[derive(Debug, Component, Clone, PartialEq, Deref, DerefMut)]
-pub struct HealthBarFillLink(Entity);
+pub(crate) struct HealthBarFillLink(Entity);
 
 #[derive(Debug, Component, Clone, PartialEq, Deref, DerefMut)]
-pub struct PostureBarFillLink(Entity);
+pub(crate) struct PostureBarFillLink(Entity);
 
 #[derive(Debug, Component, Clone, PartialEq, Deref, DerefMut)]
-pub struct PostureBarParentLink(Entity);
+pub(crate) struct PostureBarParentLink(Entity);
 
 #[derive(Debug, Component, Clone, PartialEq)]
-pub struct Billboard {
+pub(crate) struct Billboard {
     follow_target: Entity,
     offset: Vec3,
 }

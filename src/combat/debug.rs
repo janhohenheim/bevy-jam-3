@@ -2,7 +2,7 @@ use crate::combat::{ConditionTracker, Enemy, EnemyCombatState};
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 
-pub fn display_combatants(
+pub(crate) fn display_combatants(
     combatant: Query<(&Name, &Enemy, &EnemyCombatState, &ConditionTracker)>,
     mut egui_contexts: EguiContexts,
 ) {
@@ -10,7 +10,7 @@ pub fn display_combatants(
         egui::Window::new(format!("Combatant: {name}")).show(egui_contexts.ctx_mut(), |ui| {
             ui.heading("Choreography");
             if let Some(current) = combatant.current {
-                let choreography = &combatant.choreographies[current.choreography];
+                let choreography = &combatant.current_choreography().unwrap();
                 let move_ = &choreography.moves[current.move_];
                 ui.label(format!("Name: {}", choreography.name));
                 ui.label(format!("Move: {:?}", move_.name));

@@ -9,7 +9,7 @@ impl Debug for dyn ProjectileAttackFn {
     }
 }
 
-pub trait ProjectileAttackFn: Send + Sync {
+pub(crate) trait ProjectileAttackFn: Send + Sync {
     fn call(&self, input: ProjectileAttackFnInput) -> ProjectileAttackFnOutput;
     fn clone_box<'a>(&self) -> Box<dyn ProjectileAttackFn + 'a>
     where
@@ -38,23 +38,23 @@ impl<'a> Clone for Box<dyn ProjectileAttackFn + 'a> {
 }
 
 #[derive(Debug, Clone)]
-pub struct ProjectileAttackFnInput {
-    pub time: f32,
-    pub spawner: Entity,
+pub(crate) struct ProjectileAttackFnInput {
+    pub(crate) _time: f32,
+    pub(crate) spawner: Entity,
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct ProjectileAttackFnOutput {
-    pub spawn_events: Vec<SpawnEvent<ProjectileKind, (Entity, ProjectileSpawnInput)>>,
+pub(crate) struct ProjectileAttackFnOutput {
+    pub(crate) spawn_events: Vec<SpawnEvent<ProjectileKind, (Entity, ProjectileSpawnInput)>>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum ProjectileKind {
+pub(crate) enum ProjectileKind {
     Simple,
 }
 
 #[derive(Debug, Clone, Reflect, FromReflect, Default)]
-pub struct ProjectileSpawnInput {
+pub(crate) struct ProjectileSpawnInput {
     pub(crate) model: Handle<Scene>,
     pub(crate) attack: AttackHitbox,
     pub(crate) speed: f32,

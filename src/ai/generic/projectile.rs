@@ -7,10 +7,10 @@ use crate::player_control::player_embodiment::Player;
 use bevy::prelude::*;
 use spew::prelude::SpawnEvent;
 
-pub mod behavior;
-pub mod components;
+pub(crate) mod behavior;
+pub(crate) mod components;
 
-pub fn spawn_simple_projectile(input: ProjectileSpawnInput) -> Box<dyn ProjectileAttackFn> {
+pub(crate) fn spawn_simple_projectile(input: ProjectileSpawnInput) -> Box<dyn ProjectileAttackFn> {
     Box::new(
         move |ProjectileAttackFnInput { spawner, .. }: ProjectileAttackFnInput| {
             let object = ProjectileKind::Simple;
@@ -24,7 +24,7 @@ pub fn spawn_simple_projectile(input: ProjectileSpawnInput) -> Box<dyn Projectil
     )
 }
 
-pub fn spawn_actual_simple_projectile(
+pub(crate) fn spawn_actual_simple_projectile(
     In((
         spawner,
         ProjectileSpawnInput {

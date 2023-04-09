@@ -7,7 +7,7 @@ use bevy_mod_sysfail::macros::*;
 use serde::{Deserialize, Serialize};
 
 #[sysfail(log(level = "error"))]
-pub fn handle_enemy_being_hit(
+pub(crate) fn handle_enemy_being_hit(
     mut hit_events: EventReader<EnemyHitEvent>,
     mut combatants: Query<(&Enemy, &Transform)>,
     mut hurt_events: EventWriter<EnemyHurtEvent>,
@@ -67,7 +67,7 @@ fn roll_for_deflect() -> bool {
     Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect, Default, Deref, DerefMut,
 )]
 #[reflect(Serialize, Deserialize)]
-pub struct EnemyHurtEvent(pub Attack);
+pub(crate) struct EnemyHurtEvent(pub(crate) Attack);
 
 impl From<&EnemyHitEvent> for EnemyHurtEvent {
     fn from(event: &EnemyHitEvent) -> Self {
@@ -79,7 +79,7 @@ impl From<&EnemyHitEvent> for EnemyHurtEvent {
     Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect, Default, Deref, DerefMut,
 )]
 #[reflect(Serialize, Deserialize)]
-pub struct BlockedByEnemyEvent(pub Attack);
+pub(crate) struct BlockedByEnemyEvent(pub(crate) Attack);
 
 impl From<&EnemyHitEvent> for BlockedByEnemyEvent {
     fn from(event: &EnemyHitEvent) -> Self {
@@ -91,7 +91,7 @@ impl From<&EnemyHitEvent> for BlockedByEnemyEvent {
     Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect, Default, Deref, DerefMut,
 )]
 #[reflect(Serialize, Deserialize)]
-pub struct DeflectedByEnemyEvent(pub Attack);
+pub(crate) struct DeflectedByEnemyEvent(pub(crate) Attack);
 
 impl From<&EnemyHitEvent> for DeflectedByEnemyEvent {
     fn from(event: &EnemyHitEvent) -> Self {

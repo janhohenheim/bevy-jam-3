@@ -1,3 +1,3 @@
-pub mod melee;
-pub mod motion;
-pub mod projectile;
+pub(crate) mod melee;
+pub(crate) mod motion;
+pub(crate) mod projectile;
