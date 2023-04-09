@@ -52,7 +52,7 @@ pub(crate) fn spawn(
                             handle: animations.attack_one.clone(),
                             cancellation_times: CancellationTimes::Periodic(
                                 PeriodicCancellationTimes {
-                                    early_cancel_end: 0.1,
+                                    early_cancel_end: 0.15,
                                     late_cancel_start: 0.7,
                                     buffer_start: 0.5,
                                 },
