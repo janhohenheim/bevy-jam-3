@@ -40,6 +40,7 @@ pub fn read_move_metadata(
         if let Some(animation) = &move_.animation {
             combatant.time_since_last_animation = 0.0;
             animation_player.play_with_transition(animation.clone(), Duration::from_secs_f32(0.2));
+            animation_player.resume();
             if move_.duration != MoveDuration::Animation {
                 animation_player.repeat();
             }

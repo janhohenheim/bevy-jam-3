@@ -121,7 +121,7 @@ pub(crate) fn spawn(
                 constitution: Constitution::default()
                     .with_max_health(100.0)
                     .with_max_posture(50.0)
-                    .with_base_posture_recovery(12.0),
+                    .with_base_posture_recovery(8.0),
                 block_history: BlockHistory::default(),
             },
             GameObject::Player,
