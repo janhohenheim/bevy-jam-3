@@ -97,8 +97,16 @@ impl Constitution {
         self.health
     }
 
+    pub fn health_fraction(&self) -> f32 {
+        self.health / self.max_health
+    }
+
     pub fn posture(&self) -> f32 {
         self.posture
+    }
+
+    pub fn posture_fraction(&self) -> f32 {
+        self.posture / self.max_posture
     }
 
     pub fn take_full_damage(&mut self, attack: &Attack) {
