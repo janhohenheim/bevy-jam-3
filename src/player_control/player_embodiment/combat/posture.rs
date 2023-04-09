@@ -16,9 +16,9 @@ pub fn update_posture(
             None
         } else {
             match combat_state.kind {
-                PlayerCombatKind::Idle => Some(0.2),
+                PlayerCombatKind::Idle => Some(0.6),
                 PlayerCombatKind::Attack(_) => None,
-                PlayerCombatKind::Block => Some(0.6),
+                PlayerCombatKind::Block => Some(1.2),
                 PlayerCombatKind::Deflected => None,
                 PlayerCombatKind::PostureBroken => None,
                 PlayerCombatKind::Hurt => None,
@@ -31,7 +31,7 @@ pub fn update_posture(
                 && combat_state.time_since_hit > posture_recovery_time
             {
                 let factor = if combat_state.kind == PlayerCombatKind::Block {
-                    2.5
+                    2.0
                 } else {
                     1.0
                 };
