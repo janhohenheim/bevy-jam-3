@@ -130,8 +130,12 @@ pub struct TextureAssets {
     pub sky: Handle<Image>,
     #[asset(path = "textures/bar_border.png")]
     pub bar_border: Handle<Image>,
-    #[asset(path = "textures/health_bar.png")]
-    pub health_bar: Handle<Image>,
+    #[asset(path = "textures/health_bar_fill.png")]
+    pub health_bar_fill: Handle<Image>,
+    #[asset(path = "textures/posture_bar_fill.png")]
+    pub posture_bar_fill: Handle<Image>,
+    #[asset(path = "textures/posture_bar_top.png")]
+    pub posture_bar_top: Handle<Image>,
 }
 
 #[derive(AssetCollection, Resource, Clone)]
