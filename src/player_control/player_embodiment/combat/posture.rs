@@ -16,9 +16,9 @@ pub fn update_posture(
             None
         } else {
             match combat_state.kind {
-                PlayerCombatKind::Idle => Some(0.6),
+                PlayerCombatKind::Idle => Some(0.7),
                 PlayerCombatKind::Attack(_) => None,
-                PlayerCombatKind::Block => Some(0.6),
+                PlayerCombatKind::Block => Some(0.7),
                 PlayerCombatKind::Deflected => None,
                 PlayerCombatKind::PostureBroken => None,
                 PlayerCombatKind::Hurt => None,
