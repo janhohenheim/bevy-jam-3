@@ -61,6 +61,7 @@ fn spawn_constitution_bars(mut commands: Commands, textures: Res<TextureAssets>)
                                     image: UiImage::new(textures.bar_border.clone()),
                                     style: Style {
                                         position_type: PositionType::Absolute,
+                                        size: Size::new(Val::Px(BAR_WIDTH), Val::Px(HEALTH_HEIGHT)),
                                         ..default()
                                     },
                                     ..default()
@@ -68,6 +69,7 @@ fn spawn_constitution_bars(mut commands: Commands, textures: Res<TextureAssets>)
                             ));
                             parent.spawn((
                                 Name::new("Health bar fill image"),
+                                HealthBarFill,
                                 ImageBundle {
                                     image: UiImage::new(textures.health_bar_fill.clone()),
                                     z_index: ZIndex::Global(1),
@@ -77,10 +79,78 @@ fn spawn_constitution_bars(mut commands: Commands, textures: Res<TextureAssets>)
                                             left: Val::Px(-372.0),
                                             ..Default::default()
                                         },
+                                        size: Size::new(Val::Px(BAR_WIDTH), Val::Px(HEALTH_HEIGHT)),
+                                        ..default()
+                                    },
+                                    ..default()
+                                },
+                            ));
+                        });
+                    parent
+                        .spawn((
+                            Name::new("Posture bar root"),
+                            PostureBarParent,
+                            NodeBundle {
+                                style: Style {
+                                    justify_content: JustifyContent::Center,
+                                    ..default()
+                                },
+                                ..default()
+                            },
+                        ))
+                        .with_children(|parent| {
+                            parent.spawn((
+                                Name::new("Posture bar border image"),
+                                ImageBundle {
+                                    image: UiImage::new(textures.bar_border.clone()),
+                                    style: Style {
+                                        position_type: PositionType::Absolute,
                                         size: Size::new(
-                                            Val::Px(MAX_HEALTH_BAR_WIDTH),
-                                            Val::Px(93.),
+                                            Val::Px(BAR_WIDTH),
+                                            Val::Px(POSTURE_HEIGHT),
                                         ),
+                                        position: UiRect {
+                                            bottom: Val::Px(HEALTH_HEIGHT),
+                                            ..Default::default()
+                                        },
+                                        ..default()
+                                    },
+                                    ..default()
+                                },
+                            ));
+                            parent.spawn((
+                                Name::new("Posture bar fill image"),
+                                PostureBarFill,
+                                ImageBundle {
+                                    image: UiImage::new(textures.posture_bar_fill.clone()),
+                                    z_index: ZIndex::Global(1),
+                                    style: Style {
+                                        position_type: PositionType::Absolute,
+                                        size: Size::new(
+                                            Val::Px(BAR_WIDTH),
+                                            Val::Px(POSTURE_HEIGHT),
+                                        ),
+                                        position: UiRect {
+                                            bottom: Val::Px(HEALTH_HEIGHT),
+                                            ..Default::default()
+                                        },
+                                        ..default()
+                                    },
+                                    ..default()
+                                },
+                            ));
+                            parent.spawn((
+                                Name::new("Posture bar top decoration"),
+                                ImageBundle {
+                                    image: UiImage::new(textures.posture_bar_top.clone()),
+                                    z_index: ZIndex::Global(2),
+                                    style: Style {
+                                        position_type: PositionType::Absolute,
+                                        position: UiRect {
+                                            bottom: Val::Px(HEALTH_HEIGHT),
+                                            ..Default::default()
+                                        },
+                                        size: Size::new(Val::Px(337.0), Val::Px(POSTURE_HEIGHT)),
                                         ..default()
                                     },
                                     ..default()
@@ -91,44 +161,43 @@ fn spawn_constitution_bars(mut commands: Commands, textures: Res<TextureAssets>)
         });
 }
 
-const MAX_HEALTH_BAR_WIDTH: f32 = 742.0;
+const BAR_WIDTH: f32 = 742.0;
+const HEALTH_HEIGHT: f32 = 80.0;
+const POSTURE_HEIGHT: f32 = 50.0;
 
 #[derive(Debug, Component, Clone, PartialEq)]
-pub struct HealthBarLink(pub Entity);
+pub struct HealthBarFill;
 
 #[derive(Debug, Component, Clone, PartialEq)]
-pub struct PostureBarLink(pub Entity);
+pub struct PostureBarFill;
 
 #[derive(Debug, Component, Clone, PartialEq)]
-pub struct PostureBarParentLink(pub Entity);
+pub struct PostureBarParent;
 
 #[sysfail(log(level = "error"))]
 fn update_health_bar(
-    players: Query<
-        (
-            &Constitution,
-            &HealthBarLink,
-            &PostureBarLink,
-            &PostureBarParentLink,
-        ),
-        With<Player>,
-    >,
-    mut ui_bars: Query<&mut Style>,
-    mut visibilities: Query<&mut Visibility>,
+    players: Query<(&Constitution,), With<Player>>,
+    mut health_bar_fills: Query<&mut Style, (With<HealthBarFill>, Without<PostureBarFill>)>,
+    mut posture_bar_fills: Query<&mut Style, (With<PostureBarFill>, Without<HealthBarFill>)>,
+    mut posture_bar_parents: Query<&mut Visibility, With<PostureBarParent>>,
 ) -> Result<()> {
-    for (constitution, health_bar_link, posture_bar_link, posture_bar_parent_link) in players.iter()
-    {
-        let mut health_bar = ui_bars.get_mut(health_bar_link.0)?;
-        let health_fraction = constitution.health_fraction();
-        let health_bar_width = MAX_HEALTH_BAR_WIDTH * health_fraction;
-        health_bar.size.width = Val::Px(health_bar_width);
+    for (constitution,) in players.iter() {
+        for mut health_bar_fill in health_bar_fills.iter_mut() {
+            for mut posture_bar_fill in posture_bar_fills.iter_mut() {
+                for mut posture_bar_visibility in posture_bar_parents.iter_mut() {
+                    let health_fraction = constitution.health_fraction();
+                    let health_bar_width = BAR_WIDTH * health_fraction;
+                    health_bar_fill.size.width = Val::Px(health_bar_width);
 
-        let posture_fraction = constitution.posture_fraction();
-        let posture_bar_visibility = visibilities.get_mut(posture_bar_link.0)?;
-        if posture_fraction < 1e-5 {
-            let mut posture_bar_parent = ui_bars.get_mut(posture_bar_parent_link.0)?;
-        } else {
-            let mut posture_bar = ui_bars.get_mut(posture_bar_link.0)?;
+                    let posture_fraction = constitution.posture_fraction();
+                    if posture_fraction < 1e-5 {
+                        *posture_bar_visibility = Visibility::Hidden;
+                    } else {
+                        posture_bar_fill.size.width = Val::Px(BAR_WIDTH * posture_fraction);
+                        *posture_bar_visibility = Visibility::Inherited;
+                    }
+                }
+            }
         }
     }
     Ok(())
