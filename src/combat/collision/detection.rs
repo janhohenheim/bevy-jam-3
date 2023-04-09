@@ -1,4 +1,4 @@
-use crate::combat::{Attack, AttackHitbox, Combatant, HitboxToParentLink};
+use crate::combat::{Attack, AttackHitbox, Enemy, HitboxToParentLink};
 use crate::player_control::player_embodiment::Player;
 use crate::world_interaction::interactions_ui::unpack_event;
 use anyhow::{Context, Error, Result};
@@ -113,7 +113,7 @@ impl HitCache {
 pub fn detect_hits(
     mut collision_events: EventReader<CollisionEvent>,
     players: Query<(), With<Player>>,
-    combatants: Query<(), With<Combatant>>,
+    combatants: Query<(), With<Enemy>>,
     attacks: Query<(&AttackHitbox, &HitboxToParentLink)>,
     mut player_hit_events: EventWriter<PlayerHitEvent>,
     mut enemy_hit_events: EventWriter<EnemyHitEvent>,
@@ -253,7 +253,7 @@ fn determine_player_and_hitbox(
 }
 
 fn determine_enemy_and_hitbox(
-    combatants: &Query<(), With<Combatant>>,
+    combatants: &Query<(), With<Enemy>>,
     attacks: &Query<(&AttackHitbox, &HitboxToParentLink)>,
     entity_a: Entity,
     entity_b: Entity,

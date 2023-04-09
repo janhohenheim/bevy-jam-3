@@ -1,4 +1,4 @@
-use crate::combat::{CombatCondition, CombatantState};
+use crate::combat::{CombatCondition, EnemyCombatState};
 use bevy::prelude::*;
 pub use melee_attack_fn::*;
 pub use motion_fn::*;
@@ -12,19 +12,19 @@ mod projectile_attack_fn;
 #[derive(Debug, Clone, Default)]
 pub struct Move {
     pub(crate) name: Option<String>,
-    pub(crate) init: InitMove,
-    pub(crate) execute: ExecuteMove,
+    pub(crate) metadata: MoveMetadata,
+    pub(crate) functions: MoveFunctions,
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct InitMove {
+pub struct MoveMetadata {
     pub duration: MoveDuration,
     pub animation: Option<Handle<AnimationClip>>,
-    pub state: CombatantState,
+    pub state: EnemyCombatState,
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct ExecuteMove {
+pub struct MoveFunctions {
     pub motion_fn: Option<Box<dyn MotionFn>>,
     pub melee_attack_fn: Option<Box<dyn MeleeAttackFn>>,
     pub projectile_attack_fn: Option<Box<dyn ProjectileAttackFn>>,
@@ -45,14 +45,14 @@ impl Default for MoveDuration {
 }
 
 #[derive(Debug, Clone)]
-pub struct InitMoveEvent {
+pub struct ReadMoveMetadataEvent {
     pub source: Entity,
-    pub move_: InitMove,
+    pub move_: MoveMetadata,
 }
 
 #[derive(Debug, Clone)]
-pub struct ExecuteMoveEvent {
+pub struct ExecuteMoveFunctionsEvent {
     pub source: Entity,
-    pub move_: ExecuteMove,
+    pub move_: MoveFunctions,
     pub duration: MoveDuration,
 }

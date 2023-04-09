@@ -11,13 +11,13 @@ use std::time::Duration;
 
 #[sysfail(log(level = "error"))]
 pub fn init_move(
-    mut move_events: EventReader<InitMoveEvent>,
+    mut move_events: EventReader<ReadMoveMetadataEvent>,
     mut animation_player: Query<&mut AnimationPlayer>,
     mut combatant: Query<(
         &AnimationEntityLink,
-        &mut Combatant,
-        &mut CombatantState,
-        &mut MoveMetadata,
+        &mut Enemy,
+        &mut EnemyCombatState,
+        &mut CurrentMoveMetadata,
         &ConditionTracker,
         &Transform,
     )>,
@@ -53,7 +53,7 @@ pub fn init_move(
             .or(move_metadata.animation_duration);
 
         *combatant_state = move_.state;
-        *move_metadata = MoveMetadata {
+        *move_metadata = CurrentMoveMetadata {
             start_transform: *transform,
             start_player_direction: condition_tracker.player_direction,
             animation_duration,
@@ -66,18 +66,18 @@ pub fn init_move(
 pub fn execute_move(
     time: Res<Time>,
     mut combatants: Query<(
-        &Combatant,
+        &Enemy,
         &ConditionTracker,
         &mut Transform,
         &ReadMassProperties,
         &mut ExternalForce,
         &mut ExternalImpulse,
-        &MoveMetadata,
+        &CurrentMoveMetadata,
         &Velocity,
         &ParentToHitboxLink,
     )>,
     mut melee_attacks: Query<(&mut AttackHitbox, &mut CollisionGroups)>,
-    mut move_events: EventReader<ExecuteMoveEvent>,
+    mut move_events: EventReader<ExecuteMoveFunctionsEvent>,
     mut spawn_event_writer: EventWriter<SpawnEvent<ProjectileKind, (Entity, ProjectileSpawnInput)>>,
     game_config: Res<GameConfig>,
 ) -> Result<()> {
@@ -163,13 +163,13 @@ pub fn execute_choreography(
     time: Res<Time>,
     mut combatants: Query<(
         Entity,
-        &mut Combatant,
+        &mut Enemy,
         &ConditionTracker,
         &Transform,
-        &MoveMetadata,
+        &CurrentMoveMetadata,
     )>,
-    mut init_move_event_writer: EventWriter<InitMoveEvent>,
-    mut execute_move_event_writer: EventWriter<ExecuteMoveEvent>,
+    mut init_move_event_writer: EventWriter<ReadMoveMetadataEvent>,
+    mut execute_move_event_writer: EventWriter<ExecuteMoveFunctionsEvent>,
 ) -> Result<()> {
     for (entity, mut combatant, condition_tracker, transform, move_metadata) in
         &mut combatants.iter_mut()
@@ -181,7 +181,7 @@ pub fn execute_choreography(
         let (move_duration, choreography_length) = {
             let moves = &combatant.choreographies[current.choreography].moves;
             let move_ = &moves[current.move_];
-            (move_.init.duration.clone(), moves.len())
+            (move_.metadata.duration.clone(), moves.len())
         };
 
         let time_for_next_move = match move_duration {
@@ -208,22 +208,22 @@ pub fn execute_choreography(
 
                 let next_move =
                     &combatant.choreographies[current.choreography].moves[current.move_ + 1];
-                init_move_event_writer.send(InitMoveEvent {
+                init_move_event_writer.send(ReadMoveMetadataEvent {
                     source: entity,
-                    move_: next_move.init.clone(),
+                    move_: next_move.metadata.clone(),
                 });
-                execute_move_event_writer.send(ExecuteMoveEvent {
+                execute_move_event_writer.send(ExecuteMoveFunctionsEvent {
                     source: entity,
-                    move_: next_move.execute.clone(),
-                    duration: next_move.init.duration.clone(),
+                    move_: next_move.functions.clone(),
+                    duration: next_move.metadata.duration.clone(),
                 });
             }
         } else {
             let current_move = &combatant.choreographies[current.choreography].moves[current.move_];
-            execute_move_event_writer.send(ExecuteMoveEvent {
+            execute_move_event_writer.send(ExecuteMoveFunctionsEvent {
                 source: entity,
-                move_: current_move.execute.clone(),
-                duration: current_move.init.duration.clone(),
+                move_: current_move.functions.clone(),
+                duration: current_move.metadata.duration.clone(),
             });
         }
     }

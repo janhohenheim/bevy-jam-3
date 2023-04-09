@@ -1,6 +1,5 @@
 pub mod continuous;
 pub mod instant;
-use crate::file_system_interaction::config::GameConfig;
 use crate::util::smoothness_to_lerp_factor;
 use crate::util::trait_extension::Vec3Ext;
 use bevy::prelude::*;
@@ -8,11 +7,10 @@ use bevy::prelude::*;
 fn asymptotic_rotation_to_horizontal(
     transform: Transform,
     direction: Vec3,
-    config: GameConfig,
+    smoothness: f32,
     dt: f32,
 ) -> Option<Quat> {
     let target_rotation = rotation_to_horizontal(transform, direction)?;
-    let smoothness = config.characters.rotation_smoothing;
     let factor = smoothness_to_lerp_factor(smoothness, dt);
     let rotation = transform.rotation.slerp(target_rotation, factor);
     Some(rotation)

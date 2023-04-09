@@ -11,16 +11,16 @@ mod move_;
 
 #[derive(Debug, Clone, Bundle, Default)]
 pub struct CombatBundle {
-    pub(crate) combatant: Combatant,
-    pub(crate) combatant_state: CombatantState,
+    pub(crate) enemy: Enemy,
+    pub(crate) combat_state: EnemyCombatState,
     pub(crate) condition_tracker: ConditionTracker,
-    pub(crate) move_metadata: MoveMetadata,
+    pub(crate) current_move_metadata: CurrentMoveMetadata,
     pub(crate) manual_rotation: ManualRotation,
     pub(crate) constitution: Constitution,
 }
 
 #[derive(Debug, Component, Clone, Default)]
-pub struct Combatant {
+pub struct Enemy {
     pub choreographies: Vec<Choreography>,
     pub last_choreography: Option<usize>,
     pub current: Option<CurrentMove>,
@@ -30,9 +30,12 @@ pub struct Combatant {
     pub chained_choreographies: HashMap<usize, usize>,
     pub time_since_last_move: f32,
     pub time_since_last_animation: f32,
+    pub block_choreography: usize,
+    pub hurt_choreography: usize,
+    pub forced_choreography: Option<usize>,
 }
 
-impl Combatant {
+impl Enemy {
     pub fn new(
         choreographies: Vec<Choreography>,
         tendencies: Vec<Tendency>,
@@ -45,8 +48,19 @@ impl Combatant {
             ..default()
         }
     }
+
+    pub fn with_hurt_choreography_index(mut self, hurt_choreography: usize) -> Self {
+        self.hurt_choreography = hurt_choreography;
+        self
+    }
+
+    pub fn with_block_choreography_index(mut self, block_choreography: usize) -> Self {
+        self.block_choreography = block_choreography;
+        self
+    }
+
     pub fn is_ready_for_next_choreography(&self) -> bool {
-        self.current.is_none()
+        self.current.is_none() || self.forced_choreography.is_some()
     }
 
     pub fn current_choreography(&self) -> Option<&Choreography> {
@@ -61,6 +75,14 @@ impl Combatant {
                 .get(current.choreography)
                 .and_then(|choreography| choreography.moves.get(current.move_))
         })
+    }
+
+    pub fn block(&mut self) {
+        self.forced_choreography = Some(self.block_choreography);
+    }
+
+    pub fn hurt(&mut self) {
+        self.forced_choreography = Some(self.hurt_choreography);
     }
 }
 
@@ -233,7 +255,7 @@ pub struct Choreography {
     Debug, Component, Clone, Copy, PartialEq, Default, Reflect, FromReflect, Serialize, Deserialize,
 )]
 #[reflect(Component, Serialize, Deserialize)]
-pub struct MoveMetadata {
+pub struct CurrentMoveMetadata {
     pub(crate) start_transform: Transform,
     pub(crate) start_player_direction: Vec3,
     pub(crate) animation_duration: Option<f32>,
@@ -243,7 +265,7 @@ pub struct MoveMetadata {
     Debug, Component, Clone, Copy, PartialEq, Default, Reflect, FromReflect, Serialize, Deserialize,
 )]
 #[reflect(Component, Serialize, Deserialize)]
-pub enum CombatantState {
+pub enum EnemyCombatState {
     Deathblow,
     Vulnerable,
     #[default]

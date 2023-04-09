@@ -28,19 +28,19 @@ pub(crate) fn spawn(
             Name::new("NPC"),
             CharacterControllerBundle::capsule(HEIGHT, RADIUS),
             CombatBundle {
-                combatant: Combatant::new(
+                enemy: Enemy::new(
                     vec![
                         Choreography {
                             name: "Walk toward Player".to_string(),
                             moves: vec![Move {
-                                init: InitMove {
+                                metadata:  MoveMetadata {
                                     duration: MoveDuration::While(
                                         CombatCondition::PlayerDistanceOver(2.0),
                                     ),
                                     animation: Some(animations.walk.clone()),
-                                    state: CombatantState::OnGuard,
+                                    state: EnemyCombatState::OnGuard,
                                 },
-                                execute: ExecuteMove {
+                                functions: MoveFunctions {
                                     motion_fn: Some(
                                         ai::generic::motion::continuous::accelerate_towards_player(
                                             16.,
@@ -54,12 +54,12 @@ pub(crate) fn spawn(
                         Choreography {
                             name: "Idle".to_string(),
                             moves: vec![Move {
-                                init: InitMove {
+                                metadata:  MoveMetadata {
                                     duration: MoveDuration::Fixed(2.0),
                                     animation: Some(animations.idle.clone()),
-                                    state: CombatantState::OnGuard,
+                                    state: EnemyCombatState::OnGuard,
                                 },
-                                execute: ExecuteMove {
+                                functions: MoveFunctions {
                                     motion_fn: Some(ai::generic::motion::continuous::face_player()),
                                     ..default()
                                 },
@@ -71,21 +71,21 @@ pub(crate) fn spawn(
                             moves: vec![
                                 Move {
                                     name: Some("Hold up weapon".to_string()),
-                                    init: InitMove {
+                                    metadata:  MoveMetadata {
                                         duration: MoveDuration::Fixed(0.3),
                                         animation: Some(animations.attack.clone()),
-                                        state: CombatantState::OnGuard,
+                                        state: EnemyCombatState::OnGuard,
                                     },
                                     ..default()
                                 },
                                 Move {
                                     name: Some("Dash".to_string()),
-                                    init: InitMove {
+                                    metadata:  MoveMetadata {
                                         duration: MoveDuration::Instant,
-                                        state: CombatantState::Vulnerable,
+                                        state: EnemyCombatState::Vulnerable,
                                         ..default()
                                     },
-                                    execute: ExecuteMove {
+                                    functions: MoveFunctions {
                                         motion_fn: Some(
                                             ai::generic::motion::instant::step_toward_player(8.),
                                         ),
@@ -94,12 +94,12 @@ pub(crate) fn spawn(
                                 },
                                 Move {
                                     name: Some("Attack".to_string()),
-                                    init: InitMove {
+                                    metadata:  MoveMetadata {
                                         duration: MoveDuration::Fixed(0.3),
-                                        state: CombatantState::Vulnerable,
+                                        state: EnemyCombatState::Vulnerable,
                                         ..default()
                                     },
-                                    execute: ExecuteMove {
+                                    functions: MoveFunctions {
                                         melee_attack_fn: Some(ai::generic::melee::whole_animation(
                                             Attack::new("Default NPC Attack").with_health_damage_scaling_rest(10.),
                                         )),
@@ -108,9 +108,9 @@ pub(crate) fn spawn(
                                 },
                                 Move {
                                     name: Some("Attack finish".to_string()),
-                                    init: InitMove {
+                                    metadata:  MoveMetadata {
                                         duration: MoveDuration::Animation,
-                                        state: CombatantState::Vulnerable,
+                                        state: EnemyCombatState::Vulnerable,
                                         ..default()
                                     },
                                     ..default()
@@ -122,12 +122,12 @@ pub(crate) fn spawn(
                             moves: vec![
                                 Move {
                                     name: Some("Jump impulse".to_string()),
-                                    init: InitMove {
+                                    metadata:  MoveMetadata {
                                         duration: MoveDuration::Instant,
-                                        state: CombatantState::Vulnerable,
+                                        state: EnemyCombatState::Vulnerable,
                                         ..default()
                                     },
-                                    execute: ExecuteMove {
+                                    functions: MoveFunctions {
                                         motion_fn: Some(
                                             ai::generic::motion::instant::jump_relative_to_player(
                                                 10., 45.,
@@ -138,33 +138,33 @@ pub(crate) fn spawn(
                                 },
                                 Move {
                                     name: Some("Jump".to_string()),
-                                    init: InitMove {
+                                    metadata:  MoveMetadata {
                                         duration: MoveDuration::Fixed(0.25),
-                                        state: CombatantState::Vulnerable,
+                                        state: EnemyCombatState::Vulnerable,
                                         animation: Some(animations.aerial.clone()),
                                     },
                                     ..default()
                                 },
                                 Move {
                                     name: Some("Toss Kunai".to_string()),
-                                    init: InitMove {
+                                    metadata:  MoveMetadata {
                                         duration: MoveDuration::Fixed(0.2),
-                                        state: CombatantState::Vulnerable,
+                                        state: EnemyCombatState::Vulnerable,
                                         animation: Some(animations.aerial_toss.clone()),
                                     },
-                                    execute: ExecuteMove {
+                                    functions: MoveFunctions {
                                         motion_fn: Some(ai::generic::motion::continuous::face_player()),
                                         ..default()
                                     },
                                 },
                                 Move {
                                     name: Some("Spawn Kunai".to_string()),
-                                    init: InitMove {
+                                    metadata:  MoveMetadata {
                                         duration: MoveDuration::Instant,
-                                        state: CombatantState::Vulnerable,
+                                        state: EnemyCombatState::Vulnerable,
                                         ..default()
                                     },
-                                    execute: ExecuteMove {
+                                    functions: MoveFunctions {
                                         projectile_attack_fn: Some(
                                             ai::generic::projectile::spawn_simple_projectile(
                                                 ProjectileSpawnInput {
@@ -181,33 +181,33 @@ pub(crate) fn spawn(
                                 },
                                 Move {
                                     name: Some("Finish Toss Kunai".to_string()),
-                                    init: InitMove {
+                                    metadata:  MoveMetadata {
                                         duration: MoveDuration::Animation,
-                                        state: CombatantState::Vulnerable,
+                                        state: EnemyCombatState::Vulnerable,
                                         animation: Some(animations.aerial_toss.clone()),
                                     },
-                                    execute: ExecuteMove {
+                                    functions: MoveFunctions {
                                         motion_fn: Some(ai::generic::motion::continuous::face_player()),
                                         ..default()
                                     },
                                 },
                                 Move {
                                     name: Some("Fall".to_string()),
-                                    init: InitMove {
+                                    metadata:  MoveMetadata {
                                         duration: MoveDuration::Until(CombatCondition::Grounded),
-                                        state: CombatantState::Vulnerable,
+                                        state: EnemyCombatState::Vulnerable,
                                         animation: Some(animations.aerial.clone()),
                                     },
                                     ..default()
                                 },
                                 Move {
                                     name: Some("Land vulnerability".to_string()),
-                                    init: InitMove {
+                                    metadata:  MoveMetadata {
                                         duration: MoveDuration::Fixed(0.5),
-                                        state: CombatantState::Vulnerable,
+                                        state: EnemyCombatState::Vulnerable,
                                         animation: Some(animations.idle.clone()),
                                     },
-                                    execute: ExecuteMove {
+                                    functions: MoveFunctions {
                                         motion_fn: Some(
                                             ai::generic::motion::continuous::accelerate_towards_player(
                                                 14.,
@@ -217,6 +217,95 @@ pub(crate) fn spawn(
                                     },
                                 },
                             ],
+                        },
+                        Choreography {
+                            name: "Circle Around Player".to_string(),
+                            moves: vec![
+                                Move {
+                                    name: None,
+                                    metadata: MoveMetadata {
+                                        duration: MoveDuration::Fixed(4.),
+                                        animation: Some(animations.walk.clone()),
+                                        state: EnemyCombatState::OnGuard
+                                    },
+                                    functions: MoveFunctions {
+                                        motion_fn: Some(
+                                            ai::generic::motion::continuous::accelerate_around_player(
+                                                8.,
+                                            ),
+                                        ),
+                                        ..default()
+                                    },
+                                }
+                            ]
+                        },
+                        Choreography {
+                            name: "Block".to_string(),
+                            moves: vec![
+                                Move {
+                                    name: Some("Knockback".to_string()),
+                                    metadata: MoveMetadata {
+                                        duration: MoveDuration::Instant,
+                                        animation: Some(animations.block.clone()),
+                                        state: EnemyCombatState::OnGuard
+                                    },functions: MoveFunctions {
+                                        motion_fn: Some(
+                                            ai::generic::motion::instant::step_toward_player(
+                                                -3.,
+                                            ),
+                                        ),
+                                        ..default()
+                                    },
+                                },
+                                Move {
+                                    name: Some("Block".to_string()),
+                                    metadata: MoveMetadata {
+                                        duration: MoveDuration::Animation,
+                                        animation: None,
+                                        state: EnemyCombatState::OnGuard
+                                    },
+                                    functions: MoveFunctions {
+                                        motion_fn: Some(
+                                            ai::generic::motion::continuous::face_player_with_smoothness(0.7),
+                                        ),
+                                        ..default()
+                                    },
+                                }
+                            ]
+                        },
+                        Choreography {
+                            name: "Hurt".to_string(),
+                            moves: vec![
+                                Move {
+                                    name: Some("Knockback".to_string()),
+                                    metadata: MoveMetadata {
+                                        duration: MoveDuration::Instant,
+                                        animation: Some(animations.hurt.clone()),
+                                        state: EnemyCombatState::OnGuard
+                                    },functions: MoveFunctions {
+                                        motion_fn: Some(
+                                            ai::generic::motion::instant::step_toward_player(
+                                                -3.,
+                                            ),
+                                        ),
+                                        ..default()
+                                    },
+                                },
+                                Move {
+                                    name: Some("Recover".to_string()),
+                                    metadata: MoveMetadata {
+                                        duration: MoveDuration::Animation,
+                                        animation: None,
+                                        state: EnemyCombatState::OnGuard
+                                    },
+                                    functions: MoveFunctions {
+                                        motion_fn: Some(
+                                            ai::generic::motion::continuous::face_player_with_smoothness(0.1),
+                                        ),
+                                        ..default()
+                                    },
+                                }
+                            ]
                         },
                     ],
                     vec![
@@ -247,9 +336,15 @@ pub(crate) fn spawn(
                                 CombatCondition::Grounded,
                             ]),
                         },
+                        Tendency {
+                            // Circle around player
+                            choreography: 4,
+                            weight: 0.2,
+                            condition: CombatCondition::None
+                        }
                     ],
                     HashMap::new(),
-                ),
+                ).with_block_choreography_index(5).with_hurt_choreography_index(6),
                 constitution: Constitution::default().with_max_health(100.0).with_max_posture(100.0).with_base_posture_recovery(20.0),
                 ..default()
             },

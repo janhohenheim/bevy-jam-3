@@ -1,4 +1,4 @@
-use crate::combat::{Attack, Combatant, Constitution};
+use crate::combat::{Attack, Constitution, Enemy};
 use crate::player_control::player_embodiment::combat::collision::{
     BlockedByPlayerEvent, DeflectedByPlayerEvent, PlayerHurtEvent,
 };
@@ -64,9 +64,9 @@ pub fn handle_deflect_events(
             &ReadMassProperties,
             &Transform,
         ),
-        (With<Player>, Without<Combatant>),
+        (With<Player>, Without<Enemy>),
     >,
-    mut enemies: Query<(&mut Constitution,), (With<Combatant>, Without<Player>)>,
+    mut enemies: Query<(&mut Constitution,), (With<Enemy>, Without<Player>)>,
 ) {
     for event in deflect_events.iter() {
         for (mut constitution, block_history, mut impulse, mass, transform) in players.iter_mut() {

@@ -1,4 +1,4 @@
-use crate::combat::{Combatant, Constitution};
+use crate::combat::{Constitution, Enemy};
 use crate::file_system_interaction::asset_loading::TextureAssets;
 use crate::movement::general_movement::Height;
 use crate::player_control::camera::IngameCamera;
@@ -68,7 +68,7 @@ fn create_billboard_material(texture: &Handle<Image>) -> StandardMaterial {
 
 fn spawn_constitution_bars(
     mut commands: Commands,
-    enemies: Query<(Entity, &Height), Added<Combatant>>,
+    enemies: Query<(Entity, &Height), Added<Enemy>>,
     billboard_assets: Res<BillboardAssets>,
 ) {
     for (entity, height) in enemies.iter() {

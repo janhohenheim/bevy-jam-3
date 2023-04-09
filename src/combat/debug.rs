@@ -1,9 +1,9 @@
-use crate::combat::{Combatant, CombatantState, ConditionTracker};
+use crate::combat::{ConditionTracker, Enemy, EnemyCombatState};
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 
 pub fn display_combatants(
-    combatant: Query<(&Name, &Combatant, &CombatantState, &ConditionTracker)>,
+    combatant: Query<(&Name, &Enemy, &EnemyCombatState, &ConditionTracker)>,
     mut egui_contexts: EguiContexts,
 ) {
     for (name, combatant, combatant_state, condition_tracker) in combatant.iter() {

@@ -28,7 +28,7 @@ pub fn handle_player_being_hit(
                     .xz()
                     .angle_between(event.target_to_contact.xz())
                     .to_degrees();
-                if angle.abs() > get_max_deflect_angle() {
+                if angle.abs() > get_max_block_angle() {
                     hurt_events.send(event.into());
                     combat_state.time_since_hurt_or_block = 0.0;
                 } else if combat_state.time_in_state < get_max_deflect_time(&block_history) {
@@ -44,7 +44,7 @@ pub fn handle_player_being_hit(
     Ok(())
 }
 
-fn get_max_deflect_angle() -> f32 {
+fn get_max_block_angle() -> f32 {
     100.0
 }
 

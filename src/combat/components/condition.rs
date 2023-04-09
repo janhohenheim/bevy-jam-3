@@ -7,6 +7,7 @@ pub enum CombatCondition {
     PlayerDistanceOver(f32),
     Grounded,
     HasLineOfSight,
+    None,
     Not(Box<CombatCondition>),
     And(Vec<CombatCondition>),
     Or(Vec<CombatCondition>),
@@ -51,6 +52,7 @@ impl ConditionTracker {
                 CombatCondition::Not(condition) => !self.fulfilled(condition),
                 CombatCondition::And(conditions) => self.all(conditions),
                 CombatCondition::Or(conditions) => self.any(conditions),
+                CombatCondition::None => true,
             }
     }
 }

@@ -1,46 +1,100 @@
 use crate::combat::collision::detection::EnemyHitEvent;
-use crate::combat::{Combatant, CombatantState, Constitution};
+use crate::combat::{Attack, Enemy, EnemyCombatState};
 use anyhow::Result;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_mod_sysfail::macros::*;
+use serde::{Deserialize, Serialize};
 
 #[sysfail(log(level = "error"))]
 pub fn handle_enemy_being_hit(
     mut hit_events: EventReader<EnemyHitEvent>,
-    mut combatants: Query<(&Combatant, &mut Constitution, &Transform)>,
+    mut combatants: Query<(&Enemy, &Transform)>,
+    mut hurt_events: EventWriter<EnemyHurtEvent>,
+    mut block_events: EventWriter<BlockedByEnemyEvent>,
+    mut deflect_events: EventWriter<DeflectedByEnemyEvent>,
 ) -> Result<()> {
     for event in hit_events.iter() {
-        let (combatant, mut constitution, transform) = combatants
+        let (combatant, transform) = combatants
             .get_mut(event.target)
             .expect("Failed to get combatant from hit event");
 
         let angle = transform
             .forward()
             .xz()
-            .angle_between(event.target_to_contact.xz());
-        info!(
-            "Enemy hit by {} at angle: {}",
-            event.attack.name,
-            angle.to_degrees(),
-        );
+            .angle_between(event.target_to_contact.xz())
+            .to_degrees();
         match combatant.current_move() {
-            Some(move_) => match move_.init.state {
-                CombatantState::Deathblow => {
-                    constitution.die();
+            Some(move_) => match move_.metadata.state {
+                EnemyCombatState::Deathblow => {
+                    hurt_events.send(event.into());
                 }
-                CombatantState::Vulnerable => {
-                    constitution.take_full_damage(&event.attack);
+                EnemyCombatState::Vulnerable => {
+                    hurt_events.send(event.into());
                 }
-                CombatantState::OnGuard => {
-                    constitution.take_posture_damage(&event.attack);
+                EnemyCombatState::OnGuard => {
+                    if angle < get_max_block_angle() {
+                        if roll_for_deflect() {
+                            deflect_events.send(event.into());
+                        } else {
+                            block_events.send(event.into());
+                        }
+                    } else {
+                        hurt_events.send(event.into());
+                    }
                 }
-                CombatantState::HyperArmor => {
-                    constitution.take_full_damage(&event.attack);
+                EnemyCombatState::HyperArmor => {
+                    hurt_events.send(event.into());
                 }
             },
             None => {}
         }
     }
     Ok(())
+}
+
+fn get_max_block_angle() -> f32 {
+    100.0
+}
+
+fn roll_for_deflect() -> bool {
+    const CHANCE_FOR_DEFLECT: f32 = 1.0 / 3.0;
+    let rand = rand::random::<f32>();
+    rand < CHANCE_FOR_DEFLECT
+}
+
+#[derive(
+    Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect, Default, Deref, DerefMut,
+)]
+#[reflect(Serialize, Deserialize)]
+pub struct EnemyHurtEvent(pub Attack);
+
+impl From<&EnemyHitEvent> for EnemyHurtEvent {
+    fn from(event: &EnemyHitEvent) -> Self {
+        Self(event.attack.clone())
+    }
+}
+
+#[derive(
+    Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect, Default, Deref, DerefMut,
+)]
+#[reflect(Serialize, Deserialize)]
+pub struct BlockedByEnemyEvent(pub Attack);
+
+impl From<&EnemyHitEvent> for BlockedByEnemyEvent {
+    fn from(event: &EnemyHitEvent) -> Self {
+        Self(event.attack.clone())
+    }
+}
+
+#[derive(
+    Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect, Default, Deref, DerefMut,
+)]
+#[reflect(Serialize, Deserialize)]
+pub struct DeflectedByEnemyEvent(pub Attack);
+
+impl From<&EnemyHitEvent> for DeflectedByEnemyEvent {
+    fn from(event: &EnemyHitEvent) -> Self {
+        Self(event.attack.clone())
+    }
 }
