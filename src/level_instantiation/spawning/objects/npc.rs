@@ -169,7 +169,7 @@ pub(crate) fn spawn(
                                             ai::generic::projectile::spawn_simple_projectile(
                                                 ProjectileSpawnInput {
                                                     model: scene_handles.kunai.clone(),
-                                                    attack: AttackHitbox::from_attack(Attack::new("Kunai Throw").with_health_damage_scaling_rest(5.0)),
+                                                    attack: AttackHitbox::from_attack(Attack::new("Kunai Throw").with_health_damage_scaling_rest(15.0)),
                                                     speed: 10.0,
                                                     tracking: 0.1,
                                                     max_lifetime: 3.0,
@@ -260,7 +260,7 @@ pub(crate) fn spawn(
                                 Move {
                                     name: Some("Block".to_string()),
                                     metadata: MoveMetadata {
-                                        duration: MoveDuration::Animation,
+                                        duration: MoveDuration::Fixed(0.5),
                                         animation: None,
                                         state: EnemyCombatState::OnGuard
                                     },

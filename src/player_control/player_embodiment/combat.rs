@@ -26,7 +26,7 @@ pub(crate) fn attack(
     )>,
 ) {
     for (actions, mut combat_state, animations) in players.iter_mut() {
-        if actions.pressed(PlayerAction::Attack) {
+        if actions.just_pressed(PlayerAction::Attack) {
             let attack_kind = if let PlayerCombatKind::Attack(attack) = combat_state.kind {
                 let next_attack = (attack + 1) % animations.attacks.len() as u16;
                 PlayerCombatKind::Attack(next_attack)
