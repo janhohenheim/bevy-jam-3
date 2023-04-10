@@ -116,37 +116,44 @@ fn select_potion(
     let Some(potions) = select_potion_ui.potions.clone() else {
         return;
     };
-    egui::Window::new("Select a potion")
+    egui::Window::new("Select a Potion")
         .resizable(false)
         .collapsible(false)
+        .default_pos([400., 400.])
         .show(egui_contexts.ctx_mut(), |ui| {
             ui.label("The pirates left some potions behind. Which one do you want to take?");
-            egui::Grid::new("potion_grid").show(ui, |ui| {
-                for potion in potions.iter() {
-                    ui.label(&potion.name);
-                }
-                ui.end_row();
-                for potion in potions.iter() {
-                    ui.label(&potion.positive_side_effect.format_positive());
-                }
-                ui.end_row();
-                for _potion in potions.iter() {
-                    ui.label("BUT");
-                }
-                ui.end_row();
-                for potion in potions.iter() {
-                    ui.label(&potion.negative_side_effect.format_negative());
-                }
-                ui.end_row();
-                for potion in potions.iter() {
-                    if ui.button("Drink!").clicked() {
-                        side_effects.add_positive(potion.positive_side_effect);
-                        side_effects.add_negative(potion.negative_side_effect);
-                        select_potion_ui.potions = None;
-                        leave_room_events.send(LeaveRoomEvent);
+            ui.separator();
+            egui::Grid::new("potion_grid")
+                .min_col_width(50.)
+                .spacing([30., 3.])
+                .show(ui, |ui| {
+                    for potion in potions.iter() {
+                        ui.heading(&potion.name);
                     }
-                }
-            });
+                    ui.end_row();
+                    for potion in potions.iter() {
+                        ui.label(&potion.positive_side_effect.format_positive());
+                    }
+                    ui.end_row();
+                    for _potion in potions.iter() {
+                        ui.label("BUT");
+                    }
+                    ui.end_row();
+                    for potion in potions.iter() {
+                        ui.label(&potion.negative_side_effect.format_negative());
+                    }
+                    ui.end_row();
+                    for potion in potions.iter() {
+                        ui.horizontal_centered(|ui| {
+                            if ui.button("Drink!").clicked() {
+                                side_effects.add_positive(potion.positive_side_effect);
+                                side_effects.add_negative(potion.negative_side_effect);
+                                select_potion_ui.potions = None;
+                                leave_room_events.send(LeaveRoomEvent);
+                            }
+                        });
+                    }
+                });
         });
 }
 
@@ -157,11 +164,13 @@ fn leave_room(
     mut spawn_events: EventWriter<SpawnEvent<GameObject, Transform>>,
     rooms: Query<Entity, With<Room>>,
     mut actions_frozen: ResMut<ActionsFrozen>,
+    mut enter_room_events: EventWriter<EnterRoomEvent>,
 ) {
     for _ in leave_room_events.iter() {
         actions_frozen.unfreeze();
         current_room.enter_next();
         spawn_events.send(SpawnEvent::new(GameObject::IntroRoom));
+        enter_room_events.send(EnterRoomEvent);
         for room in rooms.iter() {
             commands.entity(room).despawn_recursive();
         }

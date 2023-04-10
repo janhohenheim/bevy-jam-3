@@ -51,6 +51,7 @@ pub(crate) enum SideEffect {
     DeflectWindow,
     DeflectPostureDamage,
     BackwardsWalkingSpeed,
+    Health,
 }
 
 impl SideEffect {
@@ -76,6 +77,7 @@ impl SideEffect {
             Self::DeflectWindow => "Increase",
             Self::DeflectPostureDamage => "Increase",
             Self::BackwardsWalkingSpeed => "Increase",
+            Self::Health => "Increase",
         }
     }
 
@@ -98,6 +100,7 @@ impl SideEffect {
             Self::DeflectWindow => "time window where blocking an attack will deflect it",
             Self::DeflectPostureDamage => "damage dealt to posture by deflecting an attack",
             Self::BackwardsWalkingSpeed => "walking speed when walking backwards",
+            Self::Health => "your health",
         }
     }
 

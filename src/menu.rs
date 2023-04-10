@@ -11,7 +11,13 @@ pub(crate) fn menu_plugin(app: &mut App) {
     app.add_system(setup_menu.in_set(OnUpdate(GameState::Menu)));
 }
 
-fn setup_menu(mut egui_contexts: EguiContexts, mut next_state: ResMut<NextState<GameState>>) {
+fn setup_menu(
+    mut egui_contexts: EguiContexts,
+    mut next_state: ResMut<NextState<GameState>>,
+    _asset_server: ResMut<AssetServer>,
+    _audio: Res<Audio>,
+    _audio_sinks: Res<Assets<AudioSink>>,
+) {
     get_menu_panel().show(egui_contexts.ctx_mut(), |ui| {
         set_menu_style(ui.style_mut());
         ui.vertical_centered_justified(|ui| {
@@ -24,6 +30,9 @@ fn setup_menu(mut egui_contexts: EguiContexts, mut next_state: ResMut<NextState<
             }
         })
     });
+    //let music = asset_server.load("audio/menu.ogg");
+    //audio_sinks.han
+    //audio.play(music);
 }
 
 fn get_menu_panel() -> egui::CentralPanel {

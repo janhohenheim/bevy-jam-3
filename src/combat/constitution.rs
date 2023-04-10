@@ -46,7 +46,6 @@ pub(crate) fn handle_death(
         {
             return;
         }
-        warn!("ded");
         let time_since_death = marked_for_death.entry(entity).or_insert(0.0);
         enemy.die();
         constitution.break_posture();

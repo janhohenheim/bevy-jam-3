@@ -46,6 +46,8 @@ pub(crate) struct AudioAssets {
     pub(crate) intro_and_loop_fast: Handle<AudioSource>,
     #[asset(path = "audio/fast_loop_only.ogg")]
     pub(crate) fast_loop_only: Handle<AudioSource>,
+    //#[asset(path = "audio/outro.ogg")]
+    //pub(crate) outro: Handle<AudioSource>,
 }
 
 #[derive(AssetCollection, Resource, Clone)]
