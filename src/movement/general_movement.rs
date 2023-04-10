@@ -223,8 +223,8 @@ pub(crate) fn apply_walking(
             let factor = if let Some(combat_state) = combat_state {
                 match combat_state.kind {
                     PlayerCombatKind::Idle => 1.0,
-                    PlayerCombatKind::Attack(_) => 0.9,
-                    PlayerCombatKind::Block => 0.8,
+                    PlayerCombatKind::Attack(_) => 0.8,
+                    PlayerCombatKind::Block => 0.75,
                     PlayerCombatKind::Deflected => 1.0,
                     PlayerCombatKind::PostureBroken => 0.5,
                     PlayerCombatKind::Hurt => 0.7,

@@ -1,9 +1,9 @@
 use crate::file_system_interaction::level_serialization::{CurrentLevel, WorldLoadRequest};
-use crate::level_instantiation::spawning::post_spawn_modification::set_shadows;
 use crate::level_instantiation::spawning::GameObject;
 use crate::player_control::player_embodiment::Player;
 use crate::GameState;
 use bevy::prelude::*;
+use bevy::transform::TransformSystem;
 use bevy_egui::{egui, EguiContexts};
 use regex::Regex;
 use spew::prelude::*;
@@ -21,10 +21,14 @@ pub(crate) fn map_plugin(app: &mut App) {
             .in_set(OnUpdate(GameState::Playing)),
     )
     .add_systems(
-        (spawn_enemies, place_player)
+        (
+            spawn_enemies.run_if(in_state(GameState::Playing)),
+            spawn_lights.run_if(in_state(GameState::Playing)),
+            place_player.run_if(in_state(GameState::Playing)),
+        )
             .chain()
-            .after(set_shadows)
-            .in_set(OnUpdate(GameState::Playing)),
+            .after(TransformSystem::TransformPropagate)
+            .in_base_set(CoreSet::Last),
     );
     #[cfg(feature = "wasm")]
     app.add_system(show_wasm_loader.in_set(OnUpdate(GameState::Playing)));
@@ -43,19 +47,21 @@ fn setup(mut commands: Commands, mut loader: EventWriter<WorldLoadRequest>) {
 
 fn place_player(
     mut commands: Commands,
-    names: Query<(Entity, &Transform, &Name), (Added<Name>, Without<Player>)>,
+    names: Query<(Entity, &GlobalTransform, &Name), (Added<Name>, Without<Player>)>,
     mut player_query: Query<&mut Transform, With<Player>>,
     mut spawn_events: EventWriter<SpawnEvent<GameObject, Transform>>,
 ) {
-    for (entity, transform, name) in names.iter() {
+    for (entity, global_transform, name) in names.iter() {
         if name.contains("[entrance]") {
             commands.entity(entity).despawn_recursive();
+            let transform = global_transform
+                .compute_transform()
+                .with_scale(Vec3::splat(1.));
             if let Ok(mut player_transform) = player_query.get_single_mut() {
-                *player_transform = transform.clone();
+                *player_transform = transform;
             } else {
-                spawn_events.send(
-                    SpawnEvent::with_data(GameObject::Player, transform.clone()).delay_frames(2),
-                );
+                spawn_events
+                    .send(SpawnEvent::with_data(GameObject::Player, transform).delay_frames(2));
             }
         }
     }
@@ -66,22 +72,38 @@ static ENEMY_REGEX: LazyLock<Regex> =
 
 fn spawn_enemies(
     mut commands: Commands,
-    names: Query<(Entity, &Transform, &Name), Added<Name>>,
+    names: Query<(Entity, &GlobalTransform, &Name), Added<Name>>,
     mut spawn_events: EventWriter<SpawnEvent<GameObject, Transform>>,
 ) {
-    for (entity, transform, name) in names.iter() {
+    for (entity, global_transform, name) in names.iter() {
         if let Some(captures) = ENEMY_REGEX.captures(&name.to_lowercase()) {
             commands.entity(entity).despawn_recursive();
             let enemy_name = captures.get(1).unwrap().as_str();
             match enemy_name {
                 "dummy" => {
-                    let transform = transform.with_scale(Vec3::splat(1.));
+                    let transform = global_transform
+                        .compute_transform()
+                        .with_scale(Vec3::splat(1.));
                     spawn_events.send(SpawnEvent::with_data(GameObject::Dummy, transform));
                 }
                 _ => {
                     error!("Tried to spawn invalid enemy type: {}", enemy_name);
                 }
             }
+        }
+    }
+}
+
+fn spawn_lights(
+    names: Query<(&GlobalTransform, &Name), Added<Name>>,
+    mut spawn_events: EventWriter<SpawnEvent<GameObject, Transform>>,
+) {
+    for (global_transform, name) in names.iter() {
+        if name.contains("[light]") {
+            let transform = global_transform
+                .compute_transform()
+                .with_scale(Vec3::splat(1.));
+            spawn_events.send(SpawnEvent::with_data(GameObject::PointLight, transform));
         }
     }
 }

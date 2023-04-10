@@ -1,5 +1,6 @@
 use crate::combat::{Constitution, Enemy, EnemyCombatState};
 use bevy::prelude::*;
+use bevy::utils::HashMap;
 
 pub(crate) fn update_posture(
     time: Res<Time>,
@@ -32,19 +33,30 @@ pub(crate) fn update_posture(
 }
 
 pub(crate) fn handle_death(
+    time: Res<Time>,
     mut commands: Commands,
     mut enemies: Query<(Entity, &mut Enemy, &EnemyCombatState, &mut Constitution)>,
+    mut marked_for_death: Local<HashMap<Entity, f32>>,
 ) {
     for (entity, mut enemy, combat_state, mut constitution) in enemies.iter_mut() {
-        if !(constitution.is_dead() || enemy.is_dead || *combat_state == EnemyCombatState::Dying) {
+        if !marked_for_death.contains_key(&entity)
+            && !(constitution.is_dead()
+                || enemy.is_dead
+                || *combat_state == EnemyCombatState::Dying)
+        {
             return;
         }
+        warn!("ded");
+        let time_since_death = marked_for_death.entry(entity).or_insert(0.0);
         enemy.die();
         constitution.break_posture();
 
         const TIME_TO_DESPAWN: f32 = 4.0;
-        if enemy.time_since_last_animation > TIME_TO_DESPAWN {
+        if *time_since_death > TIME_TO_DESPAWN {
             commands.entity(entity).despawn_recursive();
+            marked_for_death.remove(&entity);
+        } else {
+            *time_since_death += time.delta_seconds();
         }
     }
 }

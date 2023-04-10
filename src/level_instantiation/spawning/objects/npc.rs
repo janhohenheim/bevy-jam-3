@@ -4,7 +4,6 @@ use crate::file_system_interaction::asset_loading::{DummyAnimationAssets, SceneA
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::GameObject;
 use crate::movement::general_movement::{CharacterControllerBundle, Model};
-use crate::world_interaction::dialog::{DialogId, DialogTarget};
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use bevy_rapier3d::prelude::*;
@@ -377,28 +376,12 @@ pub(crate) fn spawn(
                 constitution: Constitution::default().with_max_health(100.0).with_max_posture(50.0).with_base_posture_recovery(10.0),
                 ..default()
             },
-            DialogTarget {
-                dialog_id: DialogId::new("follower"),
-            },
             GameObject::Dummy,
             CollisionGroups::new(
                 GameCollisionGroup::ENEMY.into(),
                 (GameCollisionGroup::PLAYER | GameCollisionGroup::ATTACK).into(),
             ),
-        ))
-        .with_children(|parent| {
-            parent.spawn((
-                Name::new("NPC Dialog Collider"),
-                Collider::cylinder(HEIGHT / 2., RADIUS * 5.),
-                Sensor,
-                ActiveEvents::COLLISION_EVENTS,
-                ActiveCollisionTypes::DYNAMIC_DYNAMIC,
-                CollisionGroups::new(
-                    GameCollisionGroup::OTHER.into(),
-                    GameCollisionGroup::PLAYER.into(),
-                ),
-            ));
-        }).id();
+        )).id();
     commands
         .spawn((
             HitboxParentModel,

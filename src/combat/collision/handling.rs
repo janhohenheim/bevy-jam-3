@@ -4,19 +4,18 @@ use anyhow::Result;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_mod_sysfail::macros::*;
-use serde::{Deserialize, Serialize};
 
 #[sysfail(log(level = "error"))]
 pub(crate) fn handle_enemy_being_hit(
     mut hit_events: EventReader<EnemyHitEvent>,
-    enemies: Query<(&Enemy, &Transform)>,
+    mut enemies: Query<(&mut Enemy, &Transform)>,
     mut hurt_events: EventWriter<EnemyHurtEvent>,
     mut block_events: EventWriter<BlockedByEnemyEvent>,
     mut deflect_events: EventWriter<DeflectedByEnemyEvent>,
 ) -> Result<()> {
     for event in hit_events.iter() {
-        let (enemy, transform) = enemies
-            .get(event.target)
+        let (mut enemy, transform) = enemies
+            .get_mut(event.target)
             .expect("Failed to get combatant from hit event");
 
         let angle = transform
@@ -27,7 +26,8 @@ pub(crate) fn handle_enemy_being_hit(
         match enemy.current_move() {
             Some(move_) => match move_.metadata.state {
                 EnemyCombatState::Deathblow => {
-                    hurt_events.send(event.into());
+                    //hurt_events.send(event.into());
+                    enemy.die();
                 }
                 EnemyCombatState::Vulnerable => {
                     hurt_events.send(event.into());
@@ -64,38 +64,47 @@ fn roll_for_deflect() -> bool {
     rand < CHANCE_FOR_DEFLECT
 }
 
-#[derive(
-    Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect, Default, Deref, DerefMut,
-)]
-#[reflect(Serialize, Deserialize)]
-pub(crate) struct EnemyHurtEvent(pub(crate) Attack);
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct EnemyHurtEvent {
+    pub(crate) enemy: Entity,
+    pub(crate) attack: Attack,
+}
 
 impl From<&EnemyHitEvent> for EnemyHurtEvent {
     fn from(event: &EnemyHitEvent) -> Self {
-        Self(event.attack.clone())
+        Self {
+            enemy: event.target,
+            attack: event.attack.clone(),
+        }
     }
 }
 
-#[derive(
-    Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect, Default, Deref, DerefMut,
-)]
-#[reflect(Serialize, Deserialize)]
-pub(crate) struct BlockedByEnemyEvent(pub(crate) Attack);
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct BlockedByEnemyEvent {
+    pub(crate) enemy: Entity,
+    pub(crate) attack: Attack,
+}
 
 impl From<&EnemyHitEvent> for BlockedByEnemyEvent {
     fn from(event: &EnemyHitEvent) -> Self {
-        Self(event.attack.clone())
+        Self {
+            enemy: event.target,
+            attack: event.attack.clone(),
+        }
     }
 }
 
-#[derive(
-    Debug, Clone, PartialEq, Reflect, Serialize, Deserialize, FromReflect, Default, Deref, DerefMut,
-)]
-#[reflect(Serialize, Deserialize)]
-pub(crate) struct DeflectedByEnemyEvent(pub(crate) Attack);
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct DeflectedByEnemyEvent {
+    pub(crate) enemy: Entity,
+    pub(crate) attack: Attack,
+}
 
 impl From<&EnemyHitEvent> for DeflectedByEnemyEvent {
     fn from(event: &EnemyHitEvent) -> Self {
-        Self(event.attack.clone())
+        Self {
+            enemy: event.target,
+            attack: event.attack.clone(),
+        }
     }
 }

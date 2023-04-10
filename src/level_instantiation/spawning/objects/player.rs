@@ -52,7 +52,7 @@ pub(crate) fn spawn(
                             handle: animations.attack_one.clone(),
                             cancellation_times: CancellationTimes::Periodic(
                                 PeriodicCancellationTimes {
-                                    early_cancel_end: 0.15,
+                                    early_cancel_end: 0.2,
                                     late_cancel_start: 0.7,
                                     buffer_start: 0.5,
                                 },
@@ -63,8 +63,8 @@ pub(crate) fn spawn(
                             cancellation_times: CancellationTimes::Periodic(
                                 PeriodicCancellationTimes {
                                     early_cancel_end: 0.1,
-                                    late_cancel_start: 0.9,
-                                    buffer_start: 0.5,
+                                    late_cancel_start: 0.6,
+                                    buffer_start: 0.4,
                                 },
                             ),
                         },
@@ -73,8 +73,8 @@ pub(crate) fn spawn(
                             cancellation_times: CancellationTimes::Periodic(
                                 PeriodicCancellationTimes {
                                     early_cancel_end: 0.07,
-                                    late_cancel_start: 0.9,
-                                    buffer_start: 0.7,
+                                    late_cancel_start: 0.7,
+                                    buffer_start: 0.5,
                                 },
                             ),
                         },
@@ -95,8 +95,8 @@ pub(crate) fn spawn(
                         cancellation_times: CancellationTimes::Periodic(
                             PeriodicCancellationTimes {
                                 early_cancel_end: 0.0,
-                                late_cancel_start: 0.9,
-                                buffer_start: 0.7,
+                                late_cancel_start: 0.85,
+                                buffer_start: 0.6,
                             },
                         ),
                     },
@@ -113,9 +113,9 @@ pub(crate) fn spawn(
                 },
                 player_attacks: PlayerAttacks {
                     attacks: [
-                        Attack::new("Attack 1").with_health_damage_scaling_rest(10.0),
-                        Attack::new("Attack 2").with_health_damage_scaling_rest(8.0),
-                        Attack::new("Attack 3").with_health_damage_scaling_rest(15.0),
+                        Attack::new("Attack 1").with_health_damage_scaling_rest(20.0),
+                        Attack::new("Attack 2").with_health_damage_scaling_rest(15.0),
+                        Attack::new("Attack 3").with_health_damage_scaling_rest(30.0),
                     ],
                 },
                 constitution: Constitution::default()

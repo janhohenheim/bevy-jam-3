@@ -105,9 +105,6 @@ impl Enemy {
     }
 
     pub(crate) fn die(&mut self) {
-        if self.is_dead {
-            return;
-        }
         self.forced_choreography = Some(self.special_choreographies.death);
         self.is_dead = true;
     }
