@@ -17,6 +17,7 @@ pub(crate) fn update_condition_tracker(
             &Transform,
             &Height,
             &Grounded,
+            &Collider,
         ),
         Without<Player>,
     >,
@@ -31,6 +32,7 @@ pub(crate) fn update_condition_tracker(
         combatant_transform,
         combatant_height,
         combatant_grounded,
+        collider,
     ) in combatants.iter_mut()
     {
         condition_tracker.grounded = combatant_grounded.0;
@@ -38,15 +40,22 @@ pub(crate) fn update_condition_tracker(
             let from = combatant_transform.translation;
             let to = player_transform.translation
                 + Vec3::Y * (combatant_height.half() - player_height.half());
-            let line_of_sight =
-                get_line_of_sight(&rapier_context, from, combatant_entity, to, player_entity);
+            let has_line_of_sight = get_line_of_sight(
+                &rapier_context,
+                from,
+                combatant_transform.rotation,
+                collider,
+                combatant_entity,
+                to,
+                player_entity,
+            );
             condition_tracker.player_direction = to - from;
 
             // if the navmesh is not loaded, we might as well pretend we have line of sight.
             // Otherwise, this gets overwritten below.
             condition_tracker.has_line_of_sight = true;
             condition_tracker.line_of_sight_direction = condition_tracker.player_direction;
-            if line_of_sight.is_none() {
+            if !has_line_of_sight {
                 if let Ok(nav_mesh) = nav_mesh.get().read() {
                     if let Ok(path) = find_path(&nav_mesh, &nav_mesh_settings, from, to, None, None)
                     {
@@ -77,17 +86,19 @@ pub(crate) fn update_condition_tracker(
 fn get_line_of_sight(
     rapier_context: &RapierContext,
     origin: Vec3,
+    rotation: Quat,
+    shape: &Collider,
     origin_entity: Entity,
     target: Vec3,
     target_entity: Entity,
-) -> Option<f32> {
-    const MAX_TOI: f32 = 10.0;
-    const SOLID: bool = true;
+) -> bool {
+    const MAX_TOI: f32 = 40.0;
     let filter = QueryFilter::new()
         .exclude_collider(origin_entity)
         .exclude_sensors();
 
     rapier_context
-        .cast_ray(origin, target - origin, MAX_TOI, SOLID, filter)
+        .cast_shape(origin, rotation, target - origin, shape, MAX_TOI, filter)
         .and_then(|(entity, toi)| (entity == target_entity).then_some(toi))
+        .is_some()
 }

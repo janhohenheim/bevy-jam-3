@@ -25,6 +25,7 @@ pub(crate) fn map_plugin(app: &mut App) {
             spawn_enemies.run_if(in_state(GameState::Playing)),
             spawn_lights.run_if(in_state(GameState::Playing)),
             place_player.run_if(in_state(GameState::Playing)),
+            spawn_exit.run_if(in_state(GameState::Playing)),
         )
             .chain()
             .after(TransformSystem::TransformPropagate)
@@ -104,6 +105,20 @@ fn spawn_lights(
                 .compute_transform()
                 .with_scale(Vec3::splat(1.));
             spawn_events.send(SpawnEvent::with_data(GameObject::PointLight, transform));
+        }
+    }
+}
+
+fn spawn_exit(
+    names: Query<(&GlobalTransform, &Name), Added<Name>>,
+    mut spawn_events: EventWriter<SpawnEvent<GameObject, Transform>>,
+) {
+    for (global_transform, name) in names.iter() {
+        if name.contains("[exit]") {
+            let transform = global_transform
+                .compute_transform()
+                .with_scale(Vec3::splat(1.));
+            spawn_events.send(SpawnEvent::with_data(GameObject::Exit, transform));
         }
     }
 }

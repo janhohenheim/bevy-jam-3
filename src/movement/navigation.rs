@@ -19,7 +19,7 @@ use oxidized_navigation::{
 use serde::{Deserialize, Serialize};
 
 /// Manually tweaked
-const CELL_WIDTH: f32 = 0.4 * npc::RADIUS;
+const CELL_WIDTH: f32 = 0.6 * npc::RADIUS;
 
 /// Handles NPC pathfinding. Currently, all entities with the [`Follower`] component will follow the [`Player`].
 pub(crate) fn navigation_plugin(app: &mut App) {

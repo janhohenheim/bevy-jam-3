@@ -1,3 +1,4 @@
+use crate::level_instantiation::spawning::objects::exit::Exit;
 use crate::player_control::actions::PlayerAction;
 use crate::player_control::camera::{IngameCamera, IngameCameraKind};
 use crate::player_control::player_embodiment::Player;
@@ -160,6 +161,7 @@ fn display_interaction_prompt(
     actions: Query<&ActionState<PlayerAction>>,
     primary_windows: Query<&Window, With<PrimaryWindow>>,
     dialog_target_query: Query<&DialogTarget>,
+    exit_target_query: Query<&Exit>,
 ) -> Result<()> {
     for actions in actions.iter() {
         let window = primary_windows
@@ -171,7 +173,7 @@ fn display_interaction_prompt(
             .auto_sized()
             .fixed_pos(egui::Pos2::new(window.width() / 2., window.height() / 2.))
             .show(egui_contexts.ctx_mut(), |ui| {
-                ui.label("E: Talk");
+                ui.label("E: Open");
             });
         if actions.just_pressed(PlayerAction::Interact) {
             if let Ok(dialog_target) = dialog_target_query.get(interaction_ui.source) {
@@ -180,6 +182,8 @@ fn display_interaction_prompt(
                     dialog: dialog_target.dialog_id.clone(),
                     page: None,
                 });
+            } else if let Ok(exit) = exit_target_query.get(interaction_ui.source) {
+                info!("Exiting room");
             }
         }
     }
