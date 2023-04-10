@@ -13,7 +13,7 @@ use strum_macros::EnumIter;
 pub(crate) mod animation_link;
 mod despawn;
 pub(crate) mod objects;
-pub mod post_spawn_modification;
+pub(crate) mod post_spawn_modification;
 
 pub(crate) fn spawning_plugin(app: &mut App) {
     app.add_plugin(SpewPlugin::<GameObject, Transform>::default())

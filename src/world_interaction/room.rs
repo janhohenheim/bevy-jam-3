@@ -1,9 +1,13 @@
 use crate::combat::Enemy;
 use crate::file_system_interaction::audio::AudioHandles;
 use crate::level_instantiation::spawning::GameObject;
+use crate::player_control::actions::ActionsFrozen;
 use crate::player_control::player_embodiment::Player;
+use crate::world_interaction::side_effects::potions::{generate_potions, Potion, POTION_COUNT};
+use crate::world_interaction::side_effects::SideEffects;
 use crate::GameState;
 use bevy::prelude::*;
+use bevy_egui::{egui, EguiContexts};
 use bevy_kira_audio::AudioInstance;
 use spew::prelude::SpawnEvent;
 
@@ -11,10 +15,21 @@ pub(crate) fn exit_plugin(app: &mut App) {
     app.add_event::<EnterRoomEvent>()
         .add_event::<RoomClearEvent>()
         .add_event::<LeaveRoomEvent>()
+        .add_event::<SelectPotionEvent>()
         .register_type::<CurrentRoom>()
+        .register_type::<SelectPotionUi>()
         .init_resource::<CurrentRoom>()
+        .init_resource::<SelectPotionUi>()
         .add_systems(
-            (enter_first_room, update_room, leave_room).in_set(OnUpdate(GameState::Playing)),
+            (
+                enter_first_room,
+                update_room,
+                leave_room,
+                activate_select_potion_ui,
+                select_potion,
+            )
+                .chain()
+                .in_set(OnUpdate(GameState::Playing)),
         );
 }
 
@@ -26,7 +41,7 @@ pub(crate) struct Room;
 
 #[derive(Debug, Clone, Resource, Reflect, FromReflect, Default)]
 #[reflect(Resource)]
-pub struct CurrentRoom {
+pub(crate) struct CurrentRoom {
     pub(crate) cleared: bool,
     pub(crate) number: usize,
 }
@@ -38,6 +53,12 @@ impl CurrentRoom {
     }
 }
 
+#[derive(Debug, Clone, Resource, Reflect, FromReflect, Default)]
+#[reflect(Resource)]
+struct SelectPotionUi {
+    potions: Option<[Potion; POTION_COUNT]>,
+}
+
 #[derive(Debug, Clone)]
 pub(crate) struct EnterRoomEvent;
 
@@ -46,6 +67,9 @@ pub(crate) struct RoomClearEvent;
 
 #[derive(Debug, Clone)]
 pub(crate) struct LeaveRoomEvent;
+
+#[derive(Debug, Clone)]
+pub(crate) struct SelectPotionEvent;
 
 fn enter_first_room(
     mut start_room_events: EventWriter<EnterRoomEvent>,
@@ -74,14 +98,68 @@ fn update_room(
     }
 }
 
+fn activate_select_potion_ui(
+    mut events: EventReader<SelectPotionEvent>,
+    mut select_potion_ui: ResMut<SelectPotionUi>,
+) {
+    for _ in events.iter() {
+        select_potion_ui.potions = Some(generate_potions());
+    }
+}
+
+fn select_potion(
+    mut egui_contexts: EguiContexts,
+    mut leave_room_events: EventWriter<LeaveRoomEvent>,
+    mut select_potion_ui: ResMut<SelectPotionUi>,
+    mut side_effects: ResMut<SideEffects>,
+) {
+    let Some(potions) = select_potion_ui.potions.clone() else {
+        return;
+    };
+    egui::Window::new("Select a potion")
+        .resizable(false)
+        .collapsible(false)
+        .show(egui_contexts.ctx_mut(), |ui| {
+            ui.label("The pirates left some potions behind. Which one do you want to take?");
+            egui::Grid::new("potion_grid").show(ui, |ui| {
+                for potion in potions.iter() {
+                    ui.label(&potion.name);
+                }
+                ui.end_row();
+                for potion in potions.iter() {
+                    ui.label(&potion.positive_side_effect.format_positive());
+                }
+                ui.end_row();
+                for _potion in potions.iter() {
+                    ui.label("BUT");
+                }
+                ui.end_row();
+                for potion in potions.iter() {
+                    ui.label(&potion.negative_side_effect.format_negative());
+                }
+                ui.end_row();
+                for potion in potions.iter() {
+                    if ui.button("Drink!").clicked() {
+                        side_effects.add_positive(potion.positive_side_effect);
+                        side_effects.add_negative(potion.negative_side_effect);
+                        select_potion_ui.potions = None;
+                        leave_room_events.send(LeaveRoomEvent);
+                    }
+                }
+            });
+        });
+}
+
 fn leave_room(
     mut commands: Commands,
     mut leave_room_events: EventReader<LeaveRoomEvent>,
     mut current_room: ResMut<CurrentRoom>,
     mut spawn_events: EventWriter<SpawnEvent<GameObject, Transform>>,
     rooms: Query<Entity, With<Room>>,
+    mut actions_frozen: ResMut<ActionsFrozen>,
 ) {
     for _ in leave_room_events.iter() {
+        actions_frozen.unfreeze();
         current_room.enter_next();
         spawn_events.send(SpawnEvent::new(GameObject::IntroRoom));
         for room in rooms.iter() {

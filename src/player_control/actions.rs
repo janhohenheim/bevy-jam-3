@@ -150,6 +150,8 @@ pub(crate) fn remove_actions_when_frozen(
         player_actions.release(PlayerAction::Jump);
         player_actions.release(PlayerAction::Interact);
         player_actions.release(PlayerAction::Sprint);
+        player_actions.release(PlayerAction::Attack);
+        player_actions.release(PlayerAction::Block);
     }
     for mut camera_actions in camera_actions_query.iter_mut() {
         camera_actions

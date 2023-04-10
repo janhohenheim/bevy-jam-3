@@ -1,8 +1,8 @@
-use crate::player_control::actions::PlayerAction;
+use crate::player_control::actions::{ActionsFrozen, PlayerAction};
 use crate::player_control::camera::IngameCamera;
 use crate::util::criteria::is_frozen;
 use crate::util::trait_extension::F32Ext;
-use crate::world_interaction::room::{CurrentRoom, Exit, LeaveRoomEvent};
+use crate::world_interaction::room::{CurrentRoom, Exit, SelectPotionEvent};
 use crate::GameState;
 use anyhow::{Context, Result};
 use bevy::prelude::*;
@@ -37,7 +37,8 @@ fn display_interaction_prompt(
     primary_windows: Query<&Window, With<PrimaryWindow>>,
     exits: Query<&Transform, With<Exit>>,
     current_room: Res<CurrentRoom>,
-    mut leave_room_events: EventWriter<LeaveRoomEvent>,
+    mut select_potion_events: EventWriter<SelectPotionEvent>,
+    mut actions_frozen: ResMut<ActionsFrozen>,
 ) -> Result<()> {
     for (player_transform, actions) in players.iter() {
         for exit_transform in exits.iter() {
@@ -67,8 +68,8 @@ fn display_interaction_prompt(
                         ui.label(message);
                     });
                 if current_room.cleared && actions.just_pressed(PlayerAction::Interact) {
-                    leave_room_events.send(LeaveRoomEvent);
-                    info!("Interacting with exit");
+                    select_potion_events.send(SelectPotionEvent);
+                    actions_frozen.freeze();
                 }
             }
         }
