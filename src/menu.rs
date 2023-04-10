@@ -22,7 +22,7 @@ fn setup_menu(
         set_menu_style(ui.style_mut());
         ui.vertical_centered_justified(|ui| {
             ui.add_space(50.);
-            ui.heading("Foxtrot");
+            ui.heading("egg slash");
             ui.separator();
             ui.add_space(50.);
             if ui.button("Play").clicked() {

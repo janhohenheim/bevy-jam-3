@@ -9,11 +9,11 @@
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::type_complexity)]
 
-//! Foxtrot is split into many plugins with their own set of responsibilities.
+//! egg slash is split into many plugins with their own set of responsibilities.
 //! This is an organizational measure and not meant to be imply that you can turn them on or off at will,
 //! since the plugins are interdependent.  
 //! Instead, decide for yourself which features you like and which one's you don't and simply trim the code accordingly.
-//! Feel free to [file an issue](https://github.com/janhohenheim/foxtrot/issues/new) if you need help!
+//! Feel free to [file an issue](https://github.com/janhohenheim/egg slash/issues/new) if you need help!
 //! The docs are organized such that you can click through the plugins to explore the systems at play.
 pub(crate) mod ai;
 pub(crate) mod bevy_config;
@@ -61,7 +61,7 @@ enum GameState {
     Menu,
 }
 
-/// Main entrypoint for Foxtrot.
+/// Main entrypoint for egg slash.
 ///
 /// The top-level plugins are:
 /// - [`bevy_config_plugin`]: Sets up the bevy configuration.
@@ -76,7 +76,7 @@ enum GameState {
 /// - [`ingame_menu_plugin`]: Handles the ingame menu accessed via ESC.
 /// - [`particle_plugin`]: Handles the particle system. Since [bevy_hanabi](https://github.com/djeedai/bevy_hanabi) does not support wasm, this plugin is only available on native.
 ///
-/// Because Foxtrot uses `seldom_fn_plugin`, these are all functions.
+/// Because egg slash uses `seldom_fn_plugin`, these are all functions.
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {

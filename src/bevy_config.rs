@@ -12,7 +12,7 @@ pub(crate) fn bevy_config_plugin(app: &mut App) {
     let default_plugins = DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
             resolution: (800., 600.).into(),
-            title: "Foxtrot".to_string(),
+            title: "egg slash".to_string(),
             canvas: Some("#bevy".to_owned()),
             present_mode: PresentMode::AutoVsync,
             // This breaks WASM for some reason
