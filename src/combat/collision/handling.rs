@@ -1,5 +1,6 @@
 use crate::combat::collision::detection::EnemyHitEvent;
 use crate::combat::{Attack, Enemy, EnemyCombatState};
+use crate::world_interaction::side_effects::{SideEffect, SideEffects};
 use anyhow::Result;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
@@ -12,8 +13,21 @@ pub(crate) fn handle_enemy_being_hit(
     mut hurt_events: EventWriter<EnemyHurtEvent>,
     mut block_events: EventWriter<BlockedByEnemyEvent>,
     mut deflect_events: EventWriter<DeflectedByEnemyEvent>,
+    side_effects: Res<SideEffects>,
 ) -> Result<()> {
     for event in hit_events.iter() {
+        let health_side_effect = side_effects.get_factored(SideEffect::HealthDamage, 0.15);
+        let posture_side_effect = side_effects.get_factored(SideEffect::AttackPostureDamage, 0.1);
+        let knockback_side_effect = side_effects.get_factored(SideEffect::AttackKnockback, 0.2);
+        let event = EnemyHitEvent {
+            attack: Attack {
+                name: event.attack.name.clone(),
+                health_damage: event.attack.health_damage * health_side_effect,
+                posture_damage: event.attack.posture_damage * posture_side_effect,
+                knockback: event.attack.knockback * knockback_side_effect,
+            },
+            ..event.clone()
+        };
         let (mut enemy, transform) = enemies
             .get_mut(event.target)
             .expect("Failed to get combatant from hit event");
@@ -70,8 +84,8 @@ pub(crate) struct EnemyHurtEvent {
     pub(crate) attack: Attack,
 }
 
-impl From<&EnemyHitEvent> for EnemyHurtEvent {
-    fn from(event: &EnemyHitEvent) -> Self {
+impl From<EnemyHitEvent> for EnemyHurtEvent {
+    fn from(event: EnemyHitEvent) -> Self {
         Self {
             enemy: event.target,
             attack: event.attack.clone(),
@@ -85,8 +99,8 @@ pub(crate) struct BlockedByEnemyEvent {
     pub(crate) attack: Attack,
 }
 
-impl From<&EnemyHitEvent> for BlockedByEnemyEvent {
-    fn from(event: &EnemyHitEvent) -> Self {
+impl From<EnemyHitEvent> for BlockedByEnemyEvent {
+    fn from(event: EnemyHitEvent) -> Self {
         Self {
             enemy: event.target,
             attack: event.attack.clone(),
@@ -100,8 +114,8 @@ pub(crate) struct DeflectedByEnemyEvent {
     pub(crate) attack: Attack,
 }
 
-impl From<&EnemyHitEvent> for DeflectedByEnemyEvent {
-    fn from(event: &EnemyHitEvent) -> Self {
+impl From<EnemyHitEvent> for DeflectedByEnemyEvent {
+    fn from(event: EnemyHitEvent) -> Self {
         Self {
             enemy: event.target,
             attack: event.attack.clone(),

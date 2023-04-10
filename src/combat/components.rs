@@ -116,6 +116,9 @@ pub(crate) struct Constitution {
     health: f32,
     max_health: f32,
     posture: f32,
+    vanilla_posture_recovery: f32,
+    vanilla_max_posture: f32,
+    vanilla_max_health: f32,
     max_posture: f32,
     base_posture_recovery: f32,
     is_posture_broken: bool,
@@ -126,17 +129,35 @@ impl Constitution {
     pub(crate) fn with_max_health(mut self, max_health: f32) -> Self {
         self.max_health = max_health;
         self.health = max_health;
+        self.vanilla_max_health = max_health;
         self
     }
 
     pub(crate) fn with_max_posture(mut self, max_posture: f32) -> Self {
         self.max_posture = max_posture;
+        self.vanilla_max_posture = max_posture;
         self
     }
 
     pub(crate) fn with_base_posture_recovery(mut self, base_posture_recovery: f32) -> Self {
         self.base_posture_recovery = base_posture_recovery;
+        self.vanilla_posture_recovery = base_posture_recovery;
         self
+    }
+
+    pub(crate) fn apply_health_side_effect(&mut self, side_effect: f32) {
+        self.max_health = self.vanilla_max_health * side_effect;
+        if side_effect > 0.0 {
+            self.recover_health(self.health * side_effect);
+        }
+    }
+
+    pub(crate) fn apply_posture_side_effect(&mut self, side_effect: f32) {
+        self.max_posture = self.vanilla_max_posture * side_effect;
+    }
+
+    pub(crate) fn apply_posture_recovery_side_effect(&mut self, side_effect: f32) {
+        self.base_posture_recovery = self.vanilla_posture_recovery * side_effect;
     }
 
     pub(crate) fn health(&self) -> f32 {
@@ -183,7 +204,7 @@ impl Constitution {
         }
     }
 
-    pub(crate) fn _recover_health(&mut self, amount: f32) {
+    pub(crate) fn recover_health(&mut self, amount: f32) {
         if self.is_dead {
             return;
         }
@@ -255,6 +276,9 @@ impl Default for Constitution {
             base_posture_recovery: 20.0,
             is_posture_broken: false,
             is_dead: false,
+            vanilla_max_health: 100.0,
+            vanilla_max_posture: 100.0,
+            vanilla_posture_recovery: 20.0,
         }
     }
 }

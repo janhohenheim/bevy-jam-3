@@ -12,6 +12,7 @@ use crate::util::criteria::never;
 use crate::util::smoothness_to_lerp_factor;
 use crate::util::trait_extension::{F32Ext, TransformExt, Vec3Ext};
 use crate::world_interaction::dialog::CurrentDialog;
+use crate::world_interaction::side_effects::{SideEffect, SideEffects};
 use crate::GameState;
 use anyhow::{Context, Result};
 use bevy::prelude::*;
@@ -114,6 +115,7 @@ fn handle_horizontal_movement(
         With<Player>,
     >,
     camera_query: Query<(&IngameCamera, &Transform), Without<Player>>,
+    side_effects: Res<SideEffects>,
 ) -> Result<()> {
     #[cfg(feature = "tracing")]
     let _span = info_span!("handle_horizontal_movement").entered();
@@ -144,7 +146,8 @@ fn handle_horizontal_movement(
             let is_looking_backward = forward.dot(forward_action) < 0.0;
             let is_first_person = camera.kind == IngameCameraKind::FirstPerson;
             let modifier = if is_looking_backward && is_first_person {
-                0.7
+                let side_effect = side_effects.get_factored(SideEffect::BackwardsWalkingSpeed, 0.6);
+                0.7 * side_effect
             } else {
                 1.
             };

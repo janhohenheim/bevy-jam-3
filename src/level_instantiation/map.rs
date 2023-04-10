@@ -1,6 +1,7 @@
 use crate::file_system_interaction::level_serialization::{CurrentLevel, WorldLoadRequest};
 use crate::level_instantiation::spawning::GameObject;
 use crate::player_control::player_embodiment::Player;
+use crate::world_interaction::side_effects::{SideEffect, SideEffects};
 use crate::GameState;
 use bevy::prelude::*;
 use bevy::transform::TransformSystem;
@@ -51,13 +52,15 @@ fn place_player(
     names: Query<(Entity, &GlobalTransform, &Name), (Added<Name>, Without<Player>)>,
     mut player_query: Query<&mut Transform, With<Player>>,
     mut spawn_events: EventWriter<SpawnEvent<GameObject, Transform>>,
+    side_effects: Res<SideEffects>,
 ) {
     for (entity, global_transform, name) in names.iter() {
         if name.contains("[entrance]") {
             commands.entity(entity).despawn_recursive();
+            let side_effect = side_effects.get_factored(SideEffect::Size, 0.3);
             let transform = global_transform
                 .compute_transform()
-                .with_scale(Vec3::splat(1.));
+                .with_scale(Vec3::splat(1. * side_effect));
             if let Ok(mut player_transform) = player_query.get_single_mut() {
                 *player_transform = transform;
             } else {

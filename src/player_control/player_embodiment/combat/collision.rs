@@ -4,6 +4,7 @@ use crate::player_control::player_embodiment::combat::{
     BlockHistory, PlayerCombatKind, PlayerCombatState,
 };
 use crate::player_control::player_embodiment::Player;
+use crate::world_interaction::side_effects::{SideEffect, SideEffects};
 use anyhow::Result;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
@@ -17,25 +18,39 @@ pub(crate) fn handle_player_being_hit(
     mut hurt_events: EventWriter<PlayerHurtEvent>,
     mut block_events: EventWriter<BlockedByPlayerEvent>,
     mut deflect_events: EventWriter<DeflectedByPlayerEvent>,
+    side_effects: Res<SideEffects>,
 ) -> Result<()> {
     for event in hit_events.iter() {
+        let side_effect = side_effects.get_factored(SideEffect::KnockbackResistance, 0.2);
+        let event = PlayerHitEvent {
+            attack: Attack {
+                name: event.attack.name.clone(),
+                health_damage: event.attack.health_damage,
+                posture_damage: event.attack.posture_damage,
+                knockback: event.attack.knockback * side_effect,
+            },
+            ..event.clone()
+        };
         for (transform, mut combat_state, mut block_history) in players.iter_mut() {
             if combat_state.kind != PlayerCombatKind::Block {
-                hurt_events.send(event.into());
+                hurt_events.send((&event).into());
             } else {
                 let angle = transform
                     .forward()
                     .xz()
                     .angle_between(event.target_to_contact.xz())
                     .to_degrees();
+                let side_effect = side_effects.get_factored(SideEffect::DeflectWindow, 0.2);
                 if angle.abs() > get_max_block_angle() {
-                    hurt_events.send(event.into());
+                    hurt_events.send((&event).into());
                     combat_state.time_since_hurt_or_block = 0.0;
-                } else if combat_state.time_in_state < get_max_deflect_time(&block_history) {
-                    deflect_events.send(event.into());
+                } else if combat_state.time_in_state
+                    < get_max_deflect_time(&block_history) * side_effect
+                {
+                    deflect_events.send((&event).into());
                     block_history.mark_last_as_deflect();
                 } else {
-                    block_events.send(event.into());
+                    block_events.send((&event).into());
                     combat_state.time_since_hurt_or_block = 0.0;
                 }
             }

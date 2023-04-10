@@ -3,6 +3,7 @@ use crate::level_instantiation::spawning::AnimationEntityLink;
 use crate::player_control::player_embodiment::combat::{PlayerCombatKind, PlayerCombatState};
 use crate::util::smoothness_to_lerp_factor;
 use crate::util::trait_extension::{TransformExt, Vec3Ext};
+use crate::world_interaction::side_effects::{SideEffect, SideEffects};
 use crate::GameState;
 use anyhow::{Context, Result};
 use bevy::prelude::*;
@@ -212,6 +213,7 @@ pub(crate) fn apply_walking(
         &Transform,
         Option<&PlayerCombatState>,
     )>,
+    side_effects: Res<SideEffects>,
 ) {
     #[cfg(feature = "tracing")]
     let _span = info_span!("apply_walking").entered();
@@ -232,7 +234,8 @@ pub(crate) fn apply_walking(
             } else {
                 1.0
             };
-            let walking_force = acceleration * mass * factor;
+            let side_effect = side_effects.get_factored(SideEffect::BaseSpeed, 0.1);
+            let walking_force = acceleration * mass * factor * side_effect;
             force.force += walking_force;
         } else if grounded.0 {
             let velocity_components = velocity.linvel.split(transform.up());

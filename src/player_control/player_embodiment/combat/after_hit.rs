@@ -7,6 +7,7 @@ use crate::player_control::player_embodiment::combat::{
     AttackCommitment, BlockHistory, PlayerCombatKind, PlayerCombatState,
 };
 use crate::player_control::player_embodiment::Player;
+use crate::world_interaction::side_effects::{SideEffect, SideEffects};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::{ExternalImpulse, ReadMassProperties};
 
@@ -77,6 +78,7 @@ pub(crate) fn handle_deflect_events(
         (With<Player>, Without<Enemy>),
     >,
     mut enemies: Query<(&mut Constitution,), (With<Enemy>, Without<Player>)>,
+    side_effects: Res<SideEffects>,
 ) {
     for event in deflect_events.iter() {
         for (mut constitution, block_history, mut impulse, mass, transform) in players.iter_mut() {
@@ -89,7 +91,8 @@ pub(crate) fn handle_deflect_events(
             // If this fails, we are deflecting a projectile
             if let Ok((mut enemy_constitution,)) = enemies.get_mut(event.attacker) {
                 let streak = block_history.current_deflect_streak();
-                let factor = 1.0 + (streak - 1) as f32 * 0.5;
+                let side_effect = side_effects.get_factored(SideEffect::DeflectPostureDamage, 0.3);
+                let factor = 1.0 + (streak - 1) as f32 * 0.5 * side_effect;
                 let base_posture_damage = 8.;
                 let attack = Attack::new(format!(
                     "Player deflecting attack: \"{}\"",
