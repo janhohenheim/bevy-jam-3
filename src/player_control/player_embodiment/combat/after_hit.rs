@@ -26,7 +26,16 @@ pub(crate) fn handle_hurt_events(
     for attack in hurt_events.iter() {
         for (mut combat_state, mut constitution, mut impulse, mass, transform) in players.iter_mut()
         {
-            constitution.take_full_damage(attack);
+            let factor = if combat_state.kind == PlayerCombatKind::PostureBroken {
+                2.0
+            } else {
+                1.0
+            };
+            let attack = attack
+                .0
+                .clone()
+                .with_health_damage(attack.health_damage * factor);
+            constitution.take_full_damage(&attack);
             combat_state.force_use_next_kind(PlayerCombatKind::Hurt);
             combat_state.commitment = AttackCommitment::Committed;
             impulse.impulse += attack.knockback * transform.back() * mass.0.mass;

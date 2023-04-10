@@ -12,18 +12,13 @@ pub(crate) fn handle_hurt_events(
     for attack in hurt_events.iter() {
         for (mut enemy, combat_state, mut constitution) in enemies.iter_mut() {
             constitution.take_full_damage(attack);
-            if constitution.is_dead() {
-                enemy.die();
-            } else {
-                match combat_state {
-                    EnemyCombatState::Deathblow => {
-                        enemy.die();
-                        constitution.die()
-                    }
-                    EnemyCombatState::HyperArmor => {}
-                    _ => enemy.hurt(),
-                }
+
+            match combat_state {
+                EnemyCombatState::Deathblow => constitution.die(),
+                EnemyCombatState::HyperArmor => {}
+                _ => enemy.hurt(),
             }
+
             enemy.time_since_hurt_or_block = 0.0;
         }
     }

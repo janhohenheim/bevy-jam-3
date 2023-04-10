@@ -64,8 +64,8 @@ pub(crate) fn player_embodiment_plugin(app: &mut App) {
         .add_systems(
             (
                 combat::update_block_history,
-                combat::attack,
                 combat::block,
+                combat::attack,
                 combat::update_states,
                 combat::collision::handle_player_being_hit,
                 combat::after_hit::handle_hurt_events,

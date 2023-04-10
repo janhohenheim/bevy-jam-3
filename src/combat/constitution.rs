@@ -33,13 +33,16 @@ pub(crate) fn update_posture(
 
 pub(crate) fn handle_death(
     mut commands: Commands,
-    mut enemies: Query<(Entity, &mut Enemy, &EnemyCombatState, &Constitution)>,
+    mut enemies: Query<(Entity, &mut Enemy, &mut Constitution)>,
 ) {
-    for (entity, mut enemy, combat_state, constitution) in enemies.iter_mut() {
-        if constitution.is_dead() && *combat_state != EnemyCombatState::Dying {
-            enemy.die();
+    for (entity, mut enemy, mut constitution) in enemies.iter_mut() {
+        if !constitution.is_dead() {
+            return;
         }
-        const TIME_TO_DESPAWN: f32 = 5.0;
+        enemy.die();
+        constitution.break_posture();
+
+        const TIME_TO_DESPAWN: f32 = 4.0;
         if enemy.time_since_last_animation > TIME_TO_DESPAWN {
             commands.entity(entity).despawn_recursive();
         }

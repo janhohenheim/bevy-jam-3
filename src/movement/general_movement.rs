@@ -226,7 +226,7 @@ pub(crate) fn apply_walking(
                     PlayerCombatKind::Attack(_) => 0.9,
                     PlayerCombatKind::Block => 0.8,
                     PlayerCombatKind::Deflected => 1.0,
-                    PlayerCombatKind::PostureBroken => 0.2,
+                    PlayerCombatKind::PostureBroken => 0.5,
                     PlayerCombatKind::Hurt => 0.7,
                 }
             } else {

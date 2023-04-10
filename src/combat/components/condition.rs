@@ -8,7 +8,7 @@ pub(crate) enum CombatCondition {
     Grounded,
     #[allow(dead_code)]
     HasLineOfSight,
-    None,
+    True,
     #[allow(dead_code)]
     Not(Box<CombatCondition>),
     And(Vec<CombatCondition>),
@@ -53,7 +53,7 @@ impl ConditionTracker {
             CombatCondition::Not(condition) => !self.fulfilled(condition),
             CombatCondition::And(conditions) => self.all(conditions),
             CombatCondition::Or(conditions) => self.any(conditions),
-            CombatCondition::None => true,
+            CombatCondition::True => true,
         }
     }
 }

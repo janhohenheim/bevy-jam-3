@@ -1,6 +1,8 @@
 use crate::combat::Constitution;
 use crate::movement::general_movement::Walking;
-use crate::player_control::player_embodiment::combat::{PlayerCombatKind, PlayerCombatState};
+use crate::player_control::player_embodiment::combat::{
+    AttackCommitment, PlayerCombatKind, PlayerCombatState,
+};
 use bevy::prelude::*;
 
 pub(crate) fn update_posture(
@@ -10,6 +12,7 @@ pub(crate) fn update_posture(
     for (mut combat_state, mut constitution, walking) in player.iter_mut() {
         if constitution.is_posture_broken() {
             combat_state.force_use_next_kind(PlayerCombatKind::PostureBroken);
+            combat_state.commitment = AttackCommitment::Committed;
             constitution.mark_broken_posture_as_handled();
         }
         let posture_recovery_time = if walking.sprinting {

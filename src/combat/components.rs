@@ -33,6 +33,7 @@ pub(crate) struct Enemy {
     pub(crate) time_since_hurt_or_block: f32,
     pub(crate) forced_choreography: Option<usize>,
     pub(crate) special_choreographies: SpecialChoreographies,
+    pub(crate) is_dead: bool,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -83,19 +84,32 @@ impl Enemy {
     }
 
     pub(crate) fn block(&mut self) {
+        if self.is_dead {
+            return;
+        }
         self.forced_choreography = Some(self.special_choreographies.block);
     }
 
     pub(crate) fn hurt(&mut self) {
+        if self.is_dead {
+            return;
+        }
         self.forced_choreography = Some(self.special_choreographies.hurt);
     }
 
     pub(crate) fn break_posture(&mut self) {
+        if self.is_dead {
+            return;
+        }
         self.forced_choreography = Some(self.special_choreographies.posture_broken);
     }
 
     pub(crate) fn die(&mut self) {
+        if self.is_dead {
+            return;
+        }
         self.forced_choreography = Some(self.special_choreographies.death);
+        self.is_dead = true;
     }
 }
 
@@ -150,19 +164,16 @@ impl Constitution {
     }
 
     fn take_health_damage(&mut self, attack: &Attack) {
-        let factor = if self.is_posture_broken { 3.0 } else { 1.0 };
-        self.health -= attack.health_damage * factor;
+        self.health -= attack.health_damage;
         if self.health < 0.0 {
-            self.health = 0.0;
-            self.is_dead = true;
+            self.die();
         }
     }
 
     pub(crate) fn take_posture_damage(&mut self, attack: &Attack) {
         self.posture += attack.posture_damage;
         if self.posture > self.max_posture {
-            self.is_posture_broken = true;
-            self.posture = 0.0;
+            self.break_posture();
         }
     }
 
@@ -170,6 +181,7 @@ impl Constitution {
         let factor = 0.5;
         self.posture += attack.posture_damage * factor;
         if self.posture > self.max_posture {
+            // cannot get posture broken from deflecting
             self.posture = self.max_posture;
         }
     }
@@ -185,6 +197,9 @@ impl Constitution {
     }
 
     pub(crate) fn recover_posture(&mut self, dt: f32) {
+        if self.is_dead {
+            return;
+        }
         let amount = self.base_posture_recovery * dt * self.get_posture_recovery_factor();
         self.posture -= amount;
         if self.posture < 0.0 {
@@ -207,7 +222,13 @@ impl Constitution {
     }
 
     pub(crate) fn die(&mut self) {
+        self.is_dead = true;
         self.health = 0.0;
+    }
+
+    pub(crate) fn break_posture(&mut self) {
+        self.posture = self.max_posture;
+        self.is_posture_broken = true;
     }
 
     pub(crate) fn is_dead(&self) -> bool {
@@ -215,6 +236,9 @@ impl Constitution {
     }
 
     pub(crate) fn mark_broken_posture_as_handled(&mut self) {
+        if self.is_dead {
+            return;
+        }
         self.posture = 0.0;
         self.is_posture_broken = false;
     }

@@ -100,7 +100,7 @@ pub(crate) fn spawn(
                                 },
                                 functions: MoveFunctions {
                                     melee_attack_fn: Some(ai::generic::melee::whole_animation(
-                                        Attack::new("Default NPC Attack").with_health_damage_scaling_rest(10.),
+                                        Attack::new("Default NPC Attack").with_health_damage_scaling_rest(10.).with_posture_damage(6.),
                                     )),
                                     ..default()
                                 },
@@ -168,9 +168,9 @@ pub(crate) fn spawn(
                                         ai::generic::projectile::spawn_simple_projectile(
                                             ProjectileSpawnInput {
                                                 model: scene_handles.kunai.clone(),
-                                                attack: AttackHitbox::from_attack(Attack::new("Kunai Throw").with_health_damage_scaling_rest(15.0)),
+                                                attack: AttackHitbox::from_attack(Attack::new("Kunai Throw").with_health_damage_scaling_rest(10.0)),
                                                 speed: 10.0,
-                                                tracking: 0.1,
+                                                tracking: 0.5,
                                                 max_lifetime: 3.0,
                                             },
                                         ),
@@ -266,7 +266,7 @@ pub(crate) fn spawn(
                                 },
                                 functions: MoveFunctions {
                                     motion_fn: Some(
-                                        ai::generic::motion::continuous::face_player_with_smoothness(0.4),
+                                        ai::generic::motion::continuous::face_player_with_smoothness(0.2),
                                     ),
                                     ..default()
                                 },
@@ -301,7 +301,7 @@ pub(crate) fn spawn(
                                 },
                                 functions: MoveFunctions {
                                     motion_fn: Some(
-                                        ai::generic::motion::continuous::face_player_with_smoothness(0.1),
+                                        ai::generic::motion::continuous::face_player_with_smoothness(0.3),
                                     ),
                                     ..default()
                                 },
@@ -326,7 +326,7 @@ pub(crate) fn spawn(
                         moves: vec![
                             Move {
                                 metadata: MoveMetadata {
-                                    duration: MoveDuration::Fixed(4.0),
+                                    duration: MoveDuration::While(CombatCondition::True),
                                     animation: Some(animations.hurt.clone()),
                                     state: EnemyCombatState::Dying
                                 },
@@ -366,7 +366,7 @@ pub(crate) fn spawn(
                         // Circle around player
                         choreography: 4,
                         weight: 0.2,
-                        condition: CombatCondition::None
+                        condition: CombatCondition::True
                     }
                 ], HashMap::new(), SpecialChoreographies {
                     block: 5,
@@ -374,7 +374,7 @@ pub(crate) fn spawn(
                     posture_broken: 7,
                     death: 8,
                 }),
-                constitution: Constitution::default().with_max_health(100.0).with_max_posture(50.0).with_base_posture_recovery(8.0),
+                constitution: Constitution::default().with_max_health(100.0).with_max_posture(50.0).with_base_posture_recovery(10.0),
                 ..default()
             },
             DialogTarget {
