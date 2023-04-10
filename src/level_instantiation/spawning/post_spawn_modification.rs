@@ -1,5 +1,5 @@
 use crate::level_instantiation::spawning::despawn::Despawn;
-use crate::level_instantiation::spawning::objects::level::Imported;
+use crate::level_instantiation::spawning::objects::intro_room::Imported;
 use anyhow::{Context, Result};
 use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;

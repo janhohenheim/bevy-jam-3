@@ -33,10 +33,10 @@ pub(crate) fn update_posture(
 
 pub(crate) fn handle_death(
     mut commands: Commands,
-    mut enemies: Query<(Entity, &mut Enemy, &mut Constitution)>,
+    mut enemies: Query<(Entity, &mut Enemy, &EnemyCombatState, &mut Constitution)>,
 ) {
-    for (entity, mut enemy, mut constitution) in enemies.iter_mut() {
-        if !constitution.is_dead() {
+    for (entity, mut enemy, combat_state, mut constitution) in enemies.iter_mut() {
+        if !(constitution.is_dead() || enemy.is_dead || *combat_state == EnemyCombatState::Dying) {
             return;
         }
         enemy.die();

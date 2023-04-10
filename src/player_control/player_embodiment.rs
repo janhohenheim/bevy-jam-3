@@ -8,6 +8,7 @@ use crate::player_control::player_embodiment::combat::collision::{
     BlockedByPlayerEvent, DeflectedByPlayerEvent, PlayerHurtEvent,
 };
 use crate::player_control::player_embodiment::combat::*;
+use crate::util::criteria::never;
 use crate::util::smoothness_to_lerp_factor;
 use crate::util::trait_extension::{F32Ext, TransformExt, Vec3Ext};
 use crate::world_interaction::dialog::CurrentDialog;
@@ -73,8 +74,6 @@ pub(crate) fn player_embodiment_plugin(app: &mut App) {
                 combat::after_hit::handle_deflect_events,
                 combat::after_hit::handle_enemy_deflect_events,
                 combat::posture::update_posture,
-                #[cfg(feature = "dev")]
-                combat::debug::display_combat_state,
                 combat::update_hitbox,
                 combat::play_animations,
             )
@@ -82,6 +81,11 @@ pub(crate) fn player_embodiment_plugin(app: &mut App) {
                 .after(CameraUpdateSystemSet)
                 .after(CombatSystemSet)
                 .before(GeneralMovementSystemSet)
+                .in_set(OnUpdate(GameState::Playing)),
+        )
+        .add_system(
+            combat::debug::display_combat_state
+                .run_if(never)
                 .in_set(OnUpdate(GameState::Playing)),
         );
 }

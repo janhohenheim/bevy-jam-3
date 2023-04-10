@@ -13,7 +13,6 @@ use std::time::Duration;
 pub(crate) mod after_hit;
 pub(crate) mod collision;
 mod components;
-#[cfg(feature = "dev")]
 pub(crate) mod debug;
 pub(crate) mod posture;
 pub(crate) mod ui;

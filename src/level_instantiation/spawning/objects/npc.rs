@@ -380,7 +380,7 @@ pub(crate) fn spawn(
             DialogTarget {
                 dialog_id: DialogId::new("follower"),
             },
-            GameObject::Npc,
+            GameObject::Dummy,
             CollisionGroups::new(
                 GameCollisionGroup::ENEMY.into(),
                 (GameCollisionGroup::PLAYER | GameCollisionGroup::ATTACK).into(),

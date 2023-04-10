@@ -28,6 +28,7 @@ pub(crate) fn loading_plugin(app: &mut App) {
         .add_collection_to_loading_state::<_, DialogAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, TextureAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, ConfigAssets>(GameState::Loading)
+        .add_collection_to_loading_state::<_, RoomAssets>(GameState::Loading)
         .add_system(show_progress.in_set(OnUpdate(GameState::Loading)))
         .add_system(update_config);
 }
@@ -47,10 +48,14 @@ pub(crate) struct SceneAssets {
     pub(crate) fps_dummy: Handle<Scene>,
     #[asset(path = "scenes/dummy.glb#Scene0")]
     pub(crate) dummy: Handle<Scene>,
-    #[asset(path = "scenes/old_town.glb#Scene0")]
-    pub(crate) level: Handle<Scene>,
     #[asset(path = "scenes/kunai.glb#Scene0")]
     pub(crate) kunai: Handle<Scene>,
+}
+
+#[derive(AssetCollection, Resource, Clone)]
+pub(crate) struct RoomAssets {
+    #[asset(path = "scenes/intro_room.glb#Scene0")]
+    pub(crate) intro: Handle<Scene>,
 }
 
 #[derive(AssetCollection, Resource, Clone)]
@@ -94,7 +99,7 @@ pub(crate) struct LevelAssets {
     #[cfg_attr(feature = "native", asset(path = "levels", collection(typed, mapped)))]
     #[cfg_attr(
         feature = "wasm",
-        asset(paths("levels/old_town.lvl.ron"), collection(typed, mapped))
+        asset(paths("levels/intro_room.lvl.ron"), collection(typed, mapped))
     )]
     pub(crate) levels: HashMap<String, Handle<SerializedLevel>>,
 }
@@ -143,6 +148,7 @@ fn show_progress(
     config_assets: Option<Res<ConfigAssets>>,
     dummy_animation_assets: Option<Res<DummyAnimationAssets>>,
     fps_dummy_animation_assets: Option<Res<FpsDummyAnimationAssets>>,
+    room_assets: Option<Res<RoomAssets>>,
 ) {
     if let Some(progress) = progress.map(|counter| counter.progress()) {
         if progress.done > *last_done {
@@ -165,6 +171,7 @@ fn show_progress(
                     ui.checkbox(&mut dialog_assets.is_some(), "Dialogs");
                     ui.checkbox(&mut texture_assets.is_some(), "Textures");
                     ui.checkbox(&mut config_assets.is_some(), "Config");
+                    ui.checkbox(&mut room_assets.is_some(), "Rooms");
                     ui.checkbox(&mut dummy_animation_assets.is_some(), "Dummy Animations");
                     ui.checkbox(
                         &mut fps_dummy_animation_assets.is_some(),

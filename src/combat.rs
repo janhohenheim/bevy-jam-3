@@ -5,6 +5,7 @@ use crate::combat::collision::{
 };
 use crate::level_instantiation::spawning::animation_link::link_animations;
 use crate::movement::general_movement::reset_forces_and_impulses;
+use crate::util::criteria::never;
 use crate::GameState;
 use bevy::prelude::*;
 pub(crate) use components::*;
@@ -14,7 +15,6 @@ use spew::prelude::*;
 pub(crate) mod collision;
 pub(crate) mod components;
 mod constitution;
-#[cfg(feature = "dev")]
 pub(crate) mod debug;
 mod decision;
 mod execution;
@@ -69,8 +69,6 @@ pub(crate) fn combat_plugin(app: &mut App) {
                 execution::read_move_metadata,
                 execution::execute_move_functions,
                 linking::sync_projectile_attack_hitbox,
-                #[cfg(feature = "dev")]
-                debug::display_combatants,
             )
                 .chain()
                 .after(link_animations)
@@ -85,5 +83,10 @@ pub(crate) fn combat_plugin(app: &mut App) {
                 .after(reset_forces_and_impulses)
                 .in_set(OnUpdate(GameState::Playing))
                 .in_set(CombatSystemSet),
+        )
+        .add_system(
+            debug::display_combatants
+                .run_if(never)
+                .in_set(OnUpdate(GameState::Playing)),
         );
 }

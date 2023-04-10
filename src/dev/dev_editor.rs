@@ -134,7 +134,7 @@ pub(crate) struct DevEditorState {
 impl Default for DevEditorState {
     fn default() -> Self {
         Self {
-            level_name: "old_town".to_owned(),
+            level_name: "entrance".to_owned(),
             save_name: default(),
             spawn_item: default(),
             collider_render_enabled: false,

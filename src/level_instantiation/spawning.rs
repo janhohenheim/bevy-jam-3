@@ -13,7 +13,7 @@ use strum_macros::EnumIter;
 pub(crate) mod animation_link;
 mod despawn;
 pub(crate) mod objects;
-mod post_spawn_modification;
+pub mod post_spawn_modification;
 
 pub(crate) fn spawning_plugin(app: &mut App) {
     app.add_plugin(SpewPlugin::<GameObject, Transform>::default())
@@ -27,9 +27,9 @@ pub(crate) fn spawning_plugin(app: &mut App) {
             (GameObject::Capsule, objects::primitives::spawn_capsule),
             (GameObject::Sunlight, objects::sunlight::spawn),
             (GameObject::PointLight, objects::point_light::spawn),
-            (GameObject::Npc, objects::npc::spawn),
+            (GameObject::Dummy, objects::npc::spawn),
             (GameObject::Player, objects::player::spawn),
-            (GameObject::Level, objects::level::spawn),
+            (GameObject::IntroRoom, objects::intro_room::spawn),
             (GameObject::Orb, objects::orb::spawn),
             (GameObject::Camera, objects::camera::spawn),
             (GameObject::Skydome, objects::skydome::spawn),
@@ -66,9 +66,9 @@ pub(crate) enum GameObject {
     Capsule,
     Sunlight,
     PointLight,
-    Npc,
+    Dummy,
     Player,
-    Level,
+    IntroRoom,
     Orb,
     Camera,
     Skydome,

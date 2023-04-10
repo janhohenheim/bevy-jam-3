@@ -1,10 +1,13 @@
 use crate::file_system_interaction::level_serialization::{CurrentLevel, WorldLoadRequest};
+use crate::level_instantiation::spawning::post_spawn_modification::set_shadows;
 use crate::level_instantiation::spawning::GameObject;
 use crate::player_control::player_embodiment::Player;
 use crate::GameState;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
+use regex::Regex;
 use spew::prelude::*;
+use std::sync::LazyLock;
 
 pub(crate) fn map_plugin(app: &mut App) {
     app.add_system(
@@ -16,29 +19,71 @@ pub(crate) fn map_plugin(app: &mut App) {
         show_loading_screen
             .run_if(not(any_with_component::<Player>()))
             .in_set(OnUpdate(GameState::Playing)),
+    )
+    .add_systems(
+        (spawn_enemies, place_player)
+            .chain()
+            .after(set_shadows)
+            .in_set(OnUpdate(GameState::Playing)),
     );
     #[cfg(feature = "wasm")]
     app.add_system(show_wasm_loader.in_set(OnUpdate(GameState::Playing)));
 }
 
-fn setup(
-    mut commands: Commands,
-    mut loader: EventWriter<WorldLoadRequest>,
-    mut delayed_spawner: EventWriter<SpawnEvent<GameObject, Transform>>,
-) {
+fn setup(mut commands: Commands, mut loader: EventWriter<WorldLoadRequest>) {
     commands.insert_resource(AmbientLight {
         color: Color::WHITE,
-        brightness: 0.3,
+        brightness: 0.05,
     });
 
     loader.send(WorldLoadRequest {
-        filename: "old_town".to_string(),
+        filename: "intro_room".to_string(),
     });
+}
 
-    // Make sure the player is spawned after the level
-    delayed_spawner.send(
-        SpawnEvent::with_data(GameObject::Player, Transform::from_xyz(0., 1.5, 0.)).delay_frames(2),
-    );
+fn place_player(
+    mut commands: Commands,
+    names: Query<(Entity, &Transform, &Name), (Added<Name>, Without<Player>)>,
+    mut player_query: Query<&mut Transform, With<Player>>,
+    mut spawn_events: EventWriter<SpawnEvent<GameObject, Transform>>,
+) {
+    for (entity, transform, name) in names.iter() {
+        if name.contains("[entrance]") {
+            commands.entity(entity).despawn_recursive();
+            if let Ok(mut player_transform) = player_query.get_single_mut() {
+                *player_transform = transform.clone();
+            } else {
+                spawn_events.send(
+                    SpawnEvent::with_data(GameObject::Player, transform.clone()).delay_frames(2),
+                );
+            }
+        }
+    }
+}
+
+static ENEMY_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"\[enemy:\s*(\w+)\]").expect("Failed to compile enemy regex"));
+
+fn spawn_enemies(
+    mut commands: Commands,
+    names: Query<(Entity, &Transform, &Name), Added<Name>>,
+    mut spawn_events: EventWriter<SpawnEvent<GameObject, Transform>>,
+) {
+    for (entity, transform, name) in names.iter() {
+        if let Some(captures) = ENEMY_REGEX.captures(&name.to_lowercase()) {
+            commands.entity(entity).despawn_recursive();
+            let enemy_name = captures.get(1).unwrap().as_str();
+            match enemy_name {
+                "dummy" => {
+                    let transform = transform.with_scale(Vec3::splat(1.));
+                    spawn_events.send(SpawnEvent::with_data(GameObject::Dummy, transform));
+                }
+                _ => {
+                    error!("Tried to spawn invalid enemy type: {}", enemy_name);
+                }
+            }
+        }
+    }
 }
 
 fn show_loading_screen(mut egui_contexts: EguiContexts) {
