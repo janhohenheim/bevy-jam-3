@@ -29,11 +29,16 @@ pub(crate) fn spawning_plugin(app: &mut App) {
             (GameObject::PointLight, objects::point_light::spawn),
             (GameObject::Dummy, objects::npc::spawn),
             (GameObject::Player, objects::player::spawn),
-            (GameObject::IntroRoom, objects::intro_room::spawn),
             (GameObject::Orb, objects::orb::spawn),
             (GameObject::Camera, objects::camera::spawn),
             (GameObject::Skydome, objects::skydome::spawn),
             (GameObject::Exit, objects::exit::spawn),
+        ))
+        .add_spawners((
+            (GameObject::IntroRoom, objects::intro_room::spawn_intro),
+            (GameObject::RoomOne, objects::intro_room::spawn_one),
+            (GameObject::RoomTwo, objects::intro_room::spawn_two),
+            (GameObject::RoomThree, objects::intro_room::spawn_three),
         ))
         .add_systems((despawn, link_animations).in_set(OnUpdate(GameState::Playing)))
         .add_systems(
@@ -70,6 +75,9 @@ pub(crate) enum GameObject {
     Dummy,
     Player,
     IntroRoom,
+    RoomOne,
+    RoomTwo,
+    RoomThree,
     Orb,
     Camera,
     Skydome,

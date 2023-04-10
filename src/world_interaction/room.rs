@@ -9,6 +9,7 @@ use crate::GameState;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 use bevy_kira_audio::AudioInstance;
+use rand::Rng;
 use spew::prelude::SpawnEvent;
 
 pub(crate) fn exit_plugin(app: &mut App) {
@@ -169,10 +170,23 @@ fn leave_room(
     for _ in leave_room_events.iter() {
         actions_frozen.unfreeze();
         current_room.enter_next();
-        spawn_events.send(SpawnEvent::new(GameObject::IntroRoom));
+        spawn_events.send(SpawnEvent::new(choose_room()));
         enter_room_events.send(EnterRoomEvent);
         for room in rooms.iter() {
             commands.entity(room).despawn_recursive();
         }
+    }
+}
+
+fn choose_room() -> GameObject {
+    let mut rng = rand::thread_rng();
+    let room = rng.gen_range(0..=3);
+    info!("Choosing room {}", room);
+    match room {
+        0 => GameObject::IntroRoom,
+        1 => GameObject::RoomOne,
+        2 => GameObject::RoomTwo,
+        3 => GameObject::RoomThree,
+        _ => GameObject::IntroRoom,
     }
 }

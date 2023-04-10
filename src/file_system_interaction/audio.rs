@@ -101,7 +101,7 @@ fn handle_audio_events(
                 .get_mut(&audio_handles.intro_and_loop)
                 .context("Failed to get audio instance from handle")?;
             let tween = AudioTween::linear(Duration::from_secs_f32(delta));
-            intro.stop(tween.clone());
+            //intro.pause(tween.clone());
             /*let outro = audio_instances
                 .get_mut(&audio_handles.outro)
                 .context("Failed to get audio instance from handle")?;

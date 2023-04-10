@@ -64,6 +64,12 @@ pub(crate) struct SceneAssets {
 pub(crate) struct RoomAssets {
     #[asset(path = "scenes/intro_room.glb#Scene0")]
     pub(crate) intro: Handle<Scene>,
+    #[asset(path = "scenes/room_one.glb#Scene0")]
+    pub(crate) one: Handle<Scene>,
+    #[asset(path = "scenes/room_two.glb#Scene0")]
+    pub(crate) two: Handle<Scene>,
+    #[asset(path = "scenes/room_three.glb#Scene0")]
+    pub(crate) three: Handle<Scene>,
 }
 
 #[derive(AssetCollection, Resource, Clone)]
