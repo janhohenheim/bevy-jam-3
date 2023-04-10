@@ -6,10 +6,10 @@ version = "0.2.0"
 license = "MIT OR  Apache-2.0"
 exclude = ["dist", "build", "assets", "credits", "saves", "resources", "build.rs"]
 description = "The all-in-one Bevy 3D game template."
-repository = "https://github.com/janhohenheim/foxtrot"
+repository = "https://github.com/janhohenheim/egg_slash"
 keywords = ["gamedev", "bevy", "template", "game"]
 categories = ["game-development"]
-homepage = "https://janhohenheim.github.io/foxtrot/"
+homepage = "https://janhohenheim.github.io/egg_slash/"
 
 [features]
 default = ["native-dev"]

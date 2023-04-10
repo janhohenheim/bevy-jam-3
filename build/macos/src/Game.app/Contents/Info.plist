@@ -5,17 +5,17 @@
         <key>CFBundleDevelopmentRegion</key>
         <string>en</string>
         <key>CFBundleDisplayName</key>
-        <string>Foxtrot</string>
+        <string>EggSlash</string>
         <key>CFBundleExecutable</key>
-        <string>foxtrot</string>
+        <string>egg_slash</string>
         <key>CFBundleIconFile</key>
         <string>AppIcon.icns</string>
         <key>CFBundleIdentifier</key>
-        <string>ch.janhohenheim.foxtrot</string>
+        <string>ch.janhohenheim.egg_slash</string>
         <key>CFBundleInfoDictionaryVersion</key>
         <string>6.0</string>
         <key>CFBundleName</key>
-        <string>Foxtrot</string>
+        <string>EggSlash</string>
         <key>CFBundlePackageType</key>
         <string>APPL</string>
         <key>CFBundleShortVersionString</key>
