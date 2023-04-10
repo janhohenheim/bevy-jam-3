@@ -1,5 +1,6 @@
 use crate::combat::Constitution;
 use crate::player_control::player_embodiment::Player;
+use crate::world_interaction::room::EnterRoomEvent;
 use crate::GameState;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
@@ -63,16 +64,20 @@ pub(crate) enum SideEffect {
 }
 
 fn apply_side_effects_to_constitution(
+    mut enter_room_events: EventReader<EnterRoomEvent>,
     mut players: Query<&mut Constitution, With<Player>>,
-    mut side_effects: ResMut<SideEffects>,
+    side_effects: Res<SideEffects>,
 ) {
-    for mut constitution in players.iter_mut() {
-        constitution.apply_health_side_effect(side_effects.get_factored(SideEffect::Health, 0.2));
-        constitution
-            .apply_posture_side_effect(side_effects.get_factored(SideEffect::MaxPosture, 0.2));
-        constitution.apply_posture_recovery_side_effect(
-            side_effects.get_factored(SideEffect::PostureRegenRate, 0.2),
-        );
+    for _ in enter_room_events.iter() {
+        for mut constitution in players.iter_mut() {
+            constitution
+                .apply_health_side_effect(side_effects.get_factored(SideEffect::Health, 0.2));
+            constitution
+                .apply_posture_side_effect(side_effects.get_factored(SideEffect::MaxPosture, 0.2));
+            constitution.apply_posture_recovery_side_effect(
+                side_effects.get_factored(SideEffect::PostureRegenRate, 0.2),
+            );
+        }
     }
 }
 

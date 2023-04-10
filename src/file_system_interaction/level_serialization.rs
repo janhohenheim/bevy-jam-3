@@ -2,6 +2,8 @@ use crate::file_system_interaction::asset_loading::LevelAssets;
 use crate::level_instantiation::spawning::GameObject;
 use crate::world_interaction::condition::ActiveConditions;
 use crate::world_interaction::dialog::CurrentDialog;
+use crate::world_interaction::room::CurrentRoom;
+use crate::world_interaction::side_effects::SideEffects;
 use anyhow::{Context, Result};
 use bevy::prelude::*;
 use bevy::reflect::TypeUuid;
@@ -140,6 +142,8 @@ fn load_world(
             scene: load.filename.clone(),
         });
         commands.insert_resource(ActiveConditions::default());
+        commands.insert_resource(SideEffects::default());
+        commands.insert_resource(CurrentRoom::default());
         commands.remove_resource::<CurrentDialog>();
 
         info!("Successfully loaded scene \"{}\"", load.filename,)

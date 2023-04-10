@@ -2073,6 +2073,7 @@ dependencies = [
  "leafwing-input-manager",
  "noise",
  "oxidized_navigation",
+ "pixelate_mesh",
  "rand",
  "regex",
  "ron",
@@ -3402,6 +3403,15 @@ name = "pin-project-lite"
 version = "0.2.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e0a7ae3ac2f1173085d398531c705756c94a4c56843785df85a60c1a0afac116"
+
+[[package]]
+name = "pixelate_mesh"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "04eda1585b9408472492809b712327b3a839e95668116aafb037637588f3462c"
+dependencies = [
+ "bevy",
+]
 
 [[package]]
 name = "pkg-config"

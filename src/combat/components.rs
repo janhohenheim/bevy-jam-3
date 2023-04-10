@@ -147,7 +147,7 @@ impl Constitution {
 
     pub(crate) fn apply_health_side_effect(&mut self, side_effect: f32) {
         self.max_health = self.vanilla_max_health * side_effect;
-        if side_effect > 0.0 {
+        if side_effect > 1.1 {
             self.recover_health(self.health * side_effect);
         }
     }

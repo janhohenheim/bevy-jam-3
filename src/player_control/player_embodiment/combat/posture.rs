@@ -1,9 +1,14 @@
 use crate::combat::Constitution;
+use crate::file_system_interaction::level_serialization::WorldLoadRequest;
 use crate::movement::general_movement::Walking;
+use crate::player_control::actions::ActionsFrozen;
 use crate::player_control::player_embodiment::combat::{
     AttackCommitment, PlayerCombatKind, PlayerCombatState,
 };
+use crate::player_control::player_embodiment::Player;
+use crate::world_interaction::room::CurrentRoom;
 use bevy::prelude::*;
+use bevy_egui::{egui, EguiContexts};
 
 pub(crate) fn update_posture(
     time: Res<Time>,
@@ -43,5 +48,50 @@ pub(crate) fn update_posture(
             };
             constitution.recover_posture(time.delta_seconds() * factor);
         }
+    }
+}
+
+pub(crate) fn handle_death(
+    mut player: Query<&Constitution, With<Player>>,
+    mut loader: EventWriter<WorldLoadRequest>,
+    mut pause: Local<bool>,
+    mut actions_frozen: ResMut<ActionsFrozen>,
+    mut egui_contexts: EguiContexts,
+    current_room: Res<CurrentRoom>,
+) {
+    let room_number = current_room.number;
+    for constitution in player.iter_mut() {
+        if constitution.is_dead() {
+            if !*pause {
+                *pause = true;
+                actions_frozen.freeze();
+            }
+        }
+    }
+    if *pause {
+        egui::CentralPanel::default()
+            .frame(egui::Frame {
+                fill: egui::Color32::from_black_alpha(240),
+                ..default()
+            })
+            .show(egui_contexts.ctx_mut(), |ui| {
+                ui.vertical_centered_justified(|ui| {
+                    ui.visuals_mut().override_text_color = Some(egui::Color32::from_gray(240));
+                    ui.add_space(100.0);
+                    ui.heading("You died");
+                    ui.separator();
+                    ui.vertical_centered_justified(|ui| {
+                        ui.label(format!("You beat {room_number} rooms!"));
+                        ui.label("Wanna try again?");
+                        if ui.button("Heck yeah!").clicked() {
+                            *pause = false;
+                            actions_frozen.unfreeze();
+                            loader.send(WorldLoadRequest {
+                                filename: "intro_room".to_string(),
+                            });
+                        }
+                    });
+                });
+            });
     }
 }

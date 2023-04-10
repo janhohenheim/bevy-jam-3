@@ -75,6 +75,7 @@ pub(crate) fn player_embodiment_plugin(app: &mut App) {
                 combat::after_hit::handle_deflect_events,
                 combat::after_hit::handle_enemy_deflect_events,
                 combat::posture::update_posture,
+                combat::posture::handle_death,
                 combat::update_hitbox,
                 combat::play_animations,
             )
