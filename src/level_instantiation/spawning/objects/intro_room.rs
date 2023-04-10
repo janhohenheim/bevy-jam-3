@@ -1,5 +1,6 @@
 use crate::file_system_interaction::asset_loading::RoomAssets;
 use crate::level_instantiation::spawning::GameObject;
+use crate::world_interaction::room::Room;
 use bevy::prelude::*;
 
 pub(crate) fn spawn(In(transform): In<Transform>, mut commands: Commands, rooms: Res<RoomAssets>) {
@@ -12,6 +13,7 @@ pub(crate) fn spawn(In(transform): In<Transform>, mut commands: Commands, rooms:
         Name::new("Intro Room"),
         Imported,
         GameObject::IntroRoom,
+        Room,
     ));
 }
 

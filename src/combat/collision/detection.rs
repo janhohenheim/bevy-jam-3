@@ -1,6 +1,5 @@
 use crate::combat::{Attack, AttackHitbox, Enemy, HitboxToParentLink};
 use crate::player_control::player_embodiment::Player;
-use crate::world_interaction::interactions_ui::unpack_event;
 use anyhow::{Context, Error, Result};
 use bevy::prelude::*;
 use bevy::utils::HashMap;
@@ -264,5 +263,12 @@ fn determine_enemy_and_hitbox(
         Some((entity_b, entity_a))
     } else {
         None
+    }
+}
+
+pub(crate) fn unpack_event(event: &CollisionEvent) -> (Entity, Entity, bool) {
+    match event {
+        CollisionEvent::Started(entity_a, entity_b, _kind) => (*entity_a, *entity_b, true),
+        CollisionEvent::Stopped(entity_a, entity_b, _kind) => (*entity_a, *entity_b, false),
     }
 }

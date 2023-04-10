@@ -4,6 +4,7 @@ use crate::file_system_interaction::asset_loading::{DummyAnimationAssets, SceneA
 use crate::level_instantiation::spawning::objects::GameCollisionGroup;
 use crate::level_instantiation::spawning::GameObject;
 use crate::movement::general_movement::{CharacterControllerBundle, Model};
+use crate::world_interaction::room::Room;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use bevy_rapier3d::prelude::*;
@@ -24,6 +25,7 @@ pub(crate) fn spawn(
                 transform,
                 ..default()
             },
+        Room,
             Name::new("NPC"),
             CharacterControllerBundle::capsule(HEIGHT, RADIUS),
             CombatBundle {

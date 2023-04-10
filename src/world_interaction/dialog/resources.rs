@@ -134,7 +134,7 @@ impl DialogChoice {
 #[serde(from = "String", into = "String")]
 pub(crate) struct DialogId(pub(crate) String);
 impl DialogId {
-    pub(crate) fn new(id: &str) -> Self {
+    pub(crate) fn _new(id: &str) -> Self {
         Self(id.to_string())
     }
 }

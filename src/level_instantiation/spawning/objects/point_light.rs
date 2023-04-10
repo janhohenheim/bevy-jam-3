@@ -1,5 +1,6 @@
 use crate::level_instantiation::spawning::GameObject;
 
+use crate::world_interaction::room::Room;
 use bevy::prelude::*;
 
 pub(crate) fn spawn(In(transform): In<Transform>, mut commands: Commands) {
@@ -18,5 +19,6 @@ pub(crate) fn spawn(In(transform): In<Transform>, mut commands: Commands) {
         },
         Name::new("Light"),
         GameObject::PointLight,
+        Room,
     ));
 }

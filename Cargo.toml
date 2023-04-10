@@ -14,7 +14,7 @@ homepage = "https://janhohenheim.github.io/foxtrot/"
 [features]
 default = ["native-dev"]
 
-core = ["bevy/animation", "bevy/bevy_asset", "bevy/bevy_scene", "bevy/bevy_winit", "bevy/bevy_core_pipeline", "bevy/bevy_pbr", "bevy/bevy_gltf", "bevy/bevy_render", "bevy/bevy_sprite", "bevy/bevy_text", "bevy/bevy_ui", "bevy/png", "bevy/jpeg", "bevy/hdr", "bevy/zstd", "bevy/x11", "bevy/ktx2", "bevy/tonemapping_luts", "bevy/serialize"]
+core = ["bevy/animation", "bevy/bevy_asset", "bevy/bevy_scene", "bevy/bevy_winit", "bevy/bevy_core_pipeline", "bevy/bevy_pbr", "bevy/bevy_gltf", "bevy/bevy_render", "bevy/bevy_sprite", "bevy/bevy_text", "bevy/bevy_ui", "bevy/png", "bevy/jpeg", "bevy/hdr", "bevy/zstd", "bevy/x11", "bevy/mp3", "bevy/ktx2", "bevy/tonemapping_luts", "bevy/serialize"]
 
 dev = ["dep:bevy_editor_pls", "dep:bevy_prototype_debug_lines", "core"]
 

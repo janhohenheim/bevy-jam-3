@@ -1,10 +1,12 @@
 pub(crate) mod condition;
 pub(crate) mod dialog;
 pub(crate) mod interactions_ui;
+pub(crate) mod room;
 
 use crate::world_interaction::condition::condition_plugin;
 use crate::world_interaction::dialog::dialog_plugin;
 use crate::world_interaction::interactions_ui::interactions_ui_plugin;
+use crate::world_interaction::room::exit_plugin;
 use bevy::prelude::*;
 use seldom_fn_plugin::FnPluginExt;
 
@@ -15,5 +17,6 @@ use seldom_fn_plugin::FnPluginExt;
 pub(crate) fn world_interaction_plugin(app: &mut App) {
     app.fn_plugin(condition_plugin)
         .fn_plugin(dialog_plugin)
+        .fn_plugin(exit_plugin)
         .fn_plugin(interactions_ui_plugin);
 }
